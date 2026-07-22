@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Add the apps/player subdirectory
-add_subdirectory(packages/aei)
+# Engine modules
+add_subdirectory(engine/utilities)
+add_subdirectory(engine/runtime)
+add_subdirectory(engine/core)
+
+# Applications
 add_subdirectory(apps/player)

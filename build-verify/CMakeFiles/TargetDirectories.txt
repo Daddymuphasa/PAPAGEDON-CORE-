@@ -1,0 +1,8 @@
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/core/aei/CMakeFiles/papagedon-aei.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/core/aei/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/core/aei/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/apps/player/CMakeFiles/papagedon-player.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/apps/player/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/apps/player/CMakeFiles/rebuild_cache.dir

@@ -1,6 +1,8 @@
-#include <iostream>
+#include <papagedon/core/Engine.h>
 
 int main() {
-    std::cout << "PAPAGEDON Core v0.0.1\n";
+    papagedon::core::Engine engine;
+    engine.Run();
+
     return 0;
 }
