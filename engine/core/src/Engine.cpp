@@ -23,13 +23,12 @@ bool Engine::Initialize() {
 }
 
 void Engine::Run() {
-    if (!Initialize()) {
-        logger_.ERROR("Engine initialization failed.");
+    if (!initialized_) {
+        logger_.ERROR("Engine must be initialized before it can run.");
         return;
     }
 
     runtime_.Run();
-    Shutdown();
 }
 
 void Engine::Shutdown() noexcept {
