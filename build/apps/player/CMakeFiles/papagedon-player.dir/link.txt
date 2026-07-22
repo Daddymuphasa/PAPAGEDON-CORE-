@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\papagedon-player.dir/objects.a
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ar.exe" qc CMakeFiles\papagedon-player.dir/objects.a @CMakeFiles\papagedon-player.dir\objects1.rsp
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" -Wl,--whole-archive CMakeFiles\papagedon-player.dir/objects.a -Wl,--no-whole-archive -o papagedon-player.exe -Wl,--out-implib,libpapagedon-player.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\papagedon-player.dir\linkLibs.rsp

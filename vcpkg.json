@@ -1,0 +1,11 @@
+{
+  "name": "papagedon-core",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "miniaudio",
+    "fftw3",
+    "spdlog",
+    "catch2",
+    "nlohmann-json"
+  ]
+}

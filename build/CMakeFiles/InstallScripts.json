@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/cmake_install.cmake",
+		"C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

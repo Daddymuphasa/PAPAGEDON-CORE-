@@ -1,0 +1,5 @@
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/papagedon-player.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/rebuild_cache.dir
