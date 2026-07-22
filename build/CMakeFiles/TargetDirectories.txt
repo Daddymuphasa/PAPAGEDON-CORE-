@@ -1,5 +1,17 @@
 C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/edit_cache.dir
 C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/utilities/CMakeFiles/papagedon-utilities.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/utilities/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/utilities/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/audio/CMakeFiles/papagedon-audio.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/audio/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/audio/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/runtime/CMakeFiles/papagedon-runtime.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/runtime/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/runtime/CMakeFiles/rebuild_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/core/CMakeFiles/papagedon-core.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/core/CMakeFiles/edit_cache.dir
+C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/core/CMakeFiles/rebuild_cache.dir
 C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/papagedon-player.dir
 C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/edit_cache.dir
 C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/apps/player/CMakeFiles/rebuild_cache.dir

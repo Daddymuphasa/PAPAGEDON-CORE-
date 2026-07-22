@@ -14,5 +14,19 @@ target_include_directories(papagedon-audio
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-find_path(MINIAUDIO_INCLUDE_DIR NAMES miniaudio.h REQUIRED)
-target_include_directories(papagedon-audio PRIVATE ${MINIAUDIO_INCLUDE_DIR})
+find_path(
+    MINIAUDIO_INCLUDE_DIR
+    NAMES miniaudio.h
+    PATH_SUFFIXES include
+    PATHS
+        "$ENV{VCPKG_ROOT}/installed/x64-mingw-static/include"
+        "$ENV{VCPKG_ROOT}/installed/x64-mingw-dynamic/include"
+        "$ENV{VCPKG_ROOT}/installed/x64-windows-static/include"
+        "$ENV{VCPKG_ROOT}/installed/x64-windows/include"
+)
+
+if(NOT MINIAUDIO_INCLUDE_DIR)
+    find_path(MINIAUDIO_INCLUDE_DIR NAMES miniaudio.h REQUIRED)
+endif()
+
+target_include_directories(papagedon-audio PUBLIC ${MINIAUDIO_INCLUDE_DIR})

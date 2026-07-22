@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <span>
 #include <utility>
 
 #define MINIAUDIO_IMPLEMENTATION
@@ -15,12 +16,6 @@ namespace {
     return config.sampleRate > 0 &&
            (config.channelCount == 1 || config.channelCount == 2) &&
            config.framesPerPeriod > 0;
-}
-
-[[nodiscard]] std::size_t NormalizeFrameCount(
-    const std::size_t sampleCount,
-    const std::uint32_t channelCount) noexcept {
-    return sampleCount / channelCount;
 }
 
 } // namespace
@@ -47,11 +42,11 @@ bool AudioInput::Initialize(const Config& config) {
 }
 
 bool AudioInput::Start() {
-    if (!initialized_ || !deviceInitialized_ || running_.load(std::memory_order_acquire)) {
+    if (!initialized_ || running_.load(std::memory_order_acquire)) {
         return false;
     }
 
-    if (config_.source == SourceType::File && decoder_ != nullptr) {
+    if (config_.source == SourceType::File) {
         running_.store(true, std::memory_order_release);
         return true;
     }
@@ -76,11 +71,13 @@ void AudioInput::Stop() noexcept {
     if (device_ != nullptr) {
         ma_device_stop(device_);
         ma_device_uninit(device_);
+        delete device_;
         device_ = nullptr;
     }
 
     if (decoder_ != nullptr) {
         ma_decoder_uninit(decoder_);
+        delete decoder_;
         decoder_ = nullptr;
     }
 
@@ -115,26 +112,11 @@ bool AudioInput::InitializeMicrophone() {
     ma_device_config deviceConfig = ma_device_config_init(ma_device_type_capture);
     deviceConfig.capture.format = ma_format_f32;
     deviceConfig.capture.channels = config_.channelCount;
-    deviceConfig.capture.periods = 2;
     deviceConfig.capture.shareMode = ma_share_mode_shared;
+    deviceConfig.periodSizeInFrames = config_.framesPerPeriod;
+    deviceConfig.periods = 2;
     deviceConfig.sampleRate = config_.sampleRate;
-    deviceConfig.dataCallback = [](ma_device* device, void* output, const void* input, ma_uint32 frameCount) {
-        static_cast<void>(output);
-        const auto* self = static_cast<AudioInput*>(device->pUserData);
-        if (self == nullptr || input == nullptr) {
-            return;
-        }
-
-        const auto* samples = static_cast<const float*>(input);
-        const auto sampleCount = static_cast<std::size_t>(frameCount) * self->config_.channelCount;
-
-        std::lock_guard lock{self->mutex_};
-        self->latestSamples_.assign(samples, samples + sampleCount);
-        self->sampleRate_ = self->config_.sampleRate;
-        self->channelCount_ = self->config_.channelCount;
-        self->frameCount_ = static_cast<std::uint64_t>(frameCount);
-    };
-
+    deviceConfig.dataCallback = &AudioInput::CaptureCallback;
     deviceConfig.pUserData = this;
 
     device_ = new ma_device{};
@@ -145,8 +127,8 @@ bool AudioInput::InitializeMicrophone() {
         return false;
     }
 
-    deviceInitialized_ = true;
     initialized_ = true;
+    deviceInitialized_ = true;
     return true;
 }
 
@@ -156,10 +138,7 @@ bool AudioInput::InitializeFileSource() {
     }
 
     decoder_ = new ma_decoder{};
-    const ma_decoder_config decoderConfig = ma_decoder_config_init(
-        ma_format_f32,
-        config_.channelCount,
-        config_.sampleRate);
+    const ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
     const ma_result result = ma_decoder_init_file(
         config_.filePath.c_str(),
         &decoderConfig,
@@ -182,12 +161,36 @@ bool AudioInput::InitializeFileSource() {
         return false;
     }
 
+    const std::size_t expectedSamples =
+        static_cast<std::size_t>(expectedFrames) * decodedChannels;
+    std::vector<float> decodedPcm(expectedSamples);
+
+    ma_uint64 framesRead = 0;
+    while (framesRead < expectedFrames) {
+        ma_uint64 framesReadThisPass = 0;
+        const ma_result readResult = ma_decoder_read_pcm_frames(
+            decoder_,
+            decodedPcm.data() + static_cast<std::size_t>(framesRead) * decodedChannels,
+            expectedFrames - framesRead,
+            &framesReadThisPass);
+
+        framesRead += framesReadThisPass;
+        if (readResult != MA_SUCCESS && readResult != MA_AT_END) {
+            return false;
+        }
+
+        if (framesReadThisPass == 0 || readResult == MA_AT_END) {
+            break;
+        }
+    }
+
+    decodedPcm.resize(static_cast<std::size_t>(framesRead) * decodedChannels);
+
     std::lock_guard lock{mutex_};
-    latestSamples_.clear();
-    latestSamples_.resize(static_cast<std::size_t>(expectedFrames) * decodedChannels);
+    latestSamples_ = std::move(decodedPcm);
     sampleRate_ = decodedSampleRate;
     channelCount_ = decodedChannels;
-    frameCount_ = static_cast<std::uint64_t>(expectedFrames);
+    frameCount_ = framesRead;
     initialized_ = true;
     deviceInitialized_ = true;
     return true;
@@ -207,7 +210,8 @@ void AudioInput::CaptureCallback(
     const void* input,
     ma_uint32 frameCount) {
     static_cast<void>(output);
-    const auto* self = static_cast<AudioInput*>(device->pUserData);
+
+    auto* self = static_cast<AudioInput*>(device->pUserData);
     if (self == nullptr || input == nullptr) {
         return;
     }

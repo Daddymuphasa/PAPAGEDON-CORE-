@@ -33,6 +33,10 @@ public:
 
 private:
     [[nodiscard]] ExperienceSignals Analyze(const AudioFrame& frame) const noexcept;
+    [[nodiscard]] static std::vector<float> ComputeSpectrum(
+        std::span<const float> samples,
+        std::uint32_t sampleRate,
+        std::uint32_t channelCount) noexcept;
 
     ExperienceSignals latestSignals_{};
 };

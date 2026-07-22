@@ -72,6 +72,7 @@ apps/player/CMakeFiles/papagedon-player.dir/codegen:
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/codegen
 
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/flags.make
+apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/includes_CXX.rsp
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/apps/player/src/main.cpp
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj"
@@ -94,6 +95,10 @@ papagedon__player_EXTERNAL_OBJECTS =
 
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/build.make
+apps/player/papagedon-player.exe: engine/core/libpapagedon-core.a
+apps/player/papagedon-player.exe: engine/runtime/libpapagedon-runtime.a
+apps/player/papagedon-player.exe: engine/audio/libpapagedon-audio.a
+apps/player/papagedon-player.exe: engine/utilities/libpapagedon-utilities.a
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/linkLibs.rsp
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/objects1.rsp
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/link.txt

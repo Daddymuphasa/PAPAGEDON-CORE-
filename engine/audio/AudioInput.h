@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <miniaudio.h>
+
 struct ma_device;
 struct ma_decoder;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace papagedon::audio {
 
 /// Semantic information derived from one analyzed audio frame.
@@ -13,6 +15,10 @@ struct ExperienceSignals final {
     bool beat = false;
     float bpm = 0.0F;
     float confidence = 0.0F;
+    std::vector<float> spectrum{};
+    float bassEnergy = 0.0F;
+    float midEnergy = 0.0F;
+    float trebleEnergy = 0.0F;
 
     [[nodiscard]] bool IsFinite() const noexcept;
 };
