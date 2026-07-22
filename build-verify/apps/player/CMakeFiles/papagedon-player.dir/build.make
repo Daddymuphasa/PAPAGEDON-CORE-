@@ -72,18 +72,19 @@ apps/player/CMakeFiles/papagedon-player.dir/codegen:
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/codegen
 
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/flags.make
+apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/includes_CXX.rsp
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/apps/player/src/main.cpp
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: apps/player/CMakeFiles/papagedon-player.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj"
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player" && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj -MF CMakeFiles\papagedon-player.dir\src\main.cpp.obj.d -o CMakeFiles\papagedon-player.dir\src\main.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1\apps\player && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj -MF CMakeFiles\papagedon-player.dir\src\main.cpp.obj.d -o CMakeFiles\papagedon-player.dir\src\main.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp"
 
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/papagedon-player.dir/src/main.cpp.i"
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player" && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp" > CMakeFiles\papagedon-player.dir\src\main.cpp.i
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1\apps\player && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp" > CMakeFiles\papagedon-player.dir\src\main.cpp.i
 
 apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/papagedon-player.dir/src/main.cpp.s"
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player" && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp" -o CMakeFiles\papagedon-player.dir\src\main.cpp.s
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1\apps\player && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\apps\player\src\main.cpp" -o CMakeFiles\papagedon-player.dir\src\main.cpp.s
 
 # Object files for target papagedon-player
 papagedon__player_OBJECTS = \
@@ -94,18 +95,22 @@ papagedon__player_EXTERNAL_OBJECTS =
 
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/build.make
+apps/player/papagedon-player.exe: engine/core/libpapagedon-core.a
+apps/player/papagedon-player.exe: engine/runtime/libpapagedon-runtime.a
+apps/player/papagedon-player.exe: engine/audio/libpapagedon-audio.a
+apps/player/papagedon-player.exe: engine/utilities/libpapagedon-utilities.a
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/linkLibs.rsp
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/objects1.rsp
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable papagedon-player.exe"
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\papagedon-player.dir\link.txt --verbose=$(VERBOSE)
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1\apps\player && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\papagedon-player.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 apps/player/CMakeFiles/papagedon-player.dir/build: apps/player/papagedon-player.exe
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/build
 
 apps/player/CMakeFiles/papagedon-player.dir/clean:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player" && $(CMAKE_COMMAND) -P CMakeFiles\papagedon-player.dir\cmake_clean.cmake
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1\apps\player && $(CMAKE_COMMAND) -P CMakeFiles\papagedon-player.dir\cmake_clean.cmake
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/clean
 
 apps/player/CMakeFiles/papagedon-player.dir/depend:

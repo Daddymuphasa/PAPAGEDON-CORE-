@@ -39,7 +39,22 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/core/aei/cmake_install.cmake")
+  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/utilities/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/audio/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/runtime/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build-verify/engine/core/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)

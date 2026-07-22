@@ -86,14 +86,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\CMakeFiles" "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player\\CMakeFiles\progress.marks"
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/all
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\CMakeFiles" "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\apps\player\\CMakeFiles\progress.marks"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify\CMakeFiles" 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/clean
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/clean
 .PHONY : clean
 
 # The main clean target
@@ -102,22 +102,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/preinstall
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/preinstall
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 1
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 apps/player/CMakeFiles/papagedon-player.dir/rule:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/CMakeFiles/papagedon-player.dir/rule
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/CMakeFiles/papagedon-player.dir/rule
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/rule
 
 # Convenience name for target.
@@ -126,7 +126,7 @@ papagedon-player: apps/player/CMakeFiles/papagedon-player.dir/rule
 
 # fast build rule for target.
 papagedon-player/fast:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/build
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/build
 .PHONY : papagedon-player/fast
 
 src/main.obj: src/main.cpp.obj
@@ -134,7 +134,7 @@ src/main.obj: src/main.cpp.obj
 
 # target to build an object file
 src/main.cpp.obj:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj
 .PHONY : src/main.cpp.obj
 
 src/main.i: src/main.cpp.i
@@ -142,7 +142,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.i
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -150,7 +150,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.s
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 # Help Target
@@ -176,6 +176,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /d "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build-verify" && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 0
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\BUILD-~1 && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles\Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

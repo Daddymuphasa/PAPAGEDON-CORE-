@@ -1,1 +1,1 @@
- -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
+ -lpapagedon::aei "../../engine/core/libpapagedon-core.a" "../../engine/runtime/libpapagedon-runtime.a" "../../engine/audio/libpapagedon-audio.a" "../../engine/utilities/libpapagedon-utilities.a" -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

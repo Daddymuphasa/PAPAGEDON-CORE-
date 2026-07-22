@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include <AudioAnalyzer.h>
+#include <AudioInput.h>
 
 namespace papagedon::utilities {
 class Logger;
@@ -32,6 +33,7 @@ private:
 
     utilities::Logger& logger_;
     audio::AudioAnalyzer audioAnalyzer_;
+    audio::AudioInput audioInput_{};
     std::atomic_bool running_{false};
     bool initialized_ = false;
 };

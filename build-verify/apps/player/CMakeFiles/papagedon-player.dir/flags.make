@@ -4,7 +4,7 @@
 # compile CXX with C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin/c++.exe
 CXX_DEFINES = 
 
-CXX_INCLUDES = 
+CXX_INCLUDES = @CMakeFiles\papagedon-player.dir\includes_CXX.rsp
 
 CXX_FLAGS = -std=c++20
 

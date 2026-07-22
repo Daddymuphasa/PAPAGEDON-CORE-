@@ -12,6 +12,23 @@ bool Runtime::Initialize() {
         return true;
     }
 
+    audio::AudioInput::Config config{};
+    config.source = audio::AudioInput::SourceType::Microphone;
+    config.sampleRate = 48'000;
+    config.channelCount = 2;
+    config.framesPerPeriod = 256;
+
+    if (!audioInput_.Initialize(config)) {
+        logger_.ERROR("Failed to initialize audio input.");
+        return false;
+    }
+
+    if (!audioInput_.Start()) {
+        logger_.ERROR("Failed to start audio input.");
+        audioInput_.Stop();
+        return false;
+    }
+
     initialized_ = true;
     logger_.INFO("Runtime initialized.");
     return true;
@@ -44,6 +61,7 @@ void Runtime::Shutdown() noexcept {
     }
 
     RequestStop();
+    audioInput_.Stop();
     initialized_ = false;
     logger_.INFO("Runtime shut down.");
 }
@@ -57,11 +75,8 @@ bool Runtime::IsRunning() const noexcept {
 }
 
 void Runtime::Update(const FrameDuration deltaTime) noexcept {
-    const audio::AudioFrame placeholderInput{
-        .sampleRate = 48'000,
-        .channelCount = 2,
-    };
-    const audio::ExperienceSignals signals = audioAnalyzer_.Update(placeholderInput);
+    const audio::AudioFrame latestInput = audioInput_.GetLatestSamples();
+    const audio::ExperienceSignals signals = audioAnalyzer_.Update(latestInput);
 
     static_cast<void>(deltaTime);
     static_cast<void>(signals);
