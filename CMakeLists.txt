@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Engine modules
 add_subdirectory(engine/utilities)
+add_subdirectory(engine/audio)
 add_subdirectory(engine/runtime)
 add_subdirectory(engine/core)
 

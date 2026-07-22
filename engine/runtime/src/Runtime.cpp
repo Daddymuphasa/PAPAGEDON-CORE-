@@ -57,7 +57,14 @@ bool Runtime::IsRunning() const noexcept {
 }
 
 void Runtime::Update(const FrameDuration deltaTime) noexcept {
+    const audio::AudioFrame placeholderInput{
+        .sampleRate = 48'000,
+        .channelCount = 2,
+    };
+    const audio::ExperienceSignals signals = audioAnalyzer_.Update(placeholderInput);
+
     static_cast<void>(deltaTime);
+    static_cast<void>(signals);
 }
 
 } // namespace papagedon::runtime

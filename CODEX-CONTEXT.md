@@ -10,24 +10,22 @@ You are implementing it.
 
 Current Stage
 
-Stage 1
+Stage 2
 
-Core Runtime
+Audio Intelligence Foundation
 
 ---
 
 Current Goal
 
-Build the engine foundation.
+Build the audio-intelligence foundation on top of the core runtime.
 
 Tasks
 
-- Engine class
-- Runtime class
-- Main Loop
-- Frame Timing
-- Update Loop
-- Shutdown
+- AudioFrame data contract
+- ExperienceSignals data contract
+- AudioAnalyzer interface
+- Runtime audio-system update
 
 Do NOT implement rendering.
 
@@ -35,7 +33,9 @@ Do NOT implement AI.
 
 Do NOT implement networking.
 
-Focus only on the runtime.
+Do NOT implement audio decoding, playback, or FFT analysis.
+
+Focus on clean interfaces between the runtime and audio intelligence.
 
 ---
 

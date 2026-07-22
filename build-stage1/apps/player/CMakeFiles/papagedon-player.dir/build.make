@@ -97,6 +97,7 @@ apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/sr
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/build.make
 apps/player/papagedon-player.exe: engine/core/libpapagedon-core.a
 apps/player/papagedon-player.exe: engine/runtime/libpapagedon-runtime.a
+apps/player/papagedon-player.exe: engine/audio/libpapagedon-audio.a
 apps/player/papagedon-player.exe: engine/utilities/libpapagedon-utilities.a
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/linkLibs.rsp
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/objects1.rsp

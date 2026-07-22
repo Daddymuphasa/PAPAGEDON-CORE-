@@ -11,4 +11,8 @@ target_include_directories(papagedon-runtime
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(papagedon-runtime PUBLIC papagedon::utilities)
+target_link_libraries(papagedon-runtime
+    PUBLIC
+        papagedon::audio
+        papagedon::utilities
+)

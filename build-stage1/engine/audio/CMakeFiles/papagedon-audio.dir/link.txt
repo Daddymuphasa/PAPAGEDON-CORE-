@@ -1,0 +1,2 @@
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ar.exe" qc libpapagedon-audio.a "CMakeFiles/papagedon-audio.dir/AudioAnalyzer.cpp.obj" "CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj" "CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj"
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ranlib.exe" libpapagedon-audio.a

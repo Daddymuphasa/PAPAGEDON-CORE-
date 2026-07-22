@@ -129,6 +129,19 @@ papagedon-utilities/fast:
 .PHONY : papagedon-utilities/fast
 
 #=============================================================================
+# Target rules for targets named papagedon-audio
+
+# Build rule for target.
+papagedon-audio: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-audio
+.PHONY : papagedon-audio
+
+# fast build rule for target.
+papagedon-audio/fast:
+	$(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/build
+.PHONY : papagedon-audio/fast
+
+#=============================================================================
 # Target rules for targets named papagedon-runtime
 
 # Build rule for target.
@@ -175,6 +188,7 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... papagedon-audio
 	@echo ... papagedon-core
 	@echo ... papagedon-player
 	@echo ... papagedon-runtime
