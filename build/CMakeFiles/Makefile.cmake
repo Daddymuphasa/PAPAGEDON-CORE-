@@ -38,6 +38,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/4.4.0/CMakeSystem.cmake"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/CMakeLists.txt"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/core/CMakeLists.txt"
+  "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/experience/CMakeLists.txt"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/runtime/CMakeLists.txt"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/utilities/CMakeLists.txt"
   )
@@ -53,6 +54,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "engine/utilities/CMakeFiles/CMakeDirectoryInformation.cmake"
   "engine/audio/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "engine/experience/CMakeFiles/CMakeDirectoryInformation.cmake"
   "engine/runtime/CMakeFiles/CMakeDirectoryInformation.cmake"
   "engine/core/CMakeFiles/CMakeDirectoryInformation.cmake"
   "apps/player/CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -62,6 +64,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "engine/utilities/CMakeFiles/papagedon-utilities.dir/DependInfo.cmake"
   "engine/audio/CMakeFiles/papagedon-audio.dir/DependInfo.cmake"
+  "engine/experience/CMakeFiles/papagedon-experience.dir/DependInfo.cmake"
   "engine/runtime/CMakeFiles/papagedon-runtime.dir/DependInfo.cmake"
   "engine/core/CMakeFiles/papagedon-core.dir/DependInfo.cmake"
   "apps/player/CMakeFiles/papagedon-player.dir/DependInfo.cmake"

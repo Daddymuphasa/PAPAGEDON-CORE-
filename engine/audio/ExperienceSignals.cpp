@@ -7,9 +7,11 @@ namespace papagedon::audio {
 bool ExperienceSignals::IsFinite() const noexcept {
     if (!(std::isfinite(energy) && std::isfinite(intensity) &&
           std::isfinite(tension) && std::isfinite(bpm) &&
-          std::isfinite(confidence) &&
+          std::isfinite(beatConfidence) && std::isfinite(confidence) &&
           std::isfinite(bassEnergy) && std::isfinite(midEnergy) &&
-          std::isfinite(trebleEnergy))) {
+          std::isfinite(trebleEnergy) && std::isfinite(bassLevel) &&
+          std::isfinite(midLevel) && std::isfinite(trebleLevel) &&
+          std::isfinite(loudness) && std::isfinite(dynamicRange))) {
         return false;
     }
 

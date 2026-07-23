@@ -4,6 +4,9 @@
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <deque>
+#include <limits>
+#include <numeric>
 #include <numbers>
 #include <vector>
 
@@ -90,6 +93,46 @@ namespace {
     return count == 0 ? 0.0F : accumulator / static_cast<float>(count);
 }
 
+[[nodiscard]] float SpectralOnset(
+    std::span<const float> currentSpectrum,
+    std::span<const float> previousSpectrum) noexcept {
+    if (currentSpectrum.empty() || previousSpectrum.empty()) {
+        return 0.0F;
+    }
+
+    const std::size_t commonSize = std::min(currentSpectrum.size(), previousSpectrum.size());
+    float accumulator = 0.0F;
+    std::size_t count = 0;
+    for (std::size_t index = 0; index < commonSize; ++index) {
+        const float delta = std::abs(currentSpectrum[index] - previousSpectrum[index]);
+        accumulator += delta;
+        ++count;
+    }
+
+    return count == 0 ? 0.0F : accumulator / static_cast<float>(count);
+}
+
+[[nodiscard]] float EstimateBpm(std::span<const float> intervals) noexcept {
+    if (intervals.empty()) {
+        return 0.0F;
+    }
+
+    std::vector<float> sortedIntervals(intervals.begin(), intervals.end());
+    std::sort(sortedIntervals.begin(), sortedIntervals.end());
+
+    const std::size_t middleIndex = sortedIntervals.size() / 2U;
+    const float medianInterval = sortedIntervals[middleIndex];
+    if (medianInterval <= 0.0F) {
+        return 0.0F;
+    }
+
+    return 60.0F / medianInterval;
+}
+
+[[nodiscard]] float SmoothValue(const float currentValue, const float previousValue, const float smoothing) noexcept {
+    return std::clamp(previousValue + (currentValue - previousValue) * smoothing, 0.0F, 1.0F);
+}
+
 } // namespace
 
 ExperienceSignals AudioAnalyzer::Update(const AudioFrame& frame) noexcept {
@@ -110,6 +153,20 @@ const ExperienceSignals& AudioAnalyzer::LatestSignals() const noexcept {
 
 void AudioAnalyzer::Reset() noexcept {
     latestSignals_ = {};
+    previousSpectrum_.clear();
+    onsetHistory_.clear();
+    beatIntervals_.clear();
+    accumulatedSeconds_ = 0.0F;
+    lastBeatTimeSeconds_ = -1.0F;
+    smoothedBpm_ = 0.0F;
+    smoothedEnergy_ = 0.0F;
+    smoothedIntensity_ = 0.0F;
+    smoothedTension_ = 0.0F;
+    smoothedBassLevel_ = 0.0F;
+    smoothedMidLevel_ = 0.0F;
+    smoothedTrebleLevel_ = 0.0F;
+    smoothedLoudness_ = 0.0F;
+    smoothedDynamicRange_ = 0.0F;
 }
 
 std::vector<float> AudioAnalyzer::ComputeSpectrum(
@@ -125,21 +182,20 @@ std::vector<float> AudioAnalyzer::ComputeSpectrum(
         return {};
     }
 
-    const auto transformed = RunFft(mono);
+    std::vector<float> padded(kSpectrumBinCount, 0.0F);
+    const std::size_t copyCount = std::min<std::size_t>(mono.size(), kSpectrumBinCount);
+    std::copy_n(mono.begin(), copyCount, padded.begin());
+
+    const auto transformed = RunFft(padded);
     if (transformed.empty()) {
         return {};
     }
 
-    std::vector<float> spectrum(transformed.size() / 2U);
-    const float normalizer = static_cast<float>(mono.size());
-    const float nyquist = static_cast<float>(sampleRate) / 2.0F;
-    for (std::size_t index = 0; index < spectrum.size(); ++index) {
+    std::vector<float> spectrum(kSpectrumBinCount);
+    const float normalizer = static_cast<float>(kSpectrumBinCount);
+    for (std::size_t index = 0; index < transformed.size() && index < spectrum.size(); ++index) {
         const float magnitude = std::abs(transformed[index]) / normalizer;
         spectrum[index] = std::clamp(magnitude, 0.0F, 1.0F);
-    }
-
-    if (nyquist <= 0.0F) {
-        return spectrum;
     }
 
     return spectrum;
@@ -166,20 +222,100 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) const noexcept
     const float trebleEnergy = BandEnergy(spectrum, spectrum.size() / 2U, spectrum.size());
 
     const float averageBandEnergy = (bassEnergy + midEnergy + trebleEnergy) / 3.0F;
+    const float frameDurationSeconds = static_cast<float>(frame.FrameCount()) / static_cast<float>(frame.sampleRate);
+    const float bassLevel = std::clamp(bassEnergy, 0.0F, 1.0F);
+    const float midLevel = std::clamp(midEnergy, 0.0F, 1.0F);
+    const float trebleLevel = std::clamp(trebleEnergy, 0.0F, 1.0F);
+    const float loudness = std::clamp((bassLevel * 0.35F) + (midLevel * 0.40F) + (trebleLevel * 0.25F), 0.0F, 1.0F);
+    const float dynamicRange = std::clamp(std::max({bassLevel, midLevel, trebleLevel}) - std::min({bassLevel, midLevel, trebleLevel}), 0.0F, 1.0F);
+
+    const float smoothedEnergy = SmoothValue(energy, smoothedEnergy_, kTemporalSmoothing);
+    const float smoothedIntensity = SmoothValue(averageBandEnergy * 1.25F, smoothedIntensity_, kTemporalSmoothing);
+    const float smoothedTension = SmoothValue(averageBandEnergy * 0.75F, smoothedTension_, kTemporalSmoothing);
+    const float smoothedBassLevel = SmoothValue(bassLevel, smoothedBassLevel_, kTemporalSmoothing);
+    const float smoothedMidLevel = SmoothValue(midLevel, smoothedMidLevel_, kTemporalSmoothing);
+    const float smoothedTrebleLevel = SmoothValue(trebleLevel, smoothedTrebleLevel_, kTemporalSmoothing);
+    const float smoothedLoudness = SmoothValue(loudness, smoothedLoudness_, kTemporalSmoothing);
+    const float smoothedDynamicRange = SmoothValue(dynamicRange, smoothedDynamicRange_, kTemporalSmoothing);
+
+    accumulatedSeconds_ += frameDurationSeconds;
+
+    const float onset = SpectralOnset(spectrum, previousSpectrum_);
+    onsetHistory_.push_back(onset);
+    if (onsetHistory_.size() > 16U) {
+        onsetHistory_.pop_front();
+    }
+
+    const float onsetAverage = std::accumulate(onsetHistory_.begin(), onsetHistory_.end(), 0.0F) /
+        static_cast<float>(std::max<std::size_t>(1U, onsetHistory_.size()));
+    const float onsetVariance = [&]() {
+        float variance = 0.0F;
+        for (const float value : onsetHistory_) {
+            const float delta = value - onsetAverage;
+            variance += delta * delta;
+        }
+        return onsetHistory_.empty() ? 0.0F : variance / static_cast<float>(onsetHistory_.size());
+    }();
+    const float onsetDeviation = std::sqrt(onsetVariance);
+    const float beatThreshold = std::clamp(onsetAverage + onsetDeviation * 0.75F + 0.02F, 0.02F, 1.0F);
+    const float timeSinceLastBeat = (lastBeatTimeSeconds_ >= 0.0F)
+        ? accumulatedSeconds_ - lastBeatTimeSeconds_
+        : std::numeric_limits<float>::max();
+
+    const bool beatCandidate = onset > beatThreshold && timeSinceLastBeat >= kBeatCooldownSeconds;
+    const bool beat = beatCandidate;
+    const float beatConfidence = beat
+        ? std::clamp((onset - beatThreshold) / std::max(0.15F, 1.0F - beatThreshold), 0.0F, 1.0F)
+        : std::clamp(onset / std::max(beatThreshold, 0.05F), 0.0F, 1.0F);
+
+    if (beat) {
+        const float intervalSeconds = std::clamp(timeSinceLastBeat, kMinBeatIntervalSeconds, kMaxBeatIntervalSeconds);
+        if (lastBeatTimeSeconds_ >= 0.0F) {
+            beatIntervals_.push_back(intervalSeconds);
+            if (beatIntervals_.size() > 12U) {
+                beatIntervals_.pop_front();
+            }
+
+            std::vector<float> intervalWindow(beatIntervals_.begin(), beatIntervals_.end());
+            const float estimatedBpm = EstimateBpm(intervalWindow);
+            const float targetBpm = std::clamp(estimatedBpm, 60.0F, 200.0F);
+            smoothedBpm_ = (1.0F - kBpmSmoothing) * smoothedBpm_ + kBpmSmoothing * targetBpm;
+        }
+
+        lastBeatTimeSeconds_ = accumulatedSeconds_;
+    }
+
+    previousSpectrum_ = spectrum;
+
+    smoothedEnergy_ = smoothedEnergy;
+    smoothedIntensity_ = smoothedIntensity;
+    smoothedTension_ = smoothedTension;
+    smoothedBassLevel_ = smoothedBassLevel;
+    smoothedMidLevel_ = smoothedMidLevel;
+    smoothedTrebleLevel_ = smoothedTrebleLevel;
+    smoothedLoudness_ = smoothedLoudness;
+    smoothedDynamicRange_ = smoothedDynamicRange;
 
     return {
-        .energy = energy,
-        .intensity = std::clamp(averageBandEnergy * 1.25F, 0.0F, 1.0F),
-        .tension = std::clamp(averageBandEnergy * 0.75F, 0.0F, 1.0F),
-        .beat = false,
-        .bpm = 0.0F,
-        .confidence = std::min(
-            1.0F,
-            static_cast<float>(frame.samples.size()) / 1'024.0F),
+        .energy = smoothedEnergy,
+        .intensity = smoothedIntensity,
+        .tension = smoothedTension,
+        .beat = beat,
+        .bpm = std::clamp(smoothedBpm_, 0.0F, 240.0F),
+        .beatConfidence = beatConfidence,
+        .confidence = std::clamp(
+            beatConfidence * 0.5F + smoothedIntensity * 0.5F,
+            0.0F,
+            1.0F),
         .spectrum = std::move(spectrum),
         .bassEnergy = bassEnergy,
         .midEnergy = midEnergy,
         .trebleEnergy = trebleEnergy,
+        .bassLevel = smoothedBassLevel,
+        .midLevel = smoothedMidLevel,
+        .trebleLevel = smoothedTrebleLevel,
+        .loudness = smoothedLoudness,
+        .dynamicRange = smoothedDynamicRange,
     };
 }
 

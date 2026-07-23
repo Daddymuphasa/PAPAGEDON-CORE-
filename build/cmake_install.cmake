@@ -49,6 +49,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/experience/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/engine/runtime/cmake_install.cmake")
 endif()
 

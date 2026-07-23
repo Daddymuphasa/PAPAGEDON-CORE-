@@ -14,11 +14,17 @@ struct ExperienceSignals final {
     float tension = 0.0F;
     bool beat = false;
     float bpm = 0.0F;
+    float beatConfidence = 0.0F;
     float confidence = 0.0F;
     std::vector<float> spectrum{};
     float bassEnergy = 0.0F;
     float midEnergy = 0.0F;
     float trebleEnergy = 0.0F;
+    float bassLevel = 0.0F;
+    float midLevel = 0.0F;
+    float trebleLevel = 0.0F;
+    float loudness = 0.0F;
+    float dynamicRange = 0.0F;
 
     [[nodiscard]] bool IsFinite() const noexcept;
 };

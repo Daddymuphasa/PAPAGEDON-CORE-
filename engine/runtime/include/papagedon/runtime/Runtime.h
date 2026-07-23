@@ -5,6 +5,7 @@
 
 #include <AudioAnalyzer.h>
 #include <AudioInput.h>
+#include <ExperienceGraph.h>
 
 namespace papagedon::utilities {
 class Logger;
@@ -34,8 +35,12 @@ private:
     utilities::Logger& logger_;
     audio::AudioAnalyzer audioAnalyzer_;
     audio::AudioInput audioInput_{};
+    papagedon::ExperienceGraph experienceGraph_;
     std::atomic_bool running_{false};
     bool initialized_ = false;
+    float lastLoggedBpm_ = 0.0F;
+    bool lastBeatLogged_ = false;
+    std::uint64_t debugFrameCounter_ = 0;
 };
 
 } // namespace papagedon::runtime
