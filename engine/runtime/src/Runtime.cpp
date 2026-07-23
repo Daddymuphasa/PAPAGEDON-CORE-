@@ -2,6 +2,9 @@
 
 #include <papagedon/utilities/Logger.h>
 
+#include <iomanip>
+#include <sstream>
+
 namespace papagedon::runtime {
 
 Runtime::Runtime(utilities::Logger& logger) noexcept
@@ -12,7 +15,17 @@ bool Runtime::Initialize() {
         return true;
     }
 
-    initialized_ = true;
+    initialized_ = sceneDNA_.Initialize();
+    if (!initialized_) {
+        logger_.ERROR("Scene DNA failed to initialize.");
+        return false;
+    }
+    initialized_ = renderer_.Initialize();
+    if (!initialized_) {
+        sceneDNA_.Shutdown();
+        logger_.ERROR("Renderer failed to initialize.");
+        return false;
+    }
     logger_.INFO("Runtime initialized.");
     return true;
 }
@@ -44,6 +57,8 @@ void Runtime::Shutdown() noexcept {
     }
 
     RequestStop();
+    renderer_.Shutdown();
+    sceneDNA_.Shutdown();
     initialized_ = false;
     logger_.INFO("Runtime shut down.");
 }
@@ -62,9 +77,24 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         .channelCount = 2,
     };
     const audio::ExperienceSignals signals = audioAnalyzer_.Update(placeholderInput);
+    static_cast<void>(signals);
+
+    const ExperienceState experienceState = ExperienceState::Ambient;
+    sceneDNA_.Update(experienceState);
+
+    const SceneState& sceneState = sceneDNA_.GetCurrentScene();
+    renderer_.BeginFrame();
+    renderer_.Render(sceneState);
+    renderer_.EndFrame();
+    std::ostringstream status;
+    status << "Current Experience: " << ToString(experienceState)
+           << "\n\xE2\x86\x93\nCurrent Scene Profile: "
+           << (sceneState.activeProfile != nullptr ? sceneState.activeProfile->name : "None")
+           << "\n\xE2\x86\x93\nTransition Progress: " << std::fixed << std::setprecision(2)
+           << sceneState.blendFactor;
+    logger_.INFO(status.str());
 
     static_cast<void>(deltaTime);
-    static_cast<void>(signals);
 }
 
 } // namespace papagedon::runtime

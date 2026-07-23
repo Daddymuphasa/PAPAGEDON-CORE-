@@ -4,6 +4,8 @@
 #include <chrono>
 
 #include <AudioAnalyzer.h>
+#include <SceneDNA.h>
+#include <Renderer.h>
 
 namespace papagedon::utilities {
 class Logger;
@@ -32,6 +34,8 @@ private:
 
     utilities::Logger& logger_;
     audio::AudioAnalyzer audioAnalyzer_;
+    SceneDNA sceneDNA_;
+    Renderer renderer_;
     std::atomic_bool running_{false};
     bool initialized_ = false;
 };
