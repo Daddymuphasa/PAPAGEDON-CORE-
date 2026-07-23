@@ -116,6 +116,84 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named papagedon-utilities
+
+# Build rule for target.
+papagedon-utilities: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-utilities
+.PHONY : papagedon-utilities
+
+# fast build rule for target.
+papagedon-utilities/fast:
+	$(MAKE) $(MAKESILENT) -f engine\utilities\CMakeFiles\papagedon-utilities.dir\build.make engine/utilities/CMakeFiles/papagedon-utilities.dir/build
+.PHONY : papagedon-utilities/fast
+
+#=============================================================================
+# Target rules for targets named papagedon-audio
+
+# Build rule for target.
+papagedon-audio: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-audio
+.PHONY : papagedon-audio
+
+# fast build rule for target.
+papagedon-audio/fast:
+	$(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/build
+.PHONY : papagedon-audio/fast
+
+#=============================================================================
+# Target rules for targets named papagedon-scene
+
+# Build rule for target.
+papagedon-scene: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-scene
+.PHONY : papagedon-scene
+
+# fast build rule for target.
+papagedon-scene/fast:
+	$(MAKE) $(MAKESILENT) -f engine\scene\CMakeFiles\papagedon-scene.dir\build.make engine/scene/CMakeFiles/papagedon-scene.dir/build
+.PHONY : papagedon-scene/fast
+
+#=============================================================================
+# Target rules for targets named papagedon-rendering
+
+# Build rule for target.
+papagedon-rendering: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-rendering
+.PHONY : papagedon-rendering
+
+# fast build rule for target.
+papagedon-rendering/fast:
+	$(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/build
+.PHONY : papagedon-rendering/fast
+
+#=============================================================================
+# Target rules for targets named papagedon-runtime
+
+# Build rule for target.
+papagedon-runtime: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-runtime
+.PHONY : papagedon-runtime
+
+# fast build rule for target.
+papagedon-runtime/fast:
+	$(MAKE) $(MAKESILENT) -f engine\runtime\CMakeFiles\papagedon-runtime.dir\build.make engine/runtime/CMakeFiles/papagedon-runtime.dir/build
+.PHONY : papagedon-runtime/fast
+
+#=============================================================================
+# Target rules for targets named papagedon-core
+
+# Build rule for target.
+papagedon-core: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 papagedon-core
+.PHONY : papagedon-core
+
+# fast build rule for target.
+papagedon-core/fast:
+	$(MAKE) $(MAKESILENT) -f engine\core\CMakeFiles\papagedon-core.dir\build.make engine/core/CMakeFiles/papagedon-core.dir/build
+.PHONY : papagedon-core/fast
+
+#=============================================================================
 # Target rules for targets named papagedon-player
 
 # Build rule for target.
@@ -136,7 +214,13 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... papagedon-audio
+	@echo ... papagedon-core
 	@echo ... papagedon-player
+	@echo ... papagedon-rendering
+	@echo ... papagedon-runtime
+	@echo ... papagedon-scene
+	@echo ... papagedon-utilities
 .PHONY : help
 
 

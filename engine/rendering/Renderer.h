@@ -17,8 +17,9 @@ public:
 
     bool Initialize();
     void BeginFrame();
-    void Render(const SceneState& sceneState);
-    void EndFrame();
+    void Render();
+    /// Returns false once the active backend requests application shutdown.
+    [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
 
 private:

@@ -2690,3 +2690,762 @@ events:
       Running the CXX compiler's linker: "Configured with: ../configure --prefix=/c/Prog/winlibs_staging_ucrt/home64/inst_gcc-16.1.0/share/gcc --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-offload-targets=nvptx-none --with-pkgversion='MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders, r2' --with-tune=generic --enable-checking=release --enable-threads=posix --disable-sjlj-exceptions --disable-libunwind-exceptions --disable-serial-configure --disable-bootstrap --enable-host-shared --enable-plugin --disable-default-ssp --disable-rpath --disable-libstdcxx-debug --disable-version-specific-runtime-libs --disable-symvers --enable-languages=c,c++,fortran,lto,objc,obj-c++ --disable-gold --disable-nls --disable-stage1-checking --disable-win32-registry --disable-multilib --enable-ld --enable-libquadmath --enable-libada --enable-libssp --enable-libstdcxx --enable-lto --enable-fully-dynamic-string --enable-libgomp --enable-graphite --enable-mingw-wildcard --enable-libstdcxx-time --enable-libstdcxx-pch --with-mpc=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-mpfr=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-gmp=/c/Prog/winlibs_staging_ucrt/custombuilt64 --with-isl=/c/Prog/winlibs_staging_ucrt/custombuilt64 --disable-libstdcxx-backtrace --enable-install-libiberty --enable-__cxa_atexit --without-included-gettext --with-diagnostics-color=auto --enable-clocale=generic --enable-libgdiagnostics --with-libiconv --with-system-zlib --with-build-sysroot=/c/Prog/winlibs_staging_ucrt/home64/gcc-16.1.0/build_mingw/mingw-w64 CFLAGS='-I/c/Prog/winlibs_staging_ucrt/custombuilt64/include/libdl-win32   -march=nocona -msahf -mtune=generic -O2 -Wno-error=format' CXXFLAGS='-Wno-int-conversion  -march=nocona -msahf -mtune=generic -O2' LDFLAGS='-pthread -Wl,--no-insert-timestamp -Wl,--dynamicbase -Wl,--high-entropy-va -Wl,--nxcompat -Wl,--tsaware' LD=/c/Prog/winlibs_staging_ucrt/custombuilt64/share/binutils/bin/ld.exe" "--version"
       
 ...
+
+---
+events:
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "engine/rendering/CMakeLists.txt:12 (find_package)"
+    name: "glad"
+    configs:
+      -
+        filename: "glad.cps"
+        kind: "cps"
+      -
+        filename: "gladConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "glad-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "glad"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/.vscode/extensions/vadimcn.vscode-lldb-1.12.2/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/.vscode/extensions/vadimcn.vscode-lldb-1.12.2/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/.vscode/extensions/vadimcn.vscode-lldb-1.12.2/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/.vscode/extensions/vadimcn.vscode-lldb-1.12.2/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/debugCommand/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/Code/User/globalStorage/github.copilot-chat/copilotCli/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/hermes-agent/venv/Scripts/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/hermes-agent/venv/Scripts/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/hermes-agent/venv/Scripts/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/hermes-agent/venv/Scripts/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/hermes/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WindowsApps/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WindowsApps/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WindowsApps/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WindowsApps/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/GitHubDesktop/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/GitHubDesktop/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/GitHubDesktop/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/GitHubDesktop/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/DADDY MUPHASA/GitHubDesktop/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/DADDY MUPHASA/GitHubDesktop/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/DADDY MUPHASA/GitHubDesktop/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/DADDY MUPHASA/GitHubDesktop/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/npm/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/npm/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/npm/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Roaming/npm/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Microsoft VS Code/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Microsoft VS Code/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Microsoft VS Code/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Microsoft VS Code/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Processing/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Processing/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Processing/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Processing/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity IDE/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity IDE/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity IDE/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Antigravity IDE/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Ollama/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Ollama/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Ollama/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Programs/Ollama/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe/ripgrep-15.1.0-x86_64-pc-windows-msvc/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe/ripgrep-15.1.0-x86_64-pc-windows-msvc/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe/ripgrep-15.1.0-x86_64-pc-windows-msvc/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe/ripgrep-15.1.0-x86_64-pc-windows-msvc/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1.1-full_build/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/gladConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/glad-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/glad.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found: null
+    search_context:
+      ENV{PATH}:
+        - "c:\\Users\\DADDY MUPHASA\\.vscode\\extensions\\vadimcn.vscode-lldb-1.12.2\\bin"
+        - "c:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\hermes\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\ProgramData\\DADDY MUPHASA\\GitHubDesktop\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\npm"
+        - "C:\\Users\\DADDY MUPHASA\\.dotnet\\tools"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin"
+        - "C:\\Program Files\\Processing\\"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe\\ripgrep-15.1.0-x86_64-pc-windows-msvc"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.1-full_build\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PAPAGEDON-CORE"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PAPAGEDON-CORE"
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/Internal/CheckSourceCompiles.cmake:138 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CheckCXXSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/FindThreads.cmake:162 (check_cxx_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.4/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/share/glfw3/glfw3Config.cmake:2 (find_dependency)"
+      - "engine/rendering/CMakeLists.txt:13 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/CMakeScratch/TryCompile-63er1e"
+      binary: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/CMakeScratch/TryCompile-63er1e"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/CMakeScratch/TryCompile-63er1e'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/Users/DADDYM~1/AppData/Local/MICROS~1/WinGet/Packages/BRECHT~1.SOU/mingw64/bin/mingw32-make.exe -f Makefile cmTC_5cb37/fast
+        C:/Users/DADDYM~1/AppData/Local/MICROS~1/WinGet/Packages/BRECHT~1.SOU/mingw64/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_5cb37.dir\\build.make CMakeFiles/cmTC_5cb37.dir/build
+        mingw32-make[1]: Entering directory 'C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/CMakeScratch/TryCompile-63er1e'
+        Building CXX object CMakeFiles/cmTC_5cb37.dir/src.cxx.obj
+        "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\c++.exe" -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++20 -o CMakeFiles\\cmTC_5cb37.dir\\src.cxx.obj -c "C:\\Users\\DADDY MUPHASA\\Documents\\GitHub\\PAPAGEDON-CORE-\\build\\CMakeFiles\\CMakeScratch\\TryCompile-63er1e\\src.cxx"
+        Linking CXX executable cmTC_5cb37.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_5cb37.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_5cb37.dir/objects.a
+        "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\ar.exe" qc CMakeFiles\\cmTC_5cb37.dir/objects.a @CMakeFiles\\cmTC_5cb37.dir\\objects1.rsp
+        "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\c++.exe" -Wl,--whole-archive CMakeFiles\\cmTC_5cb37.dir/objects.a -Wl,--no-whole-archive -o cmTC_5cb37.exe -Wl,--out-implib,libcmTC_5cb37.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_5cb37.dir\\linkLibs.rsp
+        mingw32-make[1]: Leaving directory 'C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/CMakeScratch/TryCompile-63er1e'
+        
+      exitCode: 0
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "engine/rendering/CMakeLists.txt:13 (find_package)"
+    name: "glfw3"
+    configs:
+      -
+        filename: "glfw3.cps"
+        kind: "cps"
+      -
+        filename: "glfw3Config.cmake"
+        kind: "cmake"
+      -
+        filename: "glfw3-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "glfw3"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/glfw3Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/glfw3-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/lib/cps/glfw3.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/build/CMakeFiles/pkgRedirects/share/cps/glfw3.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/glfw3Config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/glfw3-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/lib/cps/glfw3.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/share/cps/glfw3.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found:
+      path: "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/share/glfw3/glfw3Config.cmake"
+      mode: "config"
+      version: "3.4.0"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static"
+      ENV{PATH}:
+        - "c:\\Users\\DADDY MUPHASA\\.vscode\\extensions\\vadimcn.vscode-lldb-1.12.2\\bin"
+        - "c:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\debugCommand"
+        - "c:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\Code\\User\\globalStorage\\github.copilot-chat\\copilotCli"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\hermes\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\GitHubDesktop\\bin"
+        - "C:\\ProgramData\\DADDY MUPHASA\\GitHubDesktop\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Roaming\\npm"
+        - "C:\\Users\\DADDY MUPHASA\\.dotnet\\tools"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin"
+        - "C:\\Program Files\\Processing\\"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Programs\\Ollama"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BurntSushi.ripgrep.MSVC_Microsoft.Winget.Source_8wekyb3d8bbwe\\ripgrep-15.1.0-x86_64-pc-windows-msvc"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.1-full_build\\bin"
+        - "C:\\Users\\DADDY MUPHASA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/PAPAGEDON-CORE"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files (x86)/PAPAGEDON-CORE"
+...

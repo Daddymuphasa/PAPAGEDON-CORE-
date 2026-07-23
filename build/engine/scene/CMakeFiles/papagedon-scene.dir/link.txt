@@ -1,0 +1,2 @@
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ar.exe" qc libpapagedon-scene.a "CMakeFiles/papagedon-scene.dir/SceneDNA.cpp.obj" "CMakeFiles/papagedon-scene.dir/SceneProfile.cpp.obj" "CMakeFiles/papagedon-scene.dir/SceneState.cpp.obj"
+"C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\ranlib.exe" libpapagedon-scene.a

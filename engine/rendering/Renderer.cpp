@@ -21,16 +21,14 @@ void Renderer::BeginFrame() {
     }
 }
 
-void Renderer::Render(const SceneState& sceneState) {
+void Renderer::Render() {
     if (backend_ != nullptr) {
-        backend_->Render(sceneState);
+        backend_->Render();
     }
 }
 
-void Renderer::EndFrame() {
-    if (backend_ != nullptr) {
-        backend_->EndFrame();
-    }
+bool Renderer::EndFrame() {
+    return backend_ != nullptr && backend_->EndFrame();
 }
 
 void Renderer::Shutdown() noexcept {

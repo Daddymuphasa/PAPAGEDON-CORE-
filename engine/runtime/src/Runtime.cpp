@@ -2,9 +2,6 @@
 
 #include <papagedon/utilities/Logger.h>
 
-#include <iomanip>
-#include <sstream>
-
 namespace papagedon::runtime {
 
 Runtime::Runtime(utilities::Logger& logger) noexcept
@@ -82,17 +79,11 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     const ExperienceState experienceState = ExperienceState::Ambient;
     sceneDNA_.Update(experienceState);
 
-    const SceneState& sceneState = sceneDNA_.GetCurrentScene();
     renderer_.BeginFrame();
-    renderer_.Render(sceneState);
-    renderer_.EndFrame();
-    std::ostringstream status;
-    status << "Current Experience: " << ToString(experienceState)
-           << "\n\xE2\x86\x93\nCurrent Scene Profile: "
-           << (sceneState.activeProfile != nullptr ? sceneState.activeProfile->name : "None")
-           << "\n\xE2\x86\x93\nTransition Progress: " << std::fixed << std::setprecision(2)
-           << sceneState.blendFactor;
-    logger_.INFO(status.str());
+    renderer_.Render();
+    if (!renderer_.EndFrame()) {
+        RequestStop();
+    }
 
     static_cast<void>(deltaTime);
 }

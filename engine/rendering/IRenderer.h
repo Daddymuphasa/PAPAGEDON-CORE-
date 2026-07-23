@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SceneState.h>
-
 namespace papagedon {
 
 /// Interface implemented by each graphics backend.
@@ -11,8 +9,9 @@ public:
 
     virtual bool Initialize() = 0;
     virtual void BeginFrame() = 0;
-    virtual void Render(const SceneState& sceneState) = 0;
-    virtual void EndFrame() = 0;
+    virtual void Render() = 0;
+    /// Returns false once the backend has received a request to close.
+    virtual bool EndFrame() = 0;
     virtual void Shutdown() noexcept = 0;
 };
 

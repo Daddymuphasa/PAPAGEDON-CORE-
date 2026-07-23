@@ -118,6 +118,12 @@ CMAKE_OBJCOPY:FILEPATH=C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Pac
 //Path to a program.
 CMAKE_OBJDUMP:FILEPATH=C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin/objdump.exe
 
+//Semicolon-separated list of installation prefixes searched by
+// find_package(), find_program(), find_library(), find_file(),
+// and find_path(). Empty by default; intended to be set by the
+// project or the user.
+CMAKE_PREFIX_PATH:UNINITIALIZED=C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static
+
 //Value Computed by CMake
 CMAKE_PROJECT_COMPAT_VERSION:STATIC=
 
@@ -225,6 +231,11 @@ CMAKE_STRIP:FILEPATH=C:/Users/DADDY MUPHASA/AppData/Local/Microsoft/WinGet/Packa
 //Path to a program.
 CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 
+//Path to a CMake toolchain file, read early in the CMake run,
+// that specifies the compilers, toolchain utilities, and target-platform
+// information used when cross-compiling.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=C:/Users/DADDY MUPHASA/vcpkg/scripts/buildsystems/vcpkg.cmake
+
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
 // during the make.  This is useful for debugging only. With Visual
@@ -239,6 +250,15 @@ PAPAGEDON-CORE_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 PAPAGEDON-CORE_SOURCE_DIR:STATIC=C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-
+
+//No help, variable specified on the command line.
+VCPKG_TARGET_TRIPLET:UNINITIALIZED=x64-mingw-static
+
+//The directory containing a CMake configuration file for glad.
+glad_DIR:PATH=C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/share/glad
+
+//The directory containing a CMake configuration file for glfw3.
+glfw3_DIR:PATH=C:/Users/DADDY MUPHASA/vcpkg/installed/x64-mingw-static/share/glfw3
 
 
 ########################
@@ -314,6 +334,8 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
+//Test CMAKE_HAVE_LIBC_PTHREAD
+CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-
@@ -336,7 +358,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=2
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=8
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -394,4 +416,6 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Deprecated.  Use -W[no-]deprecated instead.
 CMAKE_WARN_DEPRECATED:INTERNAL=ON
+//Details about finding Threads
+FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 

@@ -9,6 +9,9 @@ add_library(papagedon::rendering ALIAS papagedon-rendering)
 
 target_compile_features(papagedon-rendering PUBLIC cxx_std_20)
 
+find_package(glad CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+
 target_include_directories(papagedon-rendering
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -17,4 +20,7 @@ target_include_directories(papagedon-rendering
 target_link_libraries(papagedon-rendering
     PUBLIC
         papagedon::scene
+    PRIVATE
+        glad::glad
+        glfw
 )

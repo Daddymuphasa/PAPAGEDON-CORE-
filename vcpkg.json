@@ -6,6 +6,8 @@
     "fftw3",
     "spdlog",
     "catch2",
-    "nlohmann-json"
+    "nlohmann-json",
+    "glad",
+    "glfw3"
   ]
 }
