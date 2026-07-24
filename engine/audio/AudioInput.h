@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-namespace aei {
+namespace papagedon::audio {
 
 /// Decodes an audio file into interleaved 32-bit floating-point PCM samples.
 ///
-/// This class performs no playback or signal analysis.  A failed Load() leaves
+/// This class performs no playback or signal analysis. A failed Load() leaves
 /// the object empty, just like Close().
 class AudioInput final {
 public:
@@ -39,4 +39,8 @@ private:
     std::uint64_t frameCount_ = 0;
 };
 
+} // namespace papagedon::audio
+
+namespace aei {
+    using AudioInput = papagedon::audio::AudioInput;
 } // namespace aei

@@ -1,0 +1,26 @@
+# Build directories
+build/
+build-*/
+build_*/
+cmake-build*/
+out/
+bin/
+lib/
+
+# IDE and Editor files
+.vs/
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.user
+
+# Tooling / Local files
+.antigravity/
+*.user
+*.log
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db

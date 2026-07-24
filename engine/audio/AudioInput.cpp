@@ -1,4 +1,4 @@
-#include "AudioInput.hpp"
+#include "AudioInput.h"
 
 #include <limits>
 #include <utility>
@@ -6,7 +6,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
-namespace aei {
+namespace papagedon::audio {
 
 bool AudioInput::Load(const std::string& path) {
     Close();
@@ -90,4 +90,4 @@ std::uint64_t AudioInput::FrameCount() const noexcept {
     return frameCount_;
 }
 
-} // namespace aei
+} // namespace papagedon::audio

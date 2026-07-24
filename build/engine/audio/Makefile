@@ -177,6 +177,30 @@ AudioFrame.cpp.s:
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.s
 .PHONY : AudioFrame.cpp.s
 
+AudioInput.obj: AudioInput.cpp.obj
+.PHONY : AudioInput.obj
+
+# target to build an object file
+AudioInput.cpp.obj:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj
+.PHONY : AudioInput.cpp.obj
+
+AudioInput.i: AudioInput.cpp.i
+.PHONY : AudioInput.i
+
+# target to preprocess a source file
+AudioInput.cpp.i:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.i
+.PHONY : AudioInput.cpp.i
+
+AudioInput.s: AudioInput.cpp.s
+.PHONY : AudioInput.s
+
+# target to generate assembly for a file
+AudioInput.cpp.s:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.s
+.PHONY : AudioInput.cpp.s
+
 ExperienceSignals.obj: ExperienceSignals.cpp.obj
 .PHONY : ExperienceSignals.obj
 
@@ -216,6 +240,9 @@ help:
 	@echo ... AudioFrame.obj
 	@echo ... AudioFrame.i
 	@echo ... AudioFrame.s
+	@echo ... AudioInput.obj
+	@echo ... AudioInput.i
+	@echo ... AudioInput.s
 	@echo ... ExperienceSignals.obj
 	@echo ... ExperienceSignals.i
 	@echo ... ExperienceSignals.s
