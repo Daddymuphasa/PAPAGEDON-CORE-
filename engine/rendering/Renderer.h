@@ -6,6 +6,8 @@
 
 namespace papagedon {
 
+struct SceneState;
+
 /// Backend-neutral renderer facade.
 class Renderer final {
 public:
@@ -17,7 +19,7 @@ public:
 
     bool Initialize();
     void BeginFrame();
-    void Render();
+    void Render(const SceneState& state);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;

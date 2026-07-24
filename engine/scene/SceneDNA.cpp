@@ -78,7 +78,8 @@ bool SceneDNA::Initialize() {
     const auto now = std::chrono::steady_clock::now();
     currentScene_ = {
         .activeProfile = &ProfileFor(ExperienceState::Ambient),
-        .blendFactor = 1.0F,
+        .previousProfile = nullptr,
+        .transitionProgress = 1.0F,
         .timestamp = now,
     };
     previousProfile_ = currentScene_.activeProfile;
@@ -95,8 +96,9 @@ void SceneDNA::Update(const ExperienceState& experienceState) noexcept {
     if (currentScene_.activeProfile != &targetProfile) {
         RefreshTransition();
         previousProfile_ = currentScene_.activeProfile;
+        currentScene_.previousProfile = previousProfile_;
         currentScene_.activeProfile = &targetProfile;
-        currentScene_.blendFactor = 0.0F;
+        currentScene_.transitionProgress = 0.0F;
         currentScene_.timestamp = std::chrono::steady_clock::now();
     }
 
@@ -131,20 +133,20 @@ const SceneProfile& SceneDNA::ProfileFor(const ExperienceState state) const noex
 }
 
 void SceneDNA::RefreshTransition() noexcept {
-    if (currentScene_.activeProfile == nullptr || currentScene_.blendFactor >= 1.0F) {
+    if (currentScene_.activeProfile == nullptr || currentScene_.transitionProgress >= 1.0F) {
         return;
     }
 
     const auto duration = currentScene_.activeProfile->transitionDuration;
     if (duration.count() <= 0) {
-        currentScene_.blendFactor = 1.0F;
+        currentScene_.transitionProgress = 1.0F;
         return;
     }
 
     const auto elapsed = std::chrono::steady_clock::now() - currentScene_.timestamp;
     const float progress = std::chrono::duration<float>(elapsed).count() /
         std::chrono::duration<float>(duration).count();
-    currentScene_.blendFactor = std::clamp(progress, 0.0F, 1.0F);
+    currentScene_.transitionProgress = std::clamp(progress, 0.0F, 1.0F);
 }
 
 } // namespace papagedon

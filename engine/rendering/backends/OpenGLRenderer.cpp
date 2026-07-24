@@ -1,4 +1,5 @@
 #include "OpenGLRenderer.h"
+#include "../scene/SceneState.h"
 
 #include <glad/glad.h>
 
@@ -11,6 +12,35 @@
 #include <sstream>
 
 namespace papagedon {
+
+namespace {
+
+struct Color { float r, g, b; };
+
+Color GetProfileColor(const SceneProfile* profile) {
+    if (!profile) {
+        return {0.0F, 0.0F, 0.0F};
+    }
+    if (profile->sceneId == "calm") {
+        return {20.0F / 255.0F, 40.0F / 255.0F, 90.0F / 255.0F};
+    }
+    if (profile->sceneId == "build-up") {
+        return {255.0F / 255.0F, 140.0F / 255.0F, 0.0F / 255.0F};
+    }
+    if (profile->sceneId == "drop") {
+        return {220.0F / 255.0F, 30.0F / 255.0F, 30.0F / 255.0F};
+    }
+    if (profile->sceneId == "ambient") {
+        return {70.0F / 255.0F, 30.0F / 255.0F, 120.0F / 255.0F};
+    }
+    if (profile->sceneId == "silence") {
+        return {0.0F, 0.0F, 0.0F};
+    }
+    return {0.0F, 0.0F, 0.0F};
+}
+
+} // namespace
+
 
 class OpenGLRenderer::Implementation final {
 public:
@@ -71,12 +101,24 @@ void OpenGLRenderer::BeginFrame() {
     if (!initialized_) {
         return;
     }
-
-    glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void OpenGLRenderer::Render() {
+void OpenGLRenderer::Render(const SceneState& state) {
+    if (!initialized_) {
+        return;
+    }
+
+    const Color c1 = GetProfileColor(state.previousProfile);
+    const Color c2 = GetProfileColor(state.activeProfile);
+    const float t = state.transitionProgress;
+
+    const float r = c1.r + (c2.r - c1.r) * t;
+    const float g = c1.g + (c2.g - c1.g) * t;
+    const float b = c1.b + (c2.b - c1.b) * t;
+
+    glClearColor(r, g, b, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     // Mesh, shader, UI, and Scene DNA rendering are intentionally deferred.
 }
 

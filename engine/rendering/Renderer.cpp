@@ -21,9 +21,9 @@ void Renderer::BeginFrame() {
     }
 }
 
-void Renderer::Render() {
+void Renderer::Render(const SceneState& state) {
     if (backend_ != nullptr) {
-        backend_->Render();
+        backend_->Render(state);
     }
 }
 

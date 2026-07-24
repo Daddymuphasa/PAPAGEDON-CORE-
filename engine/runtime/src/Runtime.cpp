@@ -80,7 +80,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     sceneDNA_.Update(experienceState);
 
     renderer_.BeginFrame();
-    renderer_.Render();
+    renderer_.Render(sceneDNA_.GetCurrentScene());
     if (!renderer_.EndFrame()) {
         RequestStop();
     }
