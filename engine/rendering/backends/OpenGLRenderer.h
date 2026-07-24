@@ -17,7 +17,7 @@ public:
 
     bool Initialize() override;
     void BeginFrame() override;
-    void Render(const SceneState& state) override;
+    void Render(const SceneState& state, const DebugState& debugState) override;
     [[nodiscard]] bool EndFrame() override;
     void Shutdown() noexcept override;
 

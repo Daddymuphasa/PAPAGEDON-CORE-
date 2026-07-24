@@ -4,10 +4,12 @@ namespace papagedon {
 
 /// Real-time engine state for the debug overlay
 struct DebugState final {
+    float fps = 0.0F;
     float bpm = 0.0F;
     float energy = 0.0F;
     float intensity = 0.0F;
     const char* currentExperience = "";
+    const char* currentScene = "";
     float transitionProgress = 0.0F;
 };
 

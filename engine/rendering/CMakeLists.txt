@@ -1,6 +1,7 @@
 add_library(papagedon-rendering
     Renderer.cpp
     backends/OpenGLRenderer.cpp
+    backends/DebugOverlayRenderer.cpp
     RenderFrame.cpp
     RenderSettings.cpp
 )

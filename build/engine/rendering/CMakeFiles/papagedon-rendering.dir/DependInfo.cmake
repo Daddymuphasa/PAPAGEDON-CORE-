@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/RenderFrame.cpp" "engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj" "gcc" "engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/RenderSettings.cpp" "engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj" "gcc" "engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/Renderer.cpp" "engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj" "gcc" "engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj.d"
+  "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/backends/DebugOverlayRenderer.cpp" "engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj" "gcc" "engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/backends/OpenGLRenderer.cpp" "engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj" "gcc" "engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj.d"
   )
 

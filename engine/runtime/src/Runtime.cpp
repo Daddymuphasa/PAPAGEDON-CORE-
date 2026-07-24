@@ -86,6 +86,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     debugState.energy = signals.energy;
     debugState.intensity = signals.intensity;
     debugState.currentExperience = ToString(experienceState);
+    debugState.currentScene = currentScene.activeProfile ? currentScene.activeProfile->sceneId.c_str() : "None";
     debugState.transitionProgress = currentScene.transitionProgress;
 
     renderer_.BeginFrame();

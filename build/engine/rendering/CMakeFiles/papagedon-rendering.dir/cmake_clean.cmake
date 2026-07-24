@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj.d"
   "CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj"
   "CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj.d"
+  "CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj"
+  "CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj.d"
   "CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj"
   "CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj.d"
   "libpapagedon-rendering.a"

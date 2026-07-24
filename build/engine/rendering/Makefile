@@ -201,6 +201,30 @@ Renderer.cpp.s:
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.s
 .PHONY : Renderer.cpp.s
 
+backends/DebugOverlayRenderer.obj: backends/DebugOverlayRenderer.cpp.obj
+.PHONY : backends/DebugOverlayRenderer.obj
+
+# target to build an object file
+backends/DebugOverlayRenderer.cpp.obj:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj
+.PHONY : backends/DebugOverlayRenderer.cpp.obj
+
+backends/DebugOverlayRenderer.i: backends/DebugOverlayRenderer.cpp.i
+.PHONY : backends/DebugOverlayRenderer.i
+
+# target to preprocess a source file
+backends/DebugOverlayRenderer.cpp.i:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.i
+.PHONY : backends/DebugOverlayRenderer.cpp.i
+
+backends/DebugOverlayRenderer.s: backends/DebugOverlayRenderer.cpp.s
+.PHONY : backends/DebugOverlayRenderer.s
+
+# target to generate assembly for a file
+backends/DebugOverlayRenderer.cpp.s:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.s
+.PHONY : backends/DebugOverlayRenderer.cpp.s
+
 backends/OpenGLRenderer.obj: backends/OpenGLRenderer.cpp.obj
 .PHONY : backends/OpenGLRenderer.obj
 
@@ -243,6 +267,9 @@ help:
 	@echo ... Renderer.obj
 	@echo ... Renderer.i
 	@echo ... Renderer.s
+	@echo ... backends/DebugOverlayRenderer.obj
+	@echo ... backends/DebugOverlayRenderer.i
+	@echo ... backends/DebugOverlayRenderer.s
 	@echo ... backends/OpenGLRenderer.obj
 	@echo ... backends/OpenGLRenderer.i
 	@echo ... backends/OpenGLRenderer.s

@@ -231,4 +231,5 @@ engine/runtime/CMakeFiles/papagedon-runtime.dir/src/Runtime.cpp.obj: \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/UTILIT~1/include/papagedon/utilities/Logger.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/mutex \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/std_mutex.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unique_lock.h
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unique_lock.h \
+ C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/DebugState.h

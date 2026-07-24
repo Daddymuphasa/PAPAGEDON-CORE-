@@ -101,11 +101,26 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.s"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\backends\OpenGLRenderer.cpp" -o CMakeFiles\papagedon-rendering.dir\backends\OpenGLRenderer.cpp.s
 
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/flags.make
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/includes_CXX.rsp
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/backends/DebugOverlayRenderer.cpp
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj -MF CMakeFiles\papagedon-rendering.dir\backends\DebugOverlayRenderer.cpp.obj.d -o CMakeFiles\papagedon-rendering.dir\backends\DebugOverlayRenderer.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\backends\DebugOverlayRenderer.cpp"
+
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.i"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\backends\DebugOverlayRenderer.cpp" > CMakeFiles\papagedon-rendering.dir\backends\DebugOverlayRenderer.cpp.i
+
+engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.s"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\backends\DebugOverlayRenderer.cpp" -o CMakeFiles\papagedon-rendering.dir\backends\DebugOverlayRenderer.cpp.s
+
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/flags.make
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/includes_CXX.rsp
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/RenderFrame.cpp
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj -MF CMakeFiles\papagedon-rendering.dir\RenderFrame.cpp.obj.d -o CMakeFiles\papagedon-rendering.dir\RenderFrame.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\RenderFrame.cpp"
 
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.i: cmake_force
@@ -120,7 +135,7 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj: engi
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/includes_CXX.rsp
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/RenderSettings.cpp
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj: engine/rendering/CMakeFiles/papagedon-rendering.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj -MF CMakeFiles\papagedon-rendering.dir\RenderSettings.cpp.obj.d -o CMakeFiles\papagedon-rendering.dir\RenderSettings.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\RenderSettings.cpp"
 
 engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.i: cmake_force
@@ -135,6 +150,7 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.s: cmake_
 papagedon__rendering_OBJECTS = \
 "CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj" \
 "CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj" \
+"CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj" \
 "CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj" \
 "CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj"
 
@@ -143,11 +159,12 @@ papagedon__rendering_EXTERNAL_OBJECTS =
 
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.obj
+engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/DebugOverlayRenderer.cpp.obj
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderFrame.cpp.obj
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/RenderSettings.cpp.obj
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/build.make
 engine/rendering/libpapagedon-rendering.a: engine/rendering/CMakeFiles/papagedon-rendering.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libpapagedon-rendering.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX static library libpapagedon-rendering.a"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && $(CMAKE_COMMAND) -P CMakeFiles\papagedon-rendering.dir\cmake_clean_target.cmake
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\RENDER~1 && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\papagedon-rendering.dir\link.txt --verbose=$(VERBOSE)
 
