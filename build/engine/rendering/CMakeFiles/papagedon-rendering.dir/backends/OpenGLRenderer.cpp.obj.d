@@ -179,10 +179,51 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
- C:/Users/DADDYM~1/vcpkg/INSTAL~1/X64-MI~1/include/glad/glad.h \
- C:/Users/DADDYM~1/vcpkg/INSTAL~1/X64-MI~1/include/KHR/khrplatform.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/RENDER~1/../scene/SceneState.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/RENDER~1/../scene/SceneProfile.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/chrono \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/chrono.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/ratio \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/cstdint \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/lib/gcc/x86_64-w64-mingw32/16.1.0/include/stdint.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/stdint.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/ctime \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/parse_numbers.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/stl_algo.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/algorithmfwd.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/stl_heap.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/uniform_int_dist.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/sstream \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/istream \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/ostream \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ostream_print.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ostream.tcc \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/istream.tcc \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/sstream.tcc \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/vector \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/stl_vector.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/stl_bvector.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/vector.tcc \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/chrono_io.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/format \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/array \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/charconv \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/locale \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/time_members.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/messages_members.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/codecvt.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_conv.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/optional \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/enable_special_members.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/span \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/monostate.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/formatfwd.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unicode.h \
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unicode-data.h \
+ C:/Users/DADDYM~1/vcpkg/INSTAL~1/X64-MI~1/include/glad/glad.h \
+ C:/Users/DADDYM~1/vcpkg/INSTAL~1/X64-MI~1/include/KHR/khrplatform.h \
  C:/Users/DADDYM~1/vcpkg/INSTAL~1/X64-MI~1/include/GLFW/glfw3.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/cmath \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/math.h \
@@ -200,19 +241,4 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/backends/OpenGLRenderer.cpp.
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/tr1/poly_laguerre.tcc \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/tr1/riemann_zeta.tcc \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/iomanip \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/locale \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/ctime \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/time_members.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/messages_members.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/codecvt.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_conv.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/quoted_string.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/sstream \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/istream \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/ostream \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ostream_print.h \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ostream.tcc \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/istream.tcc \
- C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/sstream.tcc
+ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/quoted_string.h

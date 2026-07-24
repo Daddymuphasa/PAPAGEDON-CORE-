@@ -441,8 +441,8 @@ apps/player/CMakeFiles/papagedon-player.dir/all: engine/utilities/CMakeFiles/pap
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/audio/CMakeFiles/papagedon-audio.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/rendering/CMakeFiles/papagedon-rendering.dir/all
-apps/player/CMakeFiles/papagedon-player.dir/all: engine/core/CMakeFiles/papagedon-core.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/runtime/CMakeFiles/papagedon-runtime.dir/all
+apps/player/CMakeFiles/papagedon-player.dir/all: engine/core/CMakeFiles/papagedon-core.dir/all
 	$(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/depend
 	$(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=7,8 "Built target papagedon-player"
