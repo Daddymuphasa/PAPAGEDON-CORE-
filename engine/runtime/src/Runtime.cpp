@@ -1,6 +1,7 @@
 #include <papagedon/runtime/Runtime.h>
 
 #include <papagedon/utilities/Logger.h>
+#include "../../rendering/DebugState.h"
 
 namespace papagedon::runtime {
 
@@ -74,13 +75,21 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         .channelCount = 2,
     };
     const audio::ExperienceSignals signals = audioAnalyzer_.Update(placeholderInput);
-    static_cast<void>(signals);
 
     const ExperienceState experienceState = ExperienceState::Ambient;
     sceneDNA_.Update(experienceState);
 
+    const auto& currentScene = sceneDNA_.GetCurrentScene();
+
+    DebugState debugState{};
+    debugState.bpm = signals.bpm;
+    debugState.energy = signals.energy;
+    debugState.intensity = signals.intensity;
+    debugState.currentExperience = ToString(experienceState);
+    debugState.transitionProgress = currentScene.transitionProgress;
+
     renderer_.BeginFrame();
-    renderer_.Render(sceneDNA_.GetCurrentScene());
+    renderer_.Render(currentScene, debugState);
     if (!renderer_.EndFrame()) {
         RequestStop();
     }
