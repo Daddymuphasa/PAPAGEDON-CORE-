@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include <AudioAnalyzer.h>
+#include <ExperienceGraph.h>
 #include <SceneDNA.h>
 #include <Renderer.h>
 
@@ -34,6 +35,7 @@ private:
 
     utilities::Logger& logger_;
     audio::AudioAnalyzer audioAnalyzer_;
+    ExperienceGraph experienceGraph_;
     SceneDNA sceneDNA_;
     Renderer renderer_;
     std::atomic_bool running_{false};

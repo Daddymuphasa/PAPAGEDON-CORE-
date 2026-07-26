@@ -14,6 +14,7 @@ target_include_directories(papagedon-runtime
 target_link_libraries(papagedon-runtime
     PUBLIC
         papagedon::audio
+        papagedon::experience
         papagedon::rendering
         papagedon::scene
         papagedon::utilities

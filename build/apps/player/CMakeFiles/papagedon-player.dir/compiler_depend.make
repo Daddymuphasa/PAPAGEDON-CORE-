@@ -224,6 +224,8 @@ apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: C:/Users/DADDY\ MU
   C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/wchar.h \
   C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/wctype.h \
+  C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/experience/ExperienceGraph.h \
+  C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/experience/ExperienceTypes.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/IRenderer.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/Renderer.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/utilities/include/papagedon/utilities/Logger.h \
@@ -232,6 +234,7 @@ apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: C:/Users/DADDY\ MU
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/ExperienceSignals.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/core/include/papagedon/core/Engine.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/runtime/include/papagedon/runtime/Runtime.h \
+  C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/ExperienceState.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/SceneDNA.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/SceneProfile.h \
   C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/SceneState.h
@@ -326,6 +329,8 @@ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.Wi
 C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/enable_special_members.h:
 
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/ExperienceSignals.h:
+
+C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/experience/ExperienceTypes.h:
 
 C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/locale_facets_nonio.tcc:
 
@@ -689,6 +694,8 @@ C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.Wi
 
 C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/x86_64-w64-mingw32/include/wchar.h:
 
+C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/experience/ExperienceGraph.h:
+
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/IRenderer.h:
 
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/Renderer.h:
@@ -698,6 +705,8 @@ C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/utilities/includ
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioAnalyzer.h:
 
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioFrame.h:
+
+C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/ExperienceState.h:
 
 C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/scene/SceneDNA.h:
 

@@ -1,6 +1,7 @@
 engine/scene/CMakeFiles/papagedon-scene.dir/SceneDNA.cpp.obj: \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\scene\SceneDNA.cpp \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\scene\SceneDNA.h \
+ C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\scene\ExperienceState.h \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\scene\SceneState.h \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\scene\SceneProfile.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/chrono \
@@ -211,6 +212,7 @@ engine/scene/CMakeFiles/papagedon-scene.dir/SceneDNA.cpp.obj: \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ranges_algobase.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unicode.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/unicode-data.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/EXPERI~1/ExperienceTypes.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/algorithm \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/ranges_algo.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/pstl/glue_algorithm_defs.h \

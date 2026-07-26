@@ -1,5 +1,7 @@
 #include "SceneDNA.h"
 
+#include <ExperienceTypes.h>
+
 #include <algorithm>
 #include <chrono>
 
@@ -39,20 +41,15 @@ SceneProfile MakeProfile(
 
 const char* ToString(const ExperienceState state) noexcept {
     switch (state) {
-    case ExperienceState::Calm:
-        return "Calm";
-    case ExperienceState::BuildUp:
-        return "BuildUp";
-    case ExperienceState::Drop:
-        return "Drop";
-    case ExperienceState::Silence:
-        return "Silence";
-    case ExperienceState::Ambient:
-        return "Ambient";
+    case ExperienceState::Calm:    return "Calm";
+    case ExperienceState::BuildUp: return "BuildUp";
+    case ExperienceState::Drop:    return "Drop";
+    case ExperienceState::Silence: return "Silence";
+    case ExperienceState::Ambient: return "Ambient";
     }
-
     return "Ambient";
 }
+
 
 bool SceneDNA::Initialize() {
     if (initialized_) {
@@ -87,12 +84,12 @@ bool SceneDNA::Initialize() {
     return true;
 }
 
-void SceneDNA::Update(const ExperienceState& experienceState) noexcept {
+void SceneDNA::Update(const ExperienceGraphOutput& graphOutput) noexcept {
     if (!initialized_) {
         return;
     }
 
-    const SceneProfile& targetProfile = ProfileFor(experienceState);
+    const SceneProfile& targetProfile = ProfileFor(graphOutput.state);
     if (currentScene_.activeProfile != &targetProfile) {
         RefreshTransition();
         previousProfile_ = currentScene_.activeProfile;
@@ -103,6 +100,12 @@ void SceneDNA::Update(const ExperienceState& experienceState) noexcept {
     }
 
     RefreshTransition();
+
+    // Forward live visual parameters into SceneState so the Renderer
+    // can modulate brightness, saturation and hue independently.
+    currentScene_.energy    = graphOutput.energy;
+    currentScene_.intensity = graphOutput.intensity;
+    currentScene_.mood      = graphOutput.mood;
 }
 
 void SceneDNA::Shutdown() noexcept {

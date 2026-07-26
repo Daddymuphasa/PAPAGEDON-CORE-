@@ -217,11 +217,15 @@ apps/player/CMakeFiles/papagedon-player.dir/src/main.cpp.obj: \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/audio/AudioAnalyzer.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/audio/AudioFrame.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/audio/ExperienceSignals.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/EXPERI~1/ExperienceGraph.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/EXPERI~1/ExperienceTypes.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/scene/ExperienceState.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/scene/SceneDNA.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/scene/SceneState.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/scene/SceneProfile.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/RENDER~1/Renderer.h \
  C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/RENDER~1/IRenderer.h \
+ C:/Users/DADDYM~1/DOCUME~1/GitHub/PAPAGE~2/engine/RENDER~1/ShaderUniforms.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/memory \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/stl_raw_storage_iter.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/shared_ptr_atomic.h \

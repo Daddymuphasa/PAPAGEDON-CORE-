@@ -97,6 +97,7 @@ apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/sr
 apps/player/papagedon-player.exe: apps/player/CMakeFiles/papagedon-player.dir/build.make
 apps/player/papagedon-player.exe: engine/core/libpapagedon-core.a
 apps/player/papagedon-player.exe: engine/runtime/libpapagedon-runtime.a
+apps/player/papagedon-player.exe: engine/experience/libpapagedon-experience.a
 apps/player/papagedon-player.exe: engine/audio/libpapagedon-audio.a
 apps/player/papagedon-player.exe: engine/rendering/libpapagedon-rendering.a
 apps/player/papagedon-player.exe: C:/Users/DADDY\ MUPHASA/vcpkg/installed/x64-mingw-static/debug/lib/libglad.a

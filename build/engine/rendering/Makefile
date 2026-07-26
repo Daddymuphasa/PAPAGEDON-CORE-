@@ -201,6 +201,30 @@ Renderer.cpp.s:
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.s
 .PHONY : Renderer.cpp.s
 
+ShaderManager.obj: ShaderManager.cpp.obj
+.PHONY : ShaderManager.obj
+
+# target to build an object file
+ShaderManager.cpp.obj:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/ShaderManager.cpp.obj
+.PHONY : ShaderManager.cpp.obj
+
+ShaderManager.i: ShaderManager.cpp.i
+.PHONY : ShaderManager.i
+
+# target to preprocess a source file
+ShaderManager.cpp.i:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/ShaderManager.cpp.i
+.PHONY : ShaderManager.cpp.i
+
+ShaderManager.s: ShaderManager.cpp.s
+.PHONY : ShaderManager.s
+
+# target to generate assembly for a file
+ShaderManager.cpp.s:
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build && $(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/ShaderManager.cpp.s
+.PHONY : ShaderManager.cpp.s
+
 backends/DebugOverlayRenderer.obj: backends/DebugOverlayRenderer.cpp.obj
 .PHONY : backends/DebugOverlayRenderer.obj
 
@@ -267,6 +291,9 @@ help:
 	@echo ... Renderer.obj
 	@echo ... Renderer.i
 	@echo ... Renderer.s
+	@echo ... ShaderManager.obj
+	@echo ... ShaderManager.i
+	@echo ... ShaderManager.s
 	@echo ... backends/DebugOverlayRenderer.obj
 	@echo ... backends/DebugOverlayRenderer.i
 	@echo ... backends/DebugOverlayRenderer.s

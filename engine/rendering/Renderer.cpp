@@ -21,9 +21,13 @@ void Renderer::BeginFrame() {
     }
 }
 
-void Renderer::Render(const SceneState& state, const DebugState& debugState) {
+void Renderer::Render(
+    const SceneState&     state,
+    const DebugState&     debugState,
+    const ShaderUniforms& uniforms) {
+
     if (backend_ != nullptr) {
-        backend_->Render(state, debugState);
+        backend_->Render(state, debugState, uniforms);
     }
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IRenderer.h"
+#include "ShaderUniforms.h"
 
 #include <memory>
 
@@ -20,7 +21,10 @@ public:
 
     bool Initialize();
     void BeginFrame();
-    void Render(const SceneState& state, const DebugState& debugState);
+    void Render(
+        const SceneState&    state,
+        const DebugState&    debugState,
+        const ShaderUniforms& uniforms);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
