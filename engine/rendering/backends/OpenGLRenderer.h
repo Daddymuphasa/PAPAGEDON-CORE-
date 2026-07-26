@@ -21,7 +21,7 @@ public:
     void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const ShaderUniforms& uniforms) override;
+        const audio::ExperienceSignals& signals) override;
     [[nodiscard]] bool EndFrame() override;
     void Shutdown() noexcept override;
 

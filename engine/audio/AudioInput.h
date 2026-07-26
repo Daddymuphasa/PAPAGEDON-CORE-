@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <span>
 
 namespace papagedon::audio {
 
@@ -25,6 +26,9 @@ public:
 
     /// Releases all decoded PCM data and resets the metadata.
     void Close() noexcept;
+
+    /// Exposes the decoded PCM data safely.
+    [[nodiscard]] std::span<const float> GetSamples() const noexcept;
 
     [[nodiscard]] std::uint32_t SampleRate() const noexcept;
     [[nodiscard]] std::uint32_t Channels() const noexcept;

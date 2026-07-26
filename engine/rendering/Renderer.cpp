@@ -24,10 +24,10 @@ void Renderer::BeginFrame() {
 void Renderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
-    const ShaderUniforms& uniforms) {
+    const audio::ExperienceSignals& signals) {
 
     if (backend_ != nullptr) {
-        backend_->Render(state, debugState, uniforms);
+        backend_->Render(state, debugState, signals);
     }
 }
 

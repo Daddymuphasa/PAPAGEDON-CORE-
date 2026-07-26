@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShaderUniforms.h"
+#include "../audio/ExperienceSignals.h"
 
 namespace papagedon {
 
@@ -17,7 +17,7 @@ public:
     virtual void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const ShaderUniforms& uniforms) = 0;
+        const audio::ExperienceSignals& signals) = 0;
     /// Returns false once the backend has received a request to close.
     virtual bool EndFrame() = 0;
     virtual void Shutdown() noexcept = 0;

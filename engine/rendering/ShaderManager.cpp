@@ -39,14 +39,19 @@ void main() {
 // Reactive fragment shader
 //
 // Uniform mapping (per Stage 5.1 spec):
-//   uEnergy    → HSV value  (brightness)
-//   uIntensity → HSV saturation
+//   uEnergy    → overall brightness
+//   uIntensity → colour saturation (low intensity desaturates toward grey)
 //   uBass      → ring pulse radius / speed
 //   uMid       → spiral arm density
 //   uTreble    → fine-detail ripple amplitude
 //   uBeat      → instantaneous flash at the centre
+//   uMood      → warm/cool tint  (0 = cool, 1 = warm)
+//   uColorLow/Mid/High → active scene palette (blended across transitions on CPU)
 //   uTime      → animation clock (seconds)
 //   uResolution→ viewport size for aspect correction
+//
+// The scene palette — not time — now drives hue, so every scene reads as a
+// distinct colour world and scene transitions cross-fade the whole image.
 // ──────────────────────────────────────────────────────────────────────────────
 static constexpr const char* kDefaultFragmentSource = R"GLSL(
 #version 460 core
@@ -62,13 +67,19 @@ uniform float uBass;
 uniform float uMid;
 uniform float uTreble;
 uniform float uBeat;
+uniform float uMood;
+uniform vec3  uColorLow;
+uniform vec3  uColorMid;
+uniform vec3  uColorHigh;
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-vec3 hsv2rgb(vec3 c) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+// Three-stop palette ramp: low → mid → high across t in [0, 1].
+vec3 palette(float t) {
+    t = clamp(t, 0.0, 1.0);
+    return t < 0.5
+        ? mix(uColorLow, uColorMid,  t * 2.0)
+        : mix(uColorMid, uColorHigh, (t - 0.5) * 2.0);
 }
 
 // Smooth modulo for seamless tiling
@@ -110,19 +121,28 @@ void main() {
     pattern = clamp(pattern, 0.0, 1.0);
 
     // ── Colour ────────────────────────────────────────────────────────────
-    // Hue: slowly rotates with time; bass nudges it for big impacts.
-    float hue = fract(t * 0.04 + uBass * 0.25 - pattern * 0.12);
+    // The active scene's palette maps across the pattern intensity.  Bass nudges
+    // the ramp lookup so heavy low-end pushes toward the palette's bright stop.
+    vec3 color = palette(pattern + uBass * 0.15);
 
-    // Energy drives brightness; intensity drives saturation.
-    float brightness  = 0.07 + uEnergy * 0.88;
-    float saturation  = 0.10 + uIntensity * 0.90;
+    // Intensity controls saturation: fade toward the pattern's luma when low.
+    float luma = dot(color, vec3(0.299, 0.587, 0.114));
+    float saturation = 0.15 + uIntensity * 0.85;
+    color = mix(vec3(luma), color, saturation);
 
-    vec3 color = hsv2rgb(vec3(hue, saturation, brightness * pattern));
+    // Energy drives overall brightness, shaped by the pattern.
+    float brightness = 0.07 + uEnergy * 0.88;
+    color *= brightness * pattern;
+
+    // Mood tints warm (>0.5) or cool (<0.5) without leaving the palette behind.
+    vec3 warmTint = vec3(1.12, 1.0, 0.85);
+    vec3 coolTint = vec3(0.85, 1.0, 1.12);
+    color *= mix(coolTint, warmTint, clamp(uMood, 0.0, 1.0));
 
     // ── Beat centre flash ─────────────────────────────────────────────────
-    // A radial white burst on the beat frame, decaying with distance.
+    // A radial burst on the beat frame, tinted by the palette's brightest stop.
     float beatGlow = uBeat * 0.6 * exp(-dist * dist * 4.0);
-    color += vec3(beatGlow);
+    color += mix(vec3(1.0), uColorHigh, 0.4) * beatGlow;
 
     // ── Vignette ──────────────────────────────────────────────────────────
     float vignette = 1.0 - smoothstep(0.55, 1.45, dist);
@@ -217,6 +237,10 @@ bool ShaderManager::Compile(
     locMid_        = glGetUniformLocation(program_, "uMid");
     locTreble_     = glGetUniformLocation(program_, "uTreble");
     locBeat_       = glGetUniformLocation(program_, "uBeat");
+    locMood_       = glGetUniformLocation(program_, "uMood");
+    locColorLow_   = glGetUniformLocation(program_, "uColorLow");
+    locColorMid_   = glGetUniformLocation(program_, "uColorMid");
+    locColorHigh_  = glGetUniformLocation(program_, "uColorHigh");
 
     return true;
 }
@@ -247,6 +271,10 @@ void ShaderManager::SetUniforms(
     if (locMid_        >= 0) glUniform1f(locMid_,         u.mid);
     if (locTreble_     >= 0) glUniform1f(locTreble_,      u.treble);
     if (locBeat_       >= 0) glUniform1f(locBeat_,        u.beat);
+    if (locMood_       >= 0) glUniform1f(locMood_,        u.mood);
+    if (locColorLow_   >= 0) glUniform3f(locColorLow_,    u.colorLow.r,  u.colorLow.g,  u.colorLow.b);
+    if (locColorMid_   >= 0) glUniform3f(locColorMid_,    u.colorMid.r,  u.colorMid.g,  u.colorMid.b);
+    if (locColorHigh_  >= 0) glUniform3f(locColorHigh_,   u.colorHigh.r, u.colorHigh.g, u.colorHigh.b);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -261,6 +289,10 @@ void ShaderManager::Shutdown() noexcept {
         locMid_       = -1;
         locTreble_    = -1;
         locBeat_      = -1;
+        locMood_      = -1;
+        locColorLow_  = -1;
+        locColorMid_  = -1;
+        locColorHigh_ = -1;
     }
 }
 

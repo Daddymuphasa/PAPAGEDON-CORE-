@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IRenderer.h"
-#include "ShaderUniforms.h"
+#include "../audio/ExperienceSignals.h"
 
 #include <memory>
 
@@ -24,7 +24,7 @@ public:
     void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const ShaderUniforms& uniforms);
+        const audio::ExperienceSignals& signals);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;

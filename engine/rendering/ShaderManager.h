@@ -65,6 +65,10 @@ private:
     int locMid_        = -1;
     int locTreble_     = -1;
     int locBeat_       = -1;
+    int locMood_       = -1;
+    int locColorLow_   = -1;
+    int locColorMid_   = -1;
+    int locColorHigh_  = -1;
 };
 
 } // namespace papagedon

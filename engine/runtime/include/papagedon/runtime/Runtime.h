@@ -2,7 +2,8 @@
 
 #include <atomic>
 #include <chrono>
-
+#include <AudioInput.h>
+#include <AudioPlayer.h>
 #include <AudioAnalyzer.h>
 #include <ExperienceGraph.h>
 #include <SceneDNA.h>
@@ -34,6 +35,8 @@ private:
     void Update(FrameDuration deltaTime) noexcept;
 
     utilities::Logger& logger_;
+    audio::AudioInput audioInput_;
+    audio::AudioPlayer audioPlayer_;
     audio::AudioAnalyzer audioAnalyzer_;
     ExperienceGraph experienceGraph_;
     SceneDNA sceneDNA_;
