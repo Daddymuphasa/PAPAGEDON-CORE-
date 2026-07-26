@@ -264,7 +264,7 @@ engine/utilities/clean: engine/utilities/CMakeFiles/papagedon-utilities.dir/clea
 engine/utilities/CMakeFiles/papagedon-utilities.dir/all:
 	$(MAKE) $(MAKESILENT) -f engine\utilities\CMakeFiles\papagedon-utilities.dir\build.make engine/utilities/CMakeFiles/papagedon-utilities.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\utilities\CMakeFiles\papagedon-utilities.dir\build.make engine/utilities/CMakeFiles/papagedon-utilities.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=25,26 "Built target papagedon-utilities"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=26,27 "Built target papagedon-utilities"
 .PHONY : engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 
 # Build rule for subdir invocation for target.
@@ -281,7 +281,7 @@ papagedon-utilities: engine/utilities/CMakeFiles/papagedon-utilities.dir/rule
 # codegen rule for target.
 engine/utilities/CMakeFiles/papagedon-utilities.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\utilities\CMakeFiles\papagedon-utilities.dir\build.make engine/utilities/CMakeFiles/papagedon-utilities.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=25,26 "Finished codegen for target papagedon-utilities"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=26,27 "Finished codegen for target papagedon-utilities"
 .PHONY : engine/utilities/CMakeFiles/papagedon-utilities.dir/codegen
 
 # clean rule for target.
@@ -296,12 +296,12 @@ engine/utilities/CMakeFiles/papagedon-utilities.dir/clean:
 engine/audio/CMakeFiles/papagedon-audio.dir/all:
 	$(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=1,2,3,4,5 "Built target papagedon-audio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=1,2,3,4,5,6 "Built target papagedon-audio"
 .PHONY : engine/audio/CMakeFiles/papagedon-audio.dir/all
 
 # Build rule for subdir invocation for target.
 engine/audio/CMakeFiles/papagedon-audio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 5
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 engine/audio/CMakeFiles/papagedon-audio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 0
 .PHONY : engine/audio/CMakeFiles/papagedon-audio.dir/rule
@@ -313,7 +313,7 @@ papagedon-audio: engine/audio/CMakeFiles/papagedon-audio.dir/rule
 # codegen rule for target.
 engine/audio/CMakeFiles/papagedon-audio.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\audio\CMakeFiles\papagedon-audio.dir\build.make engine/audio/CMakeFiles/papagedon-audio.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=1,2,3,4,5 "Finished codegen for target papagedon-audio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=1,2,3,4,5,6 "Finished codegen for target papagedon-audio"
 .PHONY : engine/audio/CMakeFiles/papagedon-audio.dir/codegen
 
 # clean rule for target.
@@ -329,12 +329,12 @@ engine/experience/CMakeFiles/papagedon-experience.dir/all: engine/audio/CMakeFil
 engine/experience/CMakeFiles/papagedon-experience.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 	$(MAKE) $(MAKESILENT) -f engine\experience\CMakeFiles\papagedon-experience.dir\build.make engine/experience/CMakeFiles/papagedon-experience.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\experience\CMakeFiles\papagedon-experience.dir\build.make engine/experience/CMakeFiles/papagedon-experience.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=8,9 "Built target papagedon-experience"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=9,10 "Built target papagedon-experience"
 .PHONY : engine/experience/CMakeFiles/papagedon-experience.dir/all
 
 # Build rule for subdir invocation for target.
 engine/experience/CMakeFiles/papagedon-experience.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 11
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 engine/experience/CMakeFiles/papagedon-experience.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 0
 .PHONY : engine/experience/CMakeFiles/papagedon-experience.dir/rule
@@ -346,7 +346,7 @@ papagedon-experience: engine/experience/CMakeFiles/papagedon-experience.dir/rule
 # codegen rule for target.
 engine/experience/CMakeFiles/papagedon-experience.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\experience\CMakeFiles\papagedon-experience.dir\build.make engine/experience/CMakeFiles/papagedon-experience.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=8,9 "Finished codegen for target papagedon-experience"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=9,10 "Finished codegen for target papagedon-experience"
 .PHONY : engine/experience/CMakeFiles/papagedon-experience.dir/codegen
 
 # clean rule for target.
@@ -361,7 +361,7 @@ engine/experience/CMakeFiles/papagedon-experience.dir/clean:
 engine/scene/CMakeFiles/papagedon-scene.dir/all:
 	$(MAKE) $(MAKESILENT) -f engine\scene\CMakeFiles\papagedon-scene.dir\build.make engine/scene/CMakeFiles/papagedon-scene.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\scene\CMakeFiles\papagedon-scene.dir\build.make engine/scene/CMakeFiles/papagedon-scene.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=21,22,23,24 "Built target papagedon-scene"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=22,23,24,25 "Built target papagedon-scene"
 .PHONY : engine/scene/CMakeFiles/papagedon-scene.dir/all
 
 # Build rule for subdir invocation for target.
@@ -378,7 +378,7 @@ papagedon-scene: engine/scene/CMakeFiles/papagedon-scene.dir/rule
 # codegen rule for target.
 engine/scene/CMakeFiles/papagedon-scene.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\scene\CMakeFiles\papagedon-scene.dir\build.make engine/scene/CMakeFiles/papagedon-scene.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=21,22,23,24 "Finished codegen for target papagedon-scene"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=22,23,24,25 "Finished codegen for target papagedon-scene"
 .PHONY : engine/scene/CMakeFiles/papagedon-scene.dir/codegen
 
 # clean rule for target.
@@ -393,7 +393,7 @@ engine/scene/CMakeFiles/papagedon-scene.dir/clean:
 engine/rendering/CMakeFiles/papagedon-rendering.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 	$(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=12,13,14,15,16,17,18 "Built target papagedon-rendering"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=13,14,15,16,17,18,19 "Built target papagedon-rendering"
 .PHONY : engine/rendering/CMakeFiles/papagedon-rendering.dir/all
 
 # Build rule for subdir invocation for target.
@@ -410,7 +410,7 @@ papagedon-rendering: engine/rendering/CMakeFiles/papagedon-rendering.dir/rule
 # codegen rule for target.
 engine/rendering/CMakeFiles/papagedon-rendering.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\rendering\CMakeFiles\papagedon-rendering.dir\build.make engine/rendering/CMakeFiles/papagedon-rendering.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=12,13,14,15,16,17,18 "Finished codegen for target papagedon-rendering"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=13,14,15,16,17,18,19 "Finished codegen for target papagedon-rendering"
 .PHONY : engine/rendering/CMakeFiles/papagedon-rendering.dir/codegen
 
 # clean rule for target.
@@ -422,19 +422,19 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/clean:
 # Target rules for target engine/runtime/CMakeFiles/papagedon-runtime.dir
 
 # All Build rule for target.
-engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/audio/CMakeFiles/papagedon-audio.dir/all
+engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/experience/CMakeFiles/papagedon-experience.dir/all
 engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 engine/runtime/CMakeFiles/papagedon-runtime.dir/all: engine/rendering/CMakeFiles/papagedon-rendering.dir/all
 	$(MAKE) $(MAKESILENT) -f engine\runtime\CMakeFiles\papagedon-runtime.dir\build.make engine/runtime/CMakeFiles/papagedon-runtime.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\runtime\CMakeFiles\papagedon-runtime.dir\build.make engine/runtime/CMakeFiles/papagedon-runtime.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=19,20 "Built target papagedon-runtime"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=20,21 "Built target papagedon-runtime"
 .PHONY : engine/runtime/CMakeFiles/papagedon-runtime.dir/all
 
 # Build rule for subdir invocation for target.
 engine/runtime/CMakeFiles/papagedon-runtime.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 22
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 23
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 engine/runtime/CMakeFiles/papagedon-runtime.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 0
 .PHONY : engine/runtime/CMakeFiles/papagedon-runtime.dir/rule
@@ -446,7 +446,7 @@ papagedon-runtime: engine/runtime/CMakeFiles/papagedon-runtime.dir/rule
 # codegen rule for target.
 engine/runtime/CMakeFiles/papagedon-runtime.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\runtime\CMakeFiles\papagedon-runtime.dir\build.make engine/runtime/CMakeFiles/papagedon-runtime.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=19,20 "Finished codegen for target papagedon-runtime"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=20,21 "Finished codegen for target papagedon-runtime"
 .PHONY : engine/runtime/CMakeFiles/papagedon-runtime.dir/codegen
 
 # clean rule for target.
@@ -458,20 +458,20 @@ engine/runtime/CMakeFiles/papagedon-runtime.dir/clean:
 # Target rules for target engine/core/CMakeFiles/papagedon-core.dir
 
 # All Build rule for target.
-engine/core/CMakeFiles/papagedon-core.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 engine/core/CMakeFiles/papagedon-core.dir/all: engine/audio/CMakeFiles/papagedon-audio.dir/all
+engine/core/CMakeFiles/papagedon-core.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 engine/core/CMakeFiles/papagedon-core.dir/all: engine/experience/CMakeFiles/papagedon-experience.dir/all
 engine/core/CMakeFiles/papagedon-core.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 engine/core/CMakeFiles/papagedon-core.dir/all: engine/runtime/CMakeFiles/papagedon-runtime.dir/all
 engine/core/CMakeFiles/papagedon-core.dir/all: engine/rendering/CMakeFiles/papagedon-rendering.dir/all
 	$(MAKE) $(MAKESILENT) -f engine\core\CMakeFiles\papagedon-core.dir\build.make engine/core/CMakeFiles/papagedon-core.dir/depend
 	$(MAKE) $(MAKESILENT) -f engine\core\CMakeFiles\papagedon-core.dir\build.make engine/core/CMakeFiles/papagedon-core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=6,7 "Built target papagedon-core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=7,8 "Built target papagedon-core"
 .PHONY : engine/core/CMakeFiles/papagedon-core.dir/all
 
 # Build rule for subdir invocation for target.
 engine/core/CMakeFiles/papagedon-core.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 24
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 25
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 engine/core/CMakeFiles/papagedon-core.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 0
 .PHONY : engine/core/CMakeFiles/papagedon-core.dir/rule
@@ -483,7 +483,7 @@ papagedon-core: engine/core/CMakeFiles/papagedon-core.dir/rule
 # codegen rule for target.
 engine/core/CMakeFiles/papagedon-core.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f engine\core\CMakeFiles\papagedon-core.dir\build.make engine/core/CMakeFiles/papagedon-core.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=6,7 "Finished codegen for target papagedon-core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=7,8 "Finished codegen for target papagedon-core"
 .PHONY : engine/core/CMakeFiles/papagedon-core.dir/codegen
 
 # clean rule for target.
@@ -495,21 +495,21 @@ engine/core/CMakeFiles/papagedon-core.dir/clean:
 # Target rules for target apps/player/CMakeFiles/papagedon-player.dir
 
 # All Build rule for target.
-apps/player/CMakeFiles/papagedon-player.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/audio/CMakeFiles/papagedon-audio.dir/all
+apps/player/CMakeFiles/papagedon-player.dir/all: engine/utilities/CMakeFiles/papagedon-utilities.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/experience/CMakeFiles/papagedon-experience.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/scene/CMakeFiles/papagedon-scene.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/runtime/CMakeFiles/papagedon-runtime.dir/all
-apps/player/CMakeFiles/papagedon-player.dir/all: engine/core/CMakeFiles/papagedon-core.dir/all
 apps/player/CMakeFiles/papagedon-player.dir/all: engine/rendering/CMakeFiles/papagedon-rendering.dir/all
+apps/player/CMakeFiles/papagedon-player.dir/all: engine/core/CMakeFiles/papagedon-core.dir/all
 	$(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/depend
 	$(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=10,11 "Built target papagedon-player"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=11,12 "Built target papagedon-player"
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/all
 
 # Build rule for subdir invocation for target.
 apps/player/CMakeFiles/papagedon-player.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 26
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 27
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 apps/player/CMakeFiles/papagedon-player.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" 0
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/rule
@@ -521,7 +521,7 @@ papagedon-player: apps/player/CMakeFiles/papagedon-player.dir/rule
 # codegen rule for target.
 apps/player/CMakeFiles/papagedon-player.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f apps\player\CMakeFiles\papagedon-player.dir\build.make apps/player/CMakeFiles/papagedon-player.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=10,11 "Finished codegen for target papagedon-player"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=11,12 "Finished codegen for target papagedon-player"
 .PHONY : apps/player/CMakeFiles/papagedon-player.dir/codegen
 
 # clean rule for target.

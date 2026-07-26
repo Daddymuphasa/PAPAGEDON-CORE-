@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj.d"
   "CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj"
   "CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj.d"
+  "CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj"
+  "CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj.d"
   "CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj"
   "CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj.d"
   "libpapagedon-audio.a"

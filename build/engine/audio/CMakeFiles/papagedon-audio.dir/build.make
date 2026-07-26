@@ -116,11 +116,26 @@ engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/papagedon-audio.dir/AudioInput.cpp.s"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\audio\AudioInput.cpp" -o CMakeFiles\papagedon-audio.dir\AudioInput.cpp.s
 
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/flags.make
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/includes_CXX.rsp
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioPlayer.cpp
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj -MF CMakeFiles\papagedon-audio.dir\AudioPlayer.cpp.obj.d -o CMakeFiles\papagedon-audio.dir\AudioPlayer.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\audio\AudioPlayer.cpp"
+
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.i"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\audio\AudioPlayer.cpp" > CMakeFiles\papagedon-audio.dir\AudioPlayer.cpp.i
+
+engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.s"
+	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\audio\AudioPlayer.cpp" -o CMakeFiles\papagedon-audio.dir\AudioPlayer.cpp.s
+
 engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/flags.make
 engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/includes_CXX.rsp
 engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj: C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/ExperienceSignals.cpp
 engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj: engine/audio/CMakeFiles/papagedon-audio.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && "C:\Users\DADDY MUPHASA\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\c++.exe" $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj -MF CMakeFiles\papagedon-audio.dir\ExperienceSignals.cpp.obj.d -o CMakeFiles\papagedon-audio.dir\ExperienceSignals.cpp.obj -c "C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\audio\ExperienceSignals.cpp"
 
 engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.i: cmake_force
@@ -136,6 +151,7 @@ papagedon__audio_OBJECTS = \
 "CMakeFiles/papagedon-audio.dir/AudioAnalyzer.cpp.obj" \
 "CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj" \
 "CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj" \
+"CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj" \
 "CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj"
 
 # External object files for target papagedon-audio
@@ -144,10 +160,11 @@ papagedon__audio_EXTERNAL_OBJECTS =
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/AudioAnalyzer.cpp.obj
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj
+engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/build.make
 engine/audio/libpapagedon-audio.a: engine/audio/CMakeFiles/papagedon-audio.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libpapagedon-audio.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\DADDY MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX static library libpapagedon-audio.a"
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && $(CMAKE_COMMAND) -P CMakeFiles\papagedon-audio.dir\cmake_clean_target.cmake
 	cd /d C:\Users\DADDYM~1\DOCUME~1\GitHub\PAPAGE~2\build\engine\audio && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\papagedon-audio.dir\link.txt --verbose=$(VERBOSE)
 

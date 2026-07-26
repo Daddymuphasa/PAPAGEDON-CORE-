@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioAnalyzer.cpp" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioAnalyzer.cpp.obj" "gcc" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioAnalyzer.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioFrame.cpp" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj" "gcc" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioFrame.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioInput.cpp" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj" "gcc" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioInput.cpp.obj.d"
+  "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/AudioPlayer.cpp" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj" "gcc" "engine/audio/CMakeFiles/papagedon-audio.dir/AudioPlayer.cpp.obj.d"
   "C:/Users/DADDY MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/ExperienceSignals.cpp" "engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj" "gcc" "engine/audio/CMakeFiles/papagedon-audio.dir/ExperienceSignals.cpp.obj.d"
   )
 

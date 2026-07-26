@@ -2,7 +2,7 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj: \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\Renderer.cpp \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\Renderer.h \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\IRenderer.h \
- C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\ShaderUniforms.h \
+ C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/audio/ExperienceSignals.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/memory \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/bits/memoryfwd.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -181,4 +181,5 @@ engine/rendering/CMakeFiles/papagedon-rendering.dir/Renderer.cpp.obj: \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/pstl/glue_memory_defs.h \
  C:/Users/DADDY\ MUPHASA/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/include/c++/16.1.0/pstl/execution_defs.h \
  C:\Users\DADDY\ MUPHASA\Documents\GitHub\PAPAGEDON-CORE-\engine\rendering\backends/OpenGLRenderer.h \
- C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/ShaderManager.h
+ C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/ShaderManager.h \
+ C:/Users/DADDY\ MUPHASA/Documents/GitHub/PAPAGEDON-CORE-/engine/rendering/ShaderUniforms.h
