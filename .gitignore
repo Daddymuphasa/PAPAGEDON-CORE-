@@ -6,6 +6,7 @@ cmake-build*/
 out/
 bin/
 lib/
+obj/
 
 # IDE and Editor files
 .vs/
