@@ -1,5 +1,7 @@
 add_library(papagedon-experience
     ExperienceGraph.cpp
+    presets/ExperiencePreset.cpp
+    presets/PresetManager.cpp
 )
 
 add_library(papagedon::experience ALIAS papagedon-experience)

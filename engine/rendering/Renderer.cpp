@@ -24,15 +24,20 @@ void Renderer::BeginFrame() {
 void Renderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
-    const audio::ExperienceSignals& signals) {
+    const audio::ExperienceSignals& signals,
+    const ExperiencePreset& preset) {
 
     if (backend_ != nullptr) {
-        backend_->Render(state, debugState, signals);
+        backend_->Render(state, debugState, signals, preset);
     }
 }
 
 bool Renderer::EndFrame() {
     return backend_ != nullptr && backend_->EndFrame();
+}
+
+int Renderer::ConsumePresetRequest() noexcept {
+    return backend_ != nullptr ? backend_->ConsumePresetRequest() : -1;
 }
 
 void Renderer::Shutdown() noexcept {

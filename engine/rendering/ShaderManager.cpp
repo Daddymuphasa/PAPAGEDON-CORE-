@@ -38,20 +38,26 @@ void main() {
 // ──────────────────────────────────────────────────────────────────────────────
 // Reactive fragment shader
 //
-// Uniform mapping (per Stage 5.1 spec):
-//   uEnergy    → overall brightness
-//   uIntensity → colour saturation (low intensity desaturates toward grey)
-//   uBass      → ring pulse radius / speed
-//   uMid       → spiral arm density
-//   uTreble    → fine-detail ripple amplitude
-//   uBeat      → instantaneous flash at the centre
-//   uMood      → warm/cool tint  (0 = cool, 1 = warm)
-//   uColorLow/Mid/High → active scene palette (blended across transitions on CPU)
-//   uTime      → animation clock (seconds)
-//   uResolution→ viewport size for aspect correction
+// Rather than one fixed composition, the shader carries six signature *forms* —
+// one per preset — built from domain-warped fractal noise (fbm) so the motion is
+// organic and evolving instead of a looping sine field.  uPattern selects the
+// form; during a preset switch the Renderer cross-fades uPrevPattern → uPattern
+// as uPatternBlend eases 0 → 1, so the whole look morphs rather than popping.
 //
-// The scene palette — not time — now drives hue, so every scene reads as a
-// distinct colour world and scene transitions cross-fade the whole image.
+// Uniform mapping:
+//   uEnergy    → overall brightness (already scaled by the preset on the CPU)
+//   uIntensity → colour saturation input
+//   uBass/uMid/uTreble → per-form reactive hooks (swell, speed, sparkle …)
+//   uBeat      → beat pulse (peaks at the preset's beat response)
+//   uMood      → warm/cool tint  (0 = cool, 1 = warm)
+//   uColorLow/Mid/High → active preset palette (eased across switches on CPU)
+//   uBackground        → preset ambient colour filling the darkest regions
+//   uSaturationBase/Scale → preset saturation curve (base + intensity * scale)
+//   uMotion    → preset animation-speed multiplier
+//   uPattern / uPrevPattern / uPatternBlend → signature form + switch cross-fade
+//   uWarp      → domain-warp strength (turbulence)
+//   uDetail    → fractal detail emphasis (high-frequency retention)
+//   uTime / uResolution → animation clock and aspect correction
 // ──────────────────────────────────────────────────────────────────────────────
 static constexpr const char* kDefaultFragmentSource = R"GLSL(
 #version 460 core
@@ -71,9 +77,20 @@ uniform float uMood;
 uniform vec3  uColorLow;
 uniform vec3  uColorMid;
 uniform vec3  uColorHigh;
+uniform vec3  uBackground;
+uniform float uSaturationBase;
+uniform float uSaturationScale;
+uniform float uMotion;
+uniform int   uPattern;
+uniform int   uPrevPattern;
+uniform float uPatternBlend;
+uniform float uWarp;
+uniform float uDetail;
 
-// ── Utility ──────────────────────────────────────────────────────────────────
+const float kPi  = 3.14159265358979;
+const float kTau = 6.28318530717959;
 
+// ── Palette ────────────────────────────────────────────────────────────────
 // Three-stop palette ramp: low → mid → high across t in [0, 1].
 vec3 palette(float t) {
     t = clamp(t, 0.0, 1.0);
@@ -82,71 +99,172 @@ vec3 palette(float t) {
         : mix(uColorMid, uColorHigh, (t - 0.5) * 2.0);
 }
 
-// Smooth modulo for seamless tiling
-float smod(float x, float m) { return x - m * floor(x / m); }
+// ── Noise toolkit ────────────────────────────────────────────────────────────
+float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+}
+
+// Smooth value noise.
+float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i + vec2(0.0, 0.0));
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+// Fractal brownian motion.  uDetail keeps more energy in the high octaves.
+float fbm(vec2 p) {
+    float sum  = 0.0;
+    float amp  = 0.5;
+    float freq = 1.0;
+    float gain = clamp(0.5 + 0.12 * (uDetail - 1.0), 0.38, 0.66);
+    for (int i = 0; i < 4; ++i) {
+        sum  += amp * vnoise(p * freq);
+        freq *= 2.0;
+        amp  *= gain;
+    }
+    return sum;
+}
+
+// Domain-warped fbm: fbm sampled through an fbm-displaced coordinate field.
+float warpedFbm(vec2 p, float t) {
+    vec2 q = vec2(fbm(p + vec2(0.0, t * 0.10)),
+                  fbm(p + vec2(5.2, 1.3) - vec2(t * 0.08, 0.0)));
+    return fbm(p + uWarp * q);
+}
+
+// ── Signature forms ──────────────────────────────────────────────────────────
+// Each returns an intensity in [0, 1] that the palette then maps to colour.
+
+// 0: Aurora — vertical flowing curtains that rise and ripple.
+float patAurora(vec2 uv, float t) {
+    float w       = warpedFbm(vec2(uv.x * 1.3, uv.y * 0.7 - t * 0.4), t);
+    float curtain = warpedFbm(vec2(uv.x * 2.2 + w * 1.5, uv.y * 0.5 - t * 0.35), t * 1.3);
+    float shape   = smoothstep(0.25, 0.9, curtain);
+    float vfall   = smoothstep(1.2, -0.8, uv.y);   // brighter toward the bottom
+    return clamp((shape + uBass * 0.25) * (0.35 + 0.9 * vfall), 0.0, 1.0);
+}
+
+// 1: Nebula — drifting volumetric clouds with treble sparkle.
+float patNebula(vec2 uv, float t) {
+    vec2  p      = uv * 1.1 + vec2(t * 0.05, -t * 0.04);
+    float clouds = warpedFbm(p, t * 0.6);
+    clouds       = pow(clamp(clouds * 1.4, 0.0, 1.0), 1.6);
+    float star   = hash21(floor(uv * 60.0));
+    float tw     = step(0.985 - uTreble * 0.03, star)
+                 * (0.5 + 0.5 * sin(t * 8.0 + star * 40.0));
+    return clamp(clouds + tw * uTreble, 0.0, 1.0);
+}
+
+// 2: Matrix — falling digital-rain columns.
+float patMatrix(vec2 uv, float t) {
+    float cols  = 40.0;
+    float col   = floor((uv.x * 0.5 + 0.5) * cols);
+    float y     = uv.y * 0.5 + 0.5;
+    float speed = 0.25 + hash21(vec2(col, 3.0)) * (0.5 + uMid * 1.5);
+    float head  = fract(t * speed + hash21(vec2(col, 7.0)));
+    float d     = fract(head - y);
+    float stream = pow(1.0 - d, 3.0);              // bright head, fading trail
+    float cell  = hash21(vec2(col, floor(y * cols)));
+    float flick = 0.55 + 0.45 * sin(t * 9.0 + cell * 33.0);
+    return clamp(stream * flick * (0.7 + uEnergy * 0.6), 0.0, 1.0);
+}
+
+// 3: Liquid — smooth caustic ripples, like light on water.
+float patLiquid(vec2 uv, float t) {
+    vec2  p       = uv * 1.6;
+    float a       = warpedFbm(p + vec2(t * 0.12, t * 0.09), t);
+    float b       = warpedFbm(p * 1.3 - vec2(t * 0.08, t * 0.11), t * 0.8);
+    float caustic = abs(a - b);                    // ridged → vein-like
+    float liquid  = 1.0 - smoothstep(0.0, 0.35, caustic);
+    return clamp(pow(liquid, 1.4) * (0.5 + 0.7 * a) + uBass * 0.15, 0.0, 1.0);
+}
+
+// 4: Tunnel — perspective tunnel rushing inward.
+float patTunnel(vec2 uv, float t) {
+    float r     = max(length(uv), 1e-3);
+    float ang   = atan(uv.y, uv.x);
+    float depth = 1.0 / r + t * (1.2 + uEnergy * 1.5) + uBeat * 0.6;
+    float walls = warpedFbm(vec2(ang / kPi * 3.0, depth * 2.0), t);
+    float rings = 0.5 + 0.5 * sin(depth * kTau * (1.0 + uMid));
+    float g     = mix(walls, rings, 0.5);
+    g          *= smoothstep(0.0, 0.35, r);        // dark centre (far away)
+    return clamp(g * (0.5 + uEnergy * 0.8), 0.0, 1.0);
+}
+
+// 5: Pulse — kaleidoscopic radial shockwaves retriggered on beats.
+float patPulse(vec2 uv, float t) {
+    float ang  = atan(uv.y, uv.x);
+    float wedge = abs(fract(ang / kTau * 8.0) - 0.5); // mirror into 8 wedges
+    float r    = length(uv);
+    float wave = 0.5 + 0.5 * sin(r * (14.0 + uBass * 20.0) - t * 6.0 - uBeat * 8.0);
+    float burst = uBeat * exp(-r * 3.0) * 1.5;
+    float tex  = warpedFbm(vec2(wedge * 6.0, r * 4.0 - t), t);
+    float g    = wave * (0.4 + 0.6 * tex) + burst;
+    g         *= smoothstep(1.4, 0.1, r);          // fade toward the edges
+    return clamp(g, 0.0, 1.0);
+}
+
+float patternFor(int mode, vec2 uv, float t) {
+    if (mode == 0) return patAurora(uv, t);
+    if (mode == 1) return patNebula(uv, t);
+    if (mode == 2) return patMatrix(uv, t);
+    if (mode == 3) return patLiquid(uv, t);
+    if (mode == 4) return patTunnel(uv, t);
+    return patPulse(uv, t);
+}
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 void main() {
-    const float kPi  = 3.14159265358979;
-    const float kTau = 6.28318530717959;
-
-    // Aspect-correct UV, centred at (0,0)
+    // Aspect-correct UV, centred at (0,0).
     vec2 uv = (vUV * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
 
-    float t     = uTime * 0.25;
-    float dist  = length(uv);
-    float angle = atan(uv.y, uv.x);   // [-π, π]
+    // Motion multiplier lets each preset run languid or frantic on the same clock.
+    float t = uTime * 0.25 * uMotion;
 
-    // ── Layer 1: Bass-driven concentric rings ─────────────────────────────
-    float ringFreq  = 7.0 + uBass * 14.0;
-    float ringSpeed = 1.5 + uBass * 3.0;
-    float rings     = sin(dist * ringFreq - t * ringSpeed) * 0.5 + 0.5;
-    // Pulse the ring amplitude on beat
-    rings += uBeat * 0.35 * exp(-dist * 3.0);
-
-    // ── Layer 2: Mid-driven rotating spiral ───────────────────────────────
-    float spiralArms  = 3.0 + uMid * 4.0;
-    float spiralPhase = angle / kTau + dist * 2.5 - t * 0.8;
-    float spiral      = sin(spiralPhase * spiralArms * kTau) * 0.5 + 0.5;
-
-    // ── Layer 3: Treble-driven high-frequency shimmer ─────────────────────
-    float shimmerX  = sin(uv.x * 22.0 + t * 1.7) * sin(uv.y * 22.0 - t * 1.3);
-    float shimmerY  = cos(uv.x * 15.0 - t * 2.1) * cos(uv.y * 15.0 + t * 0.9);
-    float shimmer   = (shimmerX + shimmerY) * 0.5 * uTreble;
-
-    // ── Combine layers ────────────────────────────────────────────────────
-    float pattern = rings * 0.50
-                  + spiral * 0.35
-                  + shimmer * 0.15;
+    // Active form, cross-fading from the outgoing form during a preset switch.
+    float pattern = patternFor(uPattern, uv, t);
+    if (uPatternBlend < 0.999 && uPrevPattern != uPattern) {
+        float prev = patternFor(uPrevPattern, uv, t);
+        pattern = mix(prev, pattern, uPatternBlend);
+    }
     pattern = clamp(pattern, 0.0, 1.0);
 
     // ── Colour ────────────────────────────────────────────────────────────
-    // The active scene's palette maps across the pattern intensity.  Bass nudges
+    // The active preset's palette maps across the pattern intensity.  Bass nudges
     // the ramp lookup so heavy low-end pushes toward the palette's bright stop.
-    vec3 color = palette(pattern + uBass * 0.15);
+    vec3 color = palette(pattern + uBass * 0.12);
 
-    // Intensity controls saturation: fade toward the pattern's luma when low.
+    // Preset saturation curve: intensity fades toward luma per the preset's shape.
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
-    float saturation = 0.15 + uIntensity * 0.85;
+    float saturation = clamp(uSaturationBase + uIntensity * uSaturationScale, 0.0, 1.0);
     color = mix(vec3(luma), color, saturation);
 
     // Energy drives overall brightness, shaped by the pattern.
-    float brightness = 0.07 + uEnergy * 0.88;
-    color *= brightness * pattern;
+    float brightness = 0.08 + uEnergy * 0.9;
+    color *= brightness * (0.35 + 0.85 * pattern);
+
+    // The preset's ambient background fills the darkest regions so each preset
+    // keeps a distinct base tone even where the pattern falls to zero.
+    color += uBackground * (1.0 - pattern);
 
     // Mood tints warm (>0.5) or cool (<0.5) without leaving the palette behind.
     vec3 warmTint = vec3(1.12, 1.0, 0.85);
     vec3 coolTint = vec3(0.85, 1.0, 1.12);
     color *= mix(coolTint, warmTint, clamp(uMood, 0.0, 1.0));
 
-    // ── Beat centre flash ─────────────────────────────────────────────────
-    // A radial burst on the beat frame, tinted by the palette's brightest stop.
-    float beatGlow = uBeat * 0.6 * exp(-dist * dist * 4.0);
-    color += mix(vec3(1.0), uColorHigh, 0.4) * beatGlow;
+    // Beat bloom tinted by the palette's brightest stop, shaped by the pattern.
+    color += mix(vec3(1.0), uColorHigh, 0.5) * uBeat * 0.25 * pattern;
 
-    // ── Vignette ──────────────────────────────────────────────────────────
-    float vignette = 1.0 - smoothstep(0.55, 1.45, dist);
-    color *= vignette;
+    // Subtle vignette.
+    float d = length(uv);
+    color *= 1.0 - smoothstep(0.7, 1.6, d);
 
     fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }
@@ -241,6 +359,15 @@ bool ShaderManager::Compile(
     locColorLow_   = glGetUniformLocation(program_, "uColorLow");
     locColorMid_   = glGetUniformLocation(program_, "uColorMid");
     locColorHigh_  = glGetUniformLocation(program_, "uColorHigh");
+    locBackground_      = glGetUniformLocation(program_, "uBackground");
+    locSaturationBase_  = glGetUniformLocation(program_, "uSaturationBase");
+    locSaturationScale_ = glGetUniformLocation(program_, "uSaturationScale");
+    locMotion_          = glGetUniformLocation(program_, "uMotion");
+    locPattern_         = glGetUniformLocation(program_, "uPattern");
+    locPrevPattern_     = glGetUniformLocation(program_, "uPrevPattern");
+    locPatternBlend_    = glGetUniformLocation(program_, "uPatternBlend");
+    locWarp_            = glGetUniformLocation(program_, "uWarp");
+    locDetail_          = glGetUniformLocation(program_, "uDetail");
 
     return true;
 }
@@ -275,6 +402,15 @@ void ShaderManager::SetUniforms(
     if (locColorLow_   >= 0) glUniform3f(locColorLow_,    u.colorLow.r,  u.colorLow.g,  u.colorLow.b);
     if (locColorMid_   >= 0) glUniform3f(locColorMid_,    u.colorMid.r,  u.colorMid.g,  u.colorMid.b);
     if (locColorHigh_  >= 0) glUniform3f(locColorHigh_,   u.colorHigh.r, u.colorHigh.g, u.colorHigh.b);
+    if (locBackground_      >= 0) glUniform3f(locBackground_, u.background.r, u.background.g, u.background.b);
+    if (locSaturationBase_  >= 0) glUniform1f(locSaturationBase_,  u.saturationBase);
+    if (locSaturationScale_ >= 0) glUniform1f(locSaturationScale_, u.saturationScale);
+    if (locMotion_          >= 0) glUniform1f(locMotion_,          u.motion);
+    if (locPattern_         >= 0) glUniform1i(locPattern_,         u.patternMode);
+    if (locPrevPattern_     >= 0) glUniform1i(locPrevPattern_,     u.previousPatternMode);
+    if (locPatternBlend_    >= 0) glUniform1f(locPatternBlend_,    u.patternBlend);
+    if (locWarp_            >= 0) glUniform1f(locWarp_,            u.warp);
+    if (locDetail_          >= 0) glUniform1f(locDetail_,          u.detail);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -293,6 +429,15 @@ void ShaderManager::Shutdown() noexcept {
         locColorLow_  = -1;
         locColorMid_  = -1;
         locColorHigh_ = -1;
+        locBackground_      = -1;
+        locSaturationBase_  = -1;
+        locSaturationScale_ = -1;
+        locMotion_          = -1;
+        locPattern_         = -1;
+        locPrevPattern_     = -1;
+        locPatternBlend_    = -1;
+        locWarp_            = -1;
+        locDetail_          = -1;
     }
 }
 

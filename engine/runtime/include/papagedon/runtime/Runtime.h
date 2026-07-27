@@ -6,6 +6,7 @@
 #include <AudioPlayer.h>
 #include <AudioAnalyzer.h>
 #include <ExperienceGraph.h>
+#include <presets/PresetManager.h>
 #include <SceneDNA.h>
 #include <Renderer.h>
 
@@ -39,6 +40,7 @@ private:
     audio::AudioPlayer audioPlayer_;
     audio::AudioAnalyzer audioAnalyzer_;
     ExperienceGraph experienceGraph_;
+    PresetManager presetManager_;
     SceneDNA sceneDNA_;
     Renderer renderer_;
     std::atomic_bool running_{false};

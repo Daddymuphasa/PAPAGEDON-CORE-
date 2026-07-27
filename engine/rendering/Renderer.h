@@ -24,10 +24,15 @@ public:
     void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const audio::ExperienceSignals& signals);
+        const audio::ExperienceSignals& signals,
+        const ExperiencePreset& preset);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
+
+    /// Preset index requested via the temporary F1..F6 controls, or -1 if none.
+    /// See IRenderer::ConsumePresetRequest.
+    [[nodiscard]] int ConsumePresetRequest() noexcept;
 
 private:
     std::unique_ptr<IRenderer> backend_;

@@ -103,6 +103,14 @@ bool Runtime::IsRunning() const noexcept {
 // deltaTime is available for future frame-rate-independent interpolation.
 // ──────────────────────────────────────────────────────────────────────────────
 void Runtime::Update(const FrameDuration deltaTime) noexcept {
+    // ── 0. Preset input ───────────────────────────────────────────────────────
+    // Drain any F1..F6 preset request the renderer latched last frame.  Applying
+    // it only swaps an index in the PresetManager — no allocation, no restart.
+    const int presetRequest = renderer_.ConsumePresetRequest();
+    if (presetRequest >= 0) {
+        presetManager_.SetPreset(static_cast<PresetId>(presetRequest));
+    }
+
     // ── 1. AudioPlayer ────────────────────────────────────────────────────────
     audioPlayer_.Update();
 
@@ -135,6 +143,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
 
     // ── 5. Renderer ───────────────────────────────────────────────────────────
     const SceneState& currentScene = sceneDNA_.GetCurrentScene();
+    const ExperiencePreset& activePreset = presetManager_.CurrentPreset();
 
     DebugState debugState{};
     debugState.bpm                = signals.bpm;
@@ -144,10 +153,11 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     debugState.currentScene       = currentScene.activeProfile
                                         ? currentScene.activeProfile->sceneId.c_str()
                                         : "None";
+    debugState.currentPreset      = activePreset.name;
     debugState.transitionProgress = currentScene.transitionProgress;
 
     renderer_.BeginFrame();
-    renderer_.Render(currentScene, debugState, signals);
+    renderer_.Render(currentScene, debugState, signals, activePreset);
     if (!renderer_.EndFrame()) {
         RequestStop();
     }

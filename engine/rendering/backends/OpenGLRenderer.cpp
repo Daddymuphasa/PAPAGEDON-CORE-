@@ -9,9 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <cstddef>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -20,61 +18,17 @@
 namespace papagedon {
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Scene-palette helpers
+// Preset-colour helpers
 //
-// Scene profiles store their palette as "#RRGGBB" strings.  These free functions
-// turn that data-only description into GPU-ready colours.  Parsing is tolerant:
-// any malformed entry yields a neutral grey so a bad palette never breaks output.
+// The active ExperiencePreset supplies every colour the shader uses.  These free
+// functions adapt the experience layer's PresetColor into the renderer's Color3
+// and ease one colour toward another so preset switches cross-fade on screen.
+// No colours are hardcoded here — they all originate from the preset table.
 // ──────────────────────────────────────────────────────────────────────────────
 namespace {
 
-Color3 ParseHexColor(const std::string& hex) noexcept {
-    const auto nibble = [](const char c) -> int {
-        if (c >= '0' && c <= '9') return c - '0';
-        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-        return -1;
-    };
-
-    const std::size_t offset = (!hex.empty() && hex.front() == '#') ? 1u : 0u;
-    if (hex.size() < offset + 6u) {
-        return Color3{0.5F, 0.5F, 0.5F};
-    }
-
-    std::array<int, 6> digits{};
-    for (std::size_t i = 0; i < digits.size(); ++i) {
-        digits[i] = nibble(hex[offset + i]);
-        if (digits[i] < 0) {
-            return Color3{0.5F, 0.5F, 0.5F};
-        }
-    }
-
-    return Color3{
-        static_cast<float>(digits[0] * 16 + digits[1]) / 255.0F,
-        static_cast<float>(digits[2] * 16 + digits[3]) / 255.0F,
-        static_cast<float>(digits[4] * 16 + digits[5]) / 255.0F,
-    };
-}
-
-// Resolve a profile's palette into exactly three ramp stops, tolerating lists
-// with fewer or more than three entries.
-std::array<Color3, 3> PaletteFromProfile(const SceneProfile* const profile) noexcept {
-    std::array<Color3, 3> stops{
-        Color3{0.05F, 0.05F, 0.05F},
-        Color3{0.30F, 0.30F, 0.30F},
-        Color3{0.85F, 0.85F, 0.85F},
-    };
-    if (profile == nullptr || profile->colorPalette.empty()) {
-        return stops;
-    }
-
-    const auto& palette = profile->colorPalette;
-    for (std::size_t i = 0; i < stops.size(); ++i) {
-        // Clamp to the last colour when the palette has fewer than three entries.
-        const std::size_t src = std::min(i, palette.size() - 1u);
-        stops[i] = ParseHexColor(palette[src]);
-    }
-    return stops;
+Color3 ToColor3(const PresetColor& c) noexcept {
+    return Color3{c.r, c.g, c.b};
 }
 
 Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
@@ -98,16 +52,25 @@ public:
     double      currentFps          = 0.0;
     double      lastFrameTime       = 0.0;
     bool        showDebugOverlay    = false;
-    bool        f1WasPressed        = false;
+    bool        debugKeyWasPressed  = false;
     DebugOverlayRenderer debugOverlay;
     ShaderUniforms smoothedUniforms;
 
-    // Cached palette parse — re-parsed only when the scene profile pointer
-    // changes, keeping the per-frame path free of string work.
-    const SceneProfile*   cachedActiveProfile   = nullptr;
-    const SceneProfile*   cachedPreviousProfile = nullptr;
-    std::array<Color3, 3> activePalette{};
-    std::array<Color3, 3> previousPalette{};
+    // ── Pattern cross-fade state ───────────────────────────────────────────────
+    // Tracks the signature form the shader is drawing.  When the preset's pattern
+    // changes we snapshot the outgoing form and ease patternBlend 0 → 1, so the
+    // visual form morphs across the switch rather than popping.
+    int   activePatternMode   = 0;
+    int   previousPatternMode = 0;
+    float patternBlend        = 1.0f;
+    bool  patternInitialized  = false;
+
+    // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
+    // F1..F6 select a preset.  Rising edges are latched in EndFrame (where events
+    // are polled) and drained by the Runtime via ConsumePresetRequest.
+    static constexpr int kPresetKeyCount = 6;
+    bool presetKeyWasPressed[kPresetKeyCount] = {false, false, false, false, false, false};
+    int  pendingPresetRequest = -1;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -199,7 +162,8 @@ void OpenGLRenderer::BeginFrame() {
 void OpenGLRenderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
-    const audio::ExperienceSignals& signals) {
+    const audio::ExperienceSignals& signals,
+    const ExperiencePreset& preset) {
 
     if (!initialized_) {
         return;
@@ -209,20 +173,25 @@ void OpenGLRenderer::Render(
     const float deltaTime = static_cast<float>(currentTime - implementation_->lastFrameTime);
     implementation_->lastFrameTime = currentTime;
 
-    // ── Signal Smoothing ──────────────────────────────────────────────────────
+    auto& smoothed = implementation_->smoothedUniforms;
+
+    // ── Audio-signal smoothing, shaped by the preset's response curves ─────────
+    // Signals ease quickly so the visuals stay responsive to the music.
     const float smoothingRate = 12.0f; // Tunable parameter
     const float alpha = 1.0f - std::exp(-deltaTime * smoothingRate);
 
-    auto& smoothed = implementation_->smoothedUniforms;
-    smoothed.energy    += (signals.energy - smoothed.energy) * alpha;
+    // The preset scales how much energy drives brightness.
+    const float targetEnergy = std::clamp(signals.energy * preset.energyMultiplier, 0.0f, 1.0f);
+    smoothed.energy    += (targetEnergy - smoothed.energy) * alpha;
     smoothed.intensity += (signals.intensity - smoothed.intensity) * alpha;
     smoothed.bass      += (signals.bass - smoothed.bass) * alpha;
     smoothed.mid       += (signals.mid - smoothed.mid) * alpha;
     smoothed.treble    += (signals.treble - smoothed.treble) * alpha;
 
-    // Beat pulse with ~100ms decay
+    // Beat pulse with ~100ms decay, peaking at the preset's beat response so a
+    // punchy preset flashes harder than a calm one on the same beat.
     if (signals.beat) {
-        smoothed.beat = 1.0f;
+        smoothed.beat = preset.beatResponse;
     } else {
         const float beatDecayRate = 10.0f; // exp(-dt * 10) gives ~37% after 100ms
         smoothed.beat *= std::exp(-deltaTime * beatDecayRate);
@@ -230,31 +199,49 @@ void OpenGLRenderer::Render(
 
     smoothed.mood += (state.mood - smoothed.mood) * alpha;
 
-    // ── Scene palette ─────────────────────────────────────────────────────────
-    // Re-parse the hex palettes only when a profile pointer changes; every other
-    // frame the work is three colour lerps.  SceneState::transitionProgress drives
-    // the cross-fade from the outgoing scene's palette to the incoming one, so
-    // scene changes are visible on screen for the first time.
-    if (state.activeProfile != implementation_->cachedActiveProfile) {
-        implementation_->cachedActiveProfile = state.activeProfile;
-        implementation_->activePalette = PaletteFromProfile(state.activeProfile);
-    }
-    // Fall back to the active profile when no previous one exists (first scene),
-    // which makes the blend below a no-op at transitionProgress == 1.
-    const SceneProfile* const previousProfile =
-        state.previousProfile != nullptr ? state.previousProfile : state.activeProfile;
-    if (previousProfile != implementation_->cachedPreviousProfile) {
-        implementation_->cachedPreviousProfile = previousProfile;
-        implementation_->previousPalette = PaletteFromProfile(previousProfile);
-    }
+    // ── Preset palette & style ─────────────────────────────────────────────────
+    // Every colour and style constant comes from the active preset — nothing is
+    // hardcoded here.  The preset's transitionSpeed drives the easing rate, so
+    // switching presets cross-fades the whole image instead of popping.  Each
+    // update is a handful of float lerps on the persistent smoothed uniforms,
+    // so a preset switch performs no heap allocation.
+    const float presetAlpha =
+        1.0f - std::exp(-deltaTime * std::max(preset.transitionSpeed, 0.0f));
 
-    const float blend = std::clamp(state.transitionProgress, 0.0f, 1.0f);
-    smoothed.colorLow  = LerpColor(implementation_->previousPalette[0],
-                                   implementation_->activePalette[0], blend);
-    smoothed.colorMid  = LerpColor(implementation_->previousPalette[1],
-                                   implementation_->activePalette[1], blend);
-    smoothed.colorHigh = LerpColor(implementation_->previousPalette[2],
-                                   implementation_->activePalette[2], blend);
+    smoothed.colorLow    = LerpColor(smoothed.colorLow,    ToColor3(preset.colorLow),   presetAlpha);
+    smoothed.colorMid    = LerpColor(smoothed.colorMid,    ToColor3(preset.colorMid),   presetAlpha);
+    smoothed.colorHigh   = LerpColor(smoothed.colorHigh,   ToColor3(preset.colorHigh),  presetAlpha);
+    smoothed.background  = LerpColor(smoothed.background,  ToColor3(preset.background), presetAlpha);
+    smoothed.saturationBase  += (preset.saturationBase  - smoothed.saturationBase)  * presetAlpha;
+    smoothed.saturationScale += (preset.saturationScale - smoothed.saturationScale) * presetAlpha;
+    smoothed.motion          += (preset.motionIntensity - smoothed.motion)          * presetAlpha;
+    smoothed.warp            += (preset.warp            - smoothed.warp)            * presetAlpha;
+    smoothed.detail          += (preset.detail          - smoothed.detail)          * presetAlpha;
+
+    // ── Signature form cross-fade ──────────────────────────────────────────────
+    // The pattern is a discrete choice, so it can't be lerped like a colour.
+    // Instead we snapshot the outgoing form and ease patternBlend 0 → 1; the
+    // shader mixes the two forms while the blend runs, then draws only the active
+    // form once it completes.  This is state juggling only — no allocation.
+    const int incomingMode = static_cast<int>(preset.patternMode);
+    if (!implementation_->patternInitialized) {
+        implementation_->activePatternMode   = incomingMode;
+        implementation_->previousPatternMode = incomingMode;
+        implementation_->patternBlend        = 1.0f;
+        implementation_->patternInitialized  = true;
+    } else if (incomingMode != implementation_->activePatternMode) {
+        implementation_->previousPatternMode = implementation_->activePatternMode;
+        implementation_->activePatternMode   = incomingMode;
+        implementation_->patternBlend        = 0.0f;
+    }
+    implementation_->patternBlend += (1.0f - implementation_->patternBlend) * presetAlpha;
+    if (implementation_->patternBlend > 0.999f) {
+        implementation_->patternBlend        = 1.0f;
+        implementation_->previousPatternMode = implementation_->activePatternMode;
+    }
+    smoothed.patternMode         = implementation_->activePatternMode;
+    smoothed.previousPatternMode = implementation_->previousPatternMode;
+    smoothed.patternBlend        = implementation_->patternBlend;
 
     // Query framebuffer size for the uResolution uniform and viewport.
     int width  = 0;
@@ -296,13 +283,30 @@ bool OpenGLRenderer::EndFrame() {
     glfwSwapBuffers(implementation_->window);
     glfwPollEvents();
 
-    // F1 toggles the debug overlay.
-    const bool f1IsPressed =
-        glfwGetKey(implementation_->window, GLFW_KEY_F1) == GLFW_PRESS;
-    if (f1IsPressed && !implementation_->f1WasPressed) {
+    // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
+    // F1..F6 request presets 0..5.  We latch the rising edge of the most recent
+    // key here (events were just polled) and let the Runtime drain it via
+    // ConsumePresetRequest, keeping preset ownership in the Runtime.
+    constexpr int kPresetKeys[Implementation::kPresetKeyCount] = {
+        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3,
+        GLFW_KEY_F4, GLFW_KEY_F5, GLFW_KEY_F6,
+    };
+    for (int i = 0; i < Implementation::kPresetKeyCount; ++i) {
+        const bool pressed =
+            glfwGetKey(implementation_->window, kPresetKeys[i]) == GLFW_PRESS;
+        if (pressed && !implementation_->presetKeyWasPressed[i]) {
+            implementation_->pendingPresetRequest = i;
+        }
+        implementation_->presetKeyWasPressed[i] = pressed;
+    }
+
+    // The grave/tilde (`) key toggles the debug overlay (F1 now selects a preset).
+    const bool debugKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS;
+    if (debugKeyIsPressed && !implementation_->debugKeyWasPressed) {
         implementation_->showDebugOverlay = !implementation_->showDebugOverlay;
     }
-    implementation_->f1WasPressed = f1IsPressed;
+    implementation_->debugKeyWasPressed = debugKeyIsPressed;
 
     // FPS counter and window title update.
     ++implementation_->renderedFrameCount;
@@ -322,6 +326,18 @@ bool OpenGLRenderer::EndFrame() {
     }
 
     return glfwWindowShouldClose(implementation_->window) == GLFW_FALSE;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ConsumePresetRequest
+// ──────────────────────────────────────────────────────────────────────────────
+int OpenGLRenderer::ConsumePresetRequest() noexcept {
+    if (implementation_ == nullptr) {
+        return -1;
+    }
+    const int request = implementation_->pendingPresetRequest;
+    implementation_->pendingPresetRequest = -1;
+    return request;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
