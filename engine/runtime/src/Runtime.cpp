@@ -5,6 +5,7 @@
 
 #include <span>
 #include <algorithm>
+#include <cstdlib>
 
 namespace papagedon::runtime {
 
@@ -37,6 +38,13 @@ bool Runtime::Initialize() {
         logger_.ERROR("Renderer failed to initialize.");
         return false;
     }
+    if (const char* const cycle = std::getenv("PAPAGEDON_DEMO_CYCLE")) {
+        demoCycleSeconds_ = std::atof(cycle);
+        if (demoCycleSeconds_ > 0.0) {
+            logger_.INFO("Demo preset auto-cycle enabled.");
+        }
+    }
+
     logger_.INFO("Runtime initialized.");
     return true;
 }
@@ -111,6 +119,15 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         presetManager_.SetPreset(static_cast<PresetId>(presetRequest));
     }
 
+    // Optional demo auto-cycle: step presets on a fixed interval.
+    if (demoCycleSeconds_ > 0.0) {
+        demoCycleElapsed_ += deltaTime.count();
+        if (demoCycleElapsed_ >= demoCycleSeconds_) {
+            presetManager_.NextPreset();
+            demoCycleElapsed_ = 0.0;
+        }
+    }
+
     // ── 1. AudioPlayer ────────────────────────────────────────────────────────
     audioPlayer_.Update();
 
@@ -161,8 +178,6 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     if (!renderer_.EndFrame()) {
         RequestStop();
     }
-
-    static_cast<void>(deltaTime);
 }
 
 } // namespace papagedon::runtime

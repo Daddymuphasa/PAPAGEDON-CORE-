@@ -45,6 +45,12 @@ private:
     Renderer renderer_;
     std::atomic_bool running_{false};
     bool initialized_ = false;
+
+    // Optional demo mode: when PAPAGEDON_DEMO_CYCLE is set to a positive number
+    // of seconds, the runtime advances to the next preset on that interval.
+    // Off by default (zero), so normal runs are unaffected.
+    double demoCycleSeconds_ = 0.0;
+    double demoCycleElapsed_ = 0.0;
 };
 
 } // namespace papagedon::runtime
