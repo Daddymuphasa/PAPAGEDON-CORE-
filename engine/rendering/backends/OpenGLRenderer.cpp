@@ -39,6 +39,16 @@ Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
     };
 }
 
+// One-pole follower with asymmetric attack/release, frame-rate independent.
+// A fast attack keeps visual onsets in sync with the audio (low latency); a
+// slower release smooths the decay so nothing strobes between frames.
+float Follow(const float current, const float target, const float dt,
+             const float attackRate, const float releaseRate) noexcept {
+    const float rate  = target > current ? attackRate : releaseRate;
+    const float alpha = 1.0f - std::exp(-dt * rate);
+    return current + (target - current) * alpha;
+}
+
 } // namespace
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -175,29 +185,33 @@ void OpenGLRenderer::Render(
 
     auto& smoothed = implementation_->smoothedUniforms;
 
-    // ── Audio-signal smoothing, shaped by the preset's response curves ─────────
-    // Signals ease quickly so the visuals stay responsive to the music.
-    const float smoothingRate = 12.0f; // Tunable parameter
-    const float alpha = 1.0f - std::exp(-deltaTime * smoothingRate);
+    // ── Audio-signal following ─────────────────────────────────────────────────
+    // Low visual latency is a primary target, so transients use a fast attack
+    // (~18 ms — an onset lands within ~2 frames) and a slower release (~110 ms)
+    // to keep the decay smooth.  This keeps the image locked to the beat instead
+    // of trailing it, while still avoiding per-frame strobing.
+    constexpr float kAttack  = 55.0f; // rise time constant ~18 ms
+    constexpr float kRelease = 9.0f;  // fall time constant ~110 ms
 
     // The preset scales how much energy drives brightness.
     const float targetEnergy = std::clamp(signals.energy * preset.energyMultiplier, 0.0f, 1.0f);
-    smoothed.energy    += (targetEnergy - smoothed.energy) * alpha;
-    smoothed.intensity += (signals.intensity - smoothed.intensity) * alpha;
-    smoothed.bass      += (signals.bass - smoothed.bass) * alpha;
-    smoothed.mid       += (signals.mid - smoothed.mid) * alpha;
-    smoothed.treble    += (signals.treble - smoothed.treble) * alpha;
+    smoothed.energy    = Follow(smoothed.energy,    targetEnergy,      deltaTime, kAttack, kRelease);
+    smoothed.intensity = Follow(smoothed.intensity, signals.intensity, deltaTime, kAttack, kRelease);
+    smoothed.bass      = Follow(smoothed.bass,      signals.bass,      deltaTime, kAttack, kRelease);
+    smoothed.mid       = Follow(smoothed.mid,       signals.mid,       deltaTime, kAttack, kRelease);
+    smoothed.treble    = Follow(smoothed.treble,    signals.treble,    deltaTime, kAttack, kRelease);
 
-    // Beat pulse with ~100ms decay, peaking at the preset's beat response so a
-    // punchy preset flashes harder than a calm one on the same beat.
+    // Beat pulse: instant on the beat frame (zero latency), then a fast decay so
+    // it reads as a punch.  Peaks at the preset's beat response.
     if (signals.beat) {
         smoothed.beat = preset.beatResponse;
     } else {
-        const float beatDecayRate = 10.0f; // exp(-dt * 10) gives ~37% after 100ms
+        const float beatDecayRate = 10.0f; // exp(-dt * 10) gives ~37% after 100 ms
         smoothed.beat *= std::exp(-deltaTime * beatDecayRate);
     }
 
-    smoothed.mood += (state.mood - smoothed.mood) * alpha;
+    // Mood is a slow scene property, not a transient — follow it gently.
+    smoothed.mood = Follow(smoothed.mood, state.mood, deltaTime, 6.0f, 6.0f);
 
     // ── Preset palette & style ─────────────────────────────────────────────────
     // Every colour and style constant comes from the active preset — nothing is

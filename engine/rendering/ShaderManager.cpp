@@ -119,12 +119,14 @@ float vnoise(vec2 p) {
 }
 
 // Fractal brownian motion.  uDetail keeps more energy in the high octaves.
+// Three octaves is enough once domain-warped — it hides the missing octave —
+// and keeps the per-pixel noise cost within the 120 FPS frame budget.
 float fbm(vec2 p) {
     float sum  = 0.0;
     float amp  = 0.5;
     float freq = 1.0;
     float gain = clamp(0.5 + 0.12 * (uDetail - 1.0), 0.38, 0.66);
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 3; ++i) {
         sum  += amp * vnoise(p * freq);
         freq *= 2.0;
         amp  *= gain;
