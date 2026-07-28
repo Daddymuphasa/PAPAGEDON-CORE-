@@ -163,6 +163,10 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         audioFrame.samples = std::span<const float>(src, framesToRead * channels);
         audioFrame.sampleRate = sampleRate;
         audioFrame.channelCount = channels;
+        // Audio-clock timestamp of this window; keeps tempo/beat timing
+        // independent of the render frame rate.
+        audioFrame.timestampSeconds =
+            static_cast<double>(currentFrame) / static_cast<double>(sampleRate);
     }
 
     const audio::ExperienceSignals signals = audioAnalyzer_.Update(audioFrame);

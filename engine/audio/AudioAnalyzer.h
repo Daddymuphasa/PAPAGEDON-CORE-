@@ -35,6 +35,9 @@ public:
 private:
     [[nodiscard]] ExperienceSignals Analyze(const AudioFrame& frame) noexcept;
 
+    /// Fold one plausible inter-beat interval into the running tempo estimate.
+    void UpdateTempo(double intervalSeconds) noexcept;
+
     ExperienceSignals latestSignals_{};
 
     // FFT state
@@ -42,11 +45,17 @@ private:
     std::vector<float> monoBuffer_;
     std::vector<std::complex<float>> fftOutput_;
 
-    // Beat detection state
+    // Beat detection state (adaptive bass-energy threshold)
     float bassHistorySum_ = 0.0f;
     std::vector<float> bassHistory_;
     size_t bassHistoryIndex_ = 0;
-    int beatCooldown_ = 0;
+
+    // Tempo tracking — timed from the audio playback clock, so it is
+    // independent of how fast the render loop calls the analyzer.
+    double lastBeatTimeSeconds_ = -1.0;
+    std::vector<float> beatBpmHistory_;
+    size_t beatBpmIndex_ = 0;
+    float currentBpm_ = 0.0f;
 };
 
 } // namespace papagedon::audio

@@ -8,8 +8,14 @@
 namespace papagedon::audio {
 
 constexpr size_t kFftSize = 1024;
-constexpr size_t kBeatHistorySize = 43; // ~1 second at 43 fps (1024 frames @ 44.1kHz is 23ms)
+constexpr size_t kBeatHistorySize = 43; // adaptive-threshold window (bass energy samples)
 constexpr float kBeatThresholdMultiplier = 1.4f;
+
+// Tempo tracking (all in seconds on the audio playback timeline).
+constexpr double kMinBeatIntervalSeconds = 0.15;  // debounce; rejects <=400 BPM doubles
+constexpr double kTempoMinInterval       = 0.30;  // 200 BPM ceiling for the histogram
+constexpr double kTempoMaxInterval       = 1.50;  // 40  BPM floor   for the histogram
+constexpr size_t kTempoHistorySize       = 8;     // recent intervals kept for the median
 
 AudioAnalyzer::AudioAnalyzer() {
     fft_ = std::make_unique<SimpleFFT>(kFftSize);
@@ -39,7 +45,10 @@ void AudioAnalyzer::Reset() noexcept {
     std::fill(bassHistory_.begin(), bassHistory_.end(), 0.0f);
     bassHistorySum_ = 0.0f;
     bassHistoryIndex_ = 0;
-    beatCooldown_ = 0;
+    lastBeatTimeSeconds_ = -1.0;
+    beatBpmHistory_.clear();
+    beatBpmIndex_ = 0;
+    currentBpm_ = 0.0f;
 }
 
 ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
@@ -115,23 +124,37 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     midEnergy = std::clamp(midEnergy * 25.0f, 0.0f, 1.0f);
     trebleEnergy = std::clamp(trebleEnergy * 40.0f, 0.0f, 1.0f);
 
-    // 4. Beat Detection
-    bool beat = false;
-    if (beatCooldown_ > 0) {
-        beatCooldown_--;
-    } else {
-        float averageBass = bassHistorySum_ / kBeatHistorySize;
-        if (bassEnergy > averageBass * kBeatThresholdMultiplier && bassEnergy > 0.15f) {
-            beat = true;
-            beatCooldown_ = 8; // ~185ms at 43 fps
-        }
-    }
+    // 4. Beat detection — a bass-energy spike above the recent adaptive average.
+    const float averageBass = bassHistorySum_ / static_cast<float>(kBeatHistorySize);
+    const bool bassSpike =
+        bassEnergy > averageBass * kBeatThresholdMultiplier && bassEnergy > 0.15f;
 
-    // Update history
+    // Update the rolling bass history feeding the adaptive threshold above.
     bassHistorySum_ -= bassHistory_[bassHistoryIndex_];
     bassHistory_[bassHistoryIndex_] = bassEnergy;
     bassHistorySum_ += bassEnergy;
     bassHistoryIndex_ = (bassHistoryIndex_ + 1) % kBeatHistorySize;
+
+    // 5. Time-based gating + tempo estimation, clocked by the audio timeline so
+    //    results do not change with the render frame rate.
+    const double now = frame.timestampSeconds;
+    if (now < lastBeatTimeSeconds_) {
+        // Playback jumped backwards (seek/restart) — drop stale tempo state.
+        lastBeatTimeSeconds_ = -1.0;
+    }
+
+    bool beat = false;
+    if (bassSpike) {
+        const bool firstBeat = lastBeatTimeSeconds_ < 0.0;
+        const double sinceLast = now - lastBeatTimeSeconds_;
+        if (firstBeat || sinceLast >= kMinBeatIntervalSeconds) {
+            beat = true;
+            if (!firstBeat) {
+                UpdateTempo(sinceLast);
+            }
+            lastBeatTimeSeconds_ = now;
+        }
+    }
 
     return {
         .energy = energy,
@@ -140,10 +163,31 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
         .mid = midEnergy,
         .treble = trebleEnergy,
         .beat = beat,
-        .bpm = 0.0F,
+        .bpm = currentBpm_,
         .tension = energy * 0.5F,
         .confidence = 1.0f
     };
+}
+
+void AudioAnalyzer::UpdateTempo(const double intervalSeconds) noexcept {
+    // Ignore implausible gaps — usually a missed beat (too long) or a
+    // double-triggered transient (too short) rather than a real tempo change.
+    if (intervalSeconds < kTempoMinInterval || intervalSeconds > kTempoMaxInterval) {
+        return;
+    }
+
+    const float bpm = static_cast<float>(60.0 / intervalSeconds);
+    if (beatBpmHistory_.size() < kTempoHistorySize) {
+        beatBpmHistory_.push_back(bpm);
+    } else {
+        beatBpmHistory_[beatBpmIndex_] = bpm;
+        beatBpmIndex_ = (beatBpmIndex_ + 1) % kTempoHistorySize;
+    }
+
+    // Median of recent estimates — robust to the occasional missed/extra beat.
+    std::vector<float> sorted(beatBpmHistory_);
+    std::sort(sorted.begin(), sorted.end());
+    currentBpm_ = sorted[sorted.size() / 2];
 }
 
 } // namespace papagedon::audio
