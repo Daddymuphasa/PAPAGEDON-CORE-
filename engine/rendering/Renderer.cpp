@@ -40,6 +40,10 @@ int Renderer::ConsumePresetRequest() noexcept {
     return backend_ != nullptr ? backend_->ConsumePresetRequest() : -1;
 }
 
+bool Renderer::ConsumeAutoToggle() noexcept {
+    return backend_ != nullptr && backend_->ConsumeAutoToggle();
+}
+
 void Renderer::Shutdown() noexcept {
     if (backend_ != nullptr) {
         backend_->Shutdown();

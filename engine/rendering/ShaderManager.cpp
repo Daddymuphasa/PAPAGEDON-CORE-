@@ -38,7 +38,7 @@ void main() {
 // ──────────────────────────────────────────────────────────────────────────────
 // Reactive fragment shader
 //
-// Rather than one fixed composition, the shader carries six signature *forms* —
+// Rather than one fixed composition, the shader carries twelve signature *forms* —
 // one per preset — built from domain-warped fractal noise (fbm) so the motion is
 // organic and evolving instead of a looping sine field.  uPattern selects the
 // form; during a preset switch the Renderer cross-fades uPrevPattern → uPattern
@@ -213,19 +213,121 @@ float patPulse(vec2 uv, float t) {
     return clamp(g, 0.0, 1.0);
 }
 
+// 6: Vortex — hypnotic neon spiral wormhole rushing inward.
+float patVortex(vec2 uv, float t) {
+    float r = max(length(uv), 1e-3);
+    float a = atan(uv.y, uv.x);
+    // Logarithmic spiral: arms swirl and rush toward the centre.
+    float spiral = a * (3.0 + uMid * 3.0)
+                 + log(r + 0.05) * 6.0
+                 - t * (2.0 + uEnergy * 3.0) - uBeat * 3.0;
+    float arms  = pow(0.5 + 0.5 * sin(spiral), 1.5);
+    float depth = 1.0 / (r + 0.05) + t * (1.0 + uEnergy * 2.0);
+    float rings = 0.5 + 0.5 * sin(depth * kTau);
+    float g = mix(arms, rings, 0.4) + 0.3 * exp(-r * 4.0);   // glowing throat
+    return clamp(g, 0.0, 1.0);
+}
+
+// 7: Lasers — sweeping laser-show fan that strobes on the beat.
+float patLaserFan(vec2 uv, float t) {
+    float a = atan(uv.y, uv.x);
+    float r = length(uv);
+    float rot  = t * 0.6 + uBeat * 0.8;
+    float f    = abs(fract((a + rot) / kTau * 12.0) - 0.5) * 2.0;  // 0 at beam
+    float beam = smoothstep(0.14, 0.0, f);
+    beam *= 0.6 + 0.4 * sin(r * 20.0 - t * 10.0);   // travelling pulse
+    beam *= 0.45 + 0.55 * uBeat;                    // strobe gate
+    float core = exp(-r * r * 8.0) * (0.5 + uBeat); // bright origin
+    return clamp(beam * (0.5 + uEnergy) + core, 0.0, 1.0);
+}
+
+// 8: Mandala — psychedelic mirrored kaleidoscope, folding and rotating.
+float patMandala(vec2 uv, float t) {
+    float r = length(uv);
+    float a = atan(uv.y, uv.x) + t * 0.3;
+    float seg = 8.0 + floor(uMid * 8.0);
+    a = abs(fract(a / kTau * seg) - 0.5) * 2.0;     // mirror into wedges
+    float m     = warpedFbm(vec2(a * 4.0, r * 4.0 - t * 0.5), t);
+    float rings = 0.5 + 0.5 * sin(r * (14.0 + uBass * 16.0) - t * 2.0 + a * 8.0);
+    float g = pow(mix(m, rings, 0.5), 1.3) * smoothstep(1.5, 0.05, r);
+    g += uBeat * 0.3 * exp(-r * 3.0);
+    return clamp(g * (0.6 + uEnergy * 0.6), 0.0, 1.0);
+}
+
+// 9: Lattice — pulsing neon lattice grid that scales with the bass.
+float patNeonLattice(vec2 uv, float t) {
+    float scale = 6.0 + uBass * 4.0;
+    vec2  p = uv * scale + vec2(t * 0.2, t * 0.15);
+    float l1 = abs(sin(p.x * kPi));
+    float l2 = abs(sin((p.x * 0.5 + p.y * 0.866) * kPi));
+    float l3 = abs(sin((p.x * 0.5 - p.y * 0.866) * kPi));
+    float lines = min(min(l1, l2), l3);
+    float grid  = smoothstep(0.12, 0.0, lines);     // sharp neon edges
+    grid *= 0.6 + 0.4 * sin(length(uv) * 8.0 - t * 4.0);
+    grid *= 0.5 + 0.7 * uBeat + 0.3 * uEnergy;
+    return clamp(grid, 0.0, 1.0);
+}
+
+// 10: Shockwave — concentric bass shockwaves and radial rays exploding on kicks.
+float patBassShockwave(vec2 uv, float t) {
+    float r = length(uv);
+    float a = atan(uv.y, uv.x);
+    float wave  = sin(r * (10.0 + uBass * 10.0) - t * 5.0 - uBeat * 10.0);
+    float rings = smoothstep(0.3, 1.0, wave);       // hard expanding rings
+    float rays  = pow(0.5 + 0.5 * sin(a * 16.0 + t * 0.5), 3.0);
+    float burst = uBeat * exp(-r * 2.5) * 2.0;      // kick explosion
+    float g = (rings * 0.6 + rays * 0.3 * rings + burst) * smoothstep(1.6, 0.0, r);
+    return clamp(g * (0.5 + uEnergy * 0.8), 0.0, 1.0);
+}
+
+// 11: Spectrum — circular audio-reactive bars; bass/mid/treble arcs radiate out.
+float patSpectrumRing(vec2 uv, float t) {
+    float r    = length(uv);
+    float ang  = atan(uv.y, uv.x);
+    float bars = 48.0;
+    float slot = (ang / kTau + 0.5) * bars;
+    float bi   = floor(slot);
+    float frac = fract(slot);
+    float sel  = mod(bi, 3.0);
+    float band = sel < 0.5 ? uBass : (sel < 1.5 ? uMid : uTreble);
+    float seed = hash21(vec2(bi, 3.0));
+    float h    = 0.22 + band * 0.75 + 0.10 * sin(t * 5.0 + seed * kTau);
+    float inner = 0.18;
+    float barMask = smoothstep(0.42, 0.30, abs(frac - 0.5));
+    float fill    = smoothstep(0.0, 0.02, r - inner)
+                  * smoothstep(0.0, 0.02, (inner + h) - r);
+    float g = barMask * fill;
+    g += barMask * smoothstep(0.03, 0.0, abs(r - (inner + h))) * 0.6; // glowing tips
+    g += uBeat * 0.15;
+    return clamp(g * (0.7 + uEnergy * 0.5), 0.0, 1.0);
+}
+
 float patternFor(int mode, vec2 uv, float t) {
-    if (mode == 0) return patAurora(uv, t);
-    if (mode == 1) return patNebula(uv, t);
-    if (mode == 2) return patMatrix(uv, t);
-    if (mode == 3) return patLiquid(uv, t);
-    if (mode == 4) return patTunnel(uv, t);
-    return patPulse(uv, t);
+    if (mode == 0)  return patAurora(uv, t);
+    if (mode == 1)  return patNebula(uv, t);
+    if (mode == 2)  return patMatrix(uv, t);
+    if (mode == 3)  return patLiquid(uv, t);
+    if (mode == 4)  return patTunnel(uv, t);
+    if (mode == 5)  return patPulse(uv, t);
+    if (mode == 6)  return patVortex(uv, t);
+    if (mode == 7)  return patLaserFan(uv, t);
+    if (mode == 8)  return patMandala(uv, t);
+    if (mode == 9)  return patNeonLattice(uv, t);
+    if (mode == 10) return patBassShockwave(uv, t);
+    return patSpectrumRing(uv, t);
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
+// Rave-grade composite: bright neon, hard beat strobes, a bass-driven screen
+// pump and pseudo-bloom so every form hits like a festival visual.
 void main() {
     // Aspect-correct UV, centred at (0,0).
     vec2 uv = (vUV * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
+
+    // Bass/beat pump — the whole frame punches inward on the kick and breathes
+    // with the low end, so the screen physically moves to the music.
+    float pump = 1.0 - uBeat * 0.06 - uBass * 0.05;
+    uv *= pump;
 
     // Motion multiplier lets each preset run languid or frantic on the same clock.
     float t = uTime * 0.25 * uMotion;
@@ -238,35 +340,44 @@ void main() {
     }
     pattern = clamp(pattern, 0.0, 1.0);
 
-    // ── Colour ────────────────────────────────────────────────────────────
-    // The active preset's palette maps across the pattern intensity.  Bass nudges
-    // the ramp lookup so heavy low-end pushes toward the palette's bright stop.
-    vec3 color = palette(pattern + uBass * 0.12);
+    // Contrast pop — an S-curve deepens the darks and lifts the highlights so
+    // structure reads hard instead of washing out to a soft glow.
+    pattern = smoothstep(0.04, 0.85, pattern);
 
-    // Preset saturation curve: intensity fades toward luma per the preset's shape.
+    // ── Colour ────────────────────────────────────────────────────────────
+    // The active preset's palette maps across the pattern intensity.  Bass pushes
+    // the ramp lookup so heavy low-end slams toward the palette's bright stop.
+    vec3 color = palette(pattern + uBass * 0.18);
+
+    // Saturation curve, pushed hot for neon.  Can exceed 1 to super-saturate.
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
-    float saturation = clamp(uSaturationBase + uIntensity * uSaturationScale, 0.0, 1.0);
+    float saturation = clamp(uSaturationBase + 0.2 + uIntensity * uSaturationScale, 0.0, 1.25);
     color = mix(vec3(luma), color, saturation);
 
-    // Energy drives overall brightness, shaped by the pattern.
-    float brightness = 0.08 + uEnergy * 0.9;
-    color *= brightness * (0.35 + 0.85 * pattern);
+    // Brightness: a lifted floor keeps the visual alive between hits, energy
+    // drives the swell, and the pattern shapes it.
+    float brightness = 0.22 + uEnergy * 0.95;
+    color *= brightness * (0.5 + 0.75 * pattern);
 
-    // The preset's ambient background fills the darkest regions so each preset
-    // keeps a distinct base tone even where the pattern falls to zero.
-    color += uBackground * (1.0 - pattern);
+    // Ambient background fills the dark regions with the preset's base tone.
+    color += uBackground * (1.0 - pattern) * 1.5;
 
-    // Mood tints warm (>0.5) or cool (<0.5) without leaving the palette behind.
-    vec3 warmTint = vec3(1.12, 1.0, 0.85);
-    vec3 coolTint = vec3(0.85, 1.0, 1.12);
-    color *= mix(coolTint, warmTint, clamp(uMood, 0.0, 1.0));
+    // ── Beat strobe ─────────────────────────────────────────────────────────
+    // The kick fires a hard flash — palette-tinted plus a white pop — sharpened
+    // by squaring the (decaying) beat so it reads as a strike, not a fade.
+    float strobe = uBeat * uBeat;
+    color += mix(uColorHigh, vec3(1.0), 0.5) * strobe * (0.4 + 0.6 * pattern);
+    color += vec3(0.14) * strobe;
 
-    // Beat bloom tinted by the palette's brightest stop, shaped by the pattern.
-    color += mix(vec3(1.0), uColorHigh, 0.5) * uBeat * 0.25 * pattern;
+    // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
+    color += color * color * 0.35;
 
-    // Subtle vignette.
+    // Subtle mood tint.
+    color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));
+
+    // Light vignette — edges stay lit so the visual fills the screen/wall.
     float d = length(uv);
-    color *= 1.0 - smoothstep(0.7, 1.6, d);
+    color *= 1.0 - 0.35 * smoothstep(0.85, 1.7, d);
 
     fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }

@@ -30,9 +30,12 @@ public:
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
 
-    /// Preset index requested via the temporary F1..F6 controls, or -1 if none.
+    /// Preset index requested via the temporary F1..F12 controls, or -1 if none.
     /// See IRenderer::ConsumePresetRequest.
     [[nodiscard]] int ConsumePresetRequest() noexcept;
+
+    /// True once per press of the Auto-VJ toggle key. See IRenderer::ConsumeAutoToggle.
+    [[nodiscard]] bool ConsumeAutoToggle() noexcept;
 
 private:
     std::unique_ptr<IRenderer> backend_;

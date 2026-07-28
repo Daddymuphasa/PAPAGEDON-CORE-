@@ -38,10 +38,16 @@ enum class PresetId : std::size_t {
     Liquid,
     Tunnel,
     Pulse,
+    Vortex,
+    Lasers,
+    Mandala,
+    Lattice,
+    Shockwave,
+    Spectrum,
 };
 
 /// Number of built-in presets.  Kept in sync with PresetId by GetPreset().
-inline constexpr std::size_t kPresetCount = 6;
+inline constexpr std::size_t kPresetCount = 12;
 
 /// Signature visual form a preset renders.  This selects which pattern the
 /// shader generates for the preset; the preset supplies only the choice (data),
@@ -53,6 +59,12 @@ enum class PatternMode : int {
     LiquidFlow,          ///< Smooth caustic / fluid ripples.
     WarpTunnel,          ///< Perspective tunnel rushing inward.
     RadialPulse,         ///< Kaleidoscopic radial shockwaves.
+    VortexTunnel,        ///< Hypnotic neon spiral vortex.
+    LaserFan,            ///< Sweeping strobing laser fan.
+    Mandala,             ///< Psychedelic mirrored kaleidoscope.
+    NeonLattice,         ///< Pulsing neon lattice grid.
+    BassShockwave,       ///< Concentric bass shockwaves + rays.
+    SpectrumRing,        ///< Circular audio-reactive spectrum bars.
 };
 
 struct ExperiencePreset final {

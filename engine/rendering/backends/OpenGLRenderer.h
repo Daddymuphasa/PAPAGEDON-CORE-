@@ -27,6 +27,7 @@ public:
     void Shutdown() noexcept override;
 
     [[nodiscard]] int ConsumePresetRequest() noexcept override;
+    [[nodiscard]] bool ConsumeAutoToggle() noexcept override;
 
 private:
     class Implementation;

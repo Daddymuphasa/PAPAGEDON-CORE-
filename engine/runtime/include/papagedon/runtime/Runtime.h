@@ -2,10 +2,12 @@
 
 #include <atomic>
 #include <chrono>
+#include <string>
 #include <AudioInput.h>
 #include <AudioPlayer.h>
 #include <AudioAnalyzer.h>
 #include <ExperienceGraph.h>
+#include <AutoDirector.h>
 #include <presets/PresetManager.h>
 #include <SceneDNA.h>
 #include <Renderer.h>
@@ -25,7 +27,9 @@ public:
     Runtime(const Runtime&) = delete;
     Runtime& operator=(const Runtime&) = delete;
 
-    bool Initialize();
+    /// Initializes all systems. An optional audio-file path selects the clip to
+    /// play; when empty the default (test.mp3) is used.
+    bool Initialize(const std::string& audioPath = {});
     void Run();
     void Shutdown() noexcept;
     void RequestStop() noexcept;
@@ -41,10 +45,16 @@ private:
     audio::AudioAnalyzer audioAnalyzer_;
     ExperienceGraph experienceGraph_;
     PresetManager presetManager_;
+    AutoDirector autoDirector_;
     SceneDNA sceneDNA_;
     Renderer renderer_;
     std::atomic_bool running_{false};
     bool initialized_ = false;
+
+    // Auto-VJ: when enabled, the AutoDirector chooses presets from the live
+    // experience.  Toggled with 'A', or started on with PAPAGEDON_AUTOVJ; any
+    // manual F-key press hands control back to the operator.
+    bool autoMode_ = false;
 
     // Optional demo mode: when PAPAGEDON_DEMO_CYCLE is set to a positive number
     // of seconds, the runtime advances to the next preset on that interval.

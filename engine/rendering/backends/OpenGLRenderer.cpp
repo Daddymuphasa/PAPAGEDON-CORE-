@@ -76,11 +76,16 @@ public:
     bool  patternInitialized  = false;
 
     // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
-    // F1..F6 select a preset.  Rising edges are latched in EndFrame (where events
+    // F1..F12 select a preset.  Rising edges are latched in EndFrame (where events
     // are polled) and drained by the Runtime via ConsumePresetRequest.
-    static constexpr int kPresetKeyCount = 6;
-    bool presetKeyWasPressed[kPresetKeyCount] = {false, false, false, false, false, false};
+    static constexpr int kPresetKeyCount = 12;
+    bool presetKeyWasPressed[kPresetKeyCount] = {};
     int  pendingPresetRequest = -1;
+
+    // 'A' toggles Auto-VJ mode; rising edges are latched here and drained by the
+    // Runtime via ConsumeAutoToggle.
+    bool autoKeyWasPressed  = false;
+    bool pendingAutoToggle  = false;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -298,12 +303,13 @@ bool OpenGLRenderer::EndFrame() {
     glfwPollEvents();
 
     // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
-    // F1..F6 request presets 0..5.  We latch the rising edge of the most recent
+    // F1..F12 request presets 0..11.  We latch the rising edge of the most recent
     // key here (events were just polled) and let the Runtime drain it via
     // ConsumePresetRequest, keeping preset ownership in the Runtime.
     constexpr int kPresetKeys[Implementation::kPresetKeyCount] = {
-        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3,
-        GLFW_KEY_F4, GLFW_KEY_F5, GLFW_KEY_F6,
+        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3,  GLFW_KEY_F4,
+        GLFW_KEY_F5, GLFW_KEY_F6, GLFW_KEY_F7,  GLFW_KEY_F8,
+        GLFW_KEY_F9, GLFW_KEY_F10, GLFW_KEY_F11, GLFW_KEY_F12,
     };
     for (int i = 0; i < Implementation::kPresetKeyCount; ++i) {
         const bool pressed =
@@ -321,6 +327,14 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->showDebugOverlay = !implementation_->showDebugOverlay;
     }
     implementation_->debugKeyWasPressed = debugKeyIsPressed;
+
+    // 'A' toggles Auto-VJ mode.
+    const bool autoKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_A) == GLFW_PRESS;
+    if (autoKeyIsPressed && !implementation_->autoKeyWasPressed) {
+        implementation_->pendingAutoToggle = true;
+    }
+    implementation_->autoKeyWasPressed = autoKeyIsPressed;
 
     // FPS counter and window title update.
     ++implementation_->renderedFrameCount;
@@ -352,6 +366,15 @@ int OpenGLRenderer::ConsumePresetRequest() noexcept {
     const int request = implementation_->pendingPresetRequest;
     implementation_->pendingPresetRequest = -1;
     return request;
+}
+
+bool OpenGLRenderer::ConsumeAutoToggle() noexcept {
+    if (implementation_ == nullptr) {
+        return false;
+    }
+    const bool toggled = implementation_->pendingAutoToggle;
+    implementation_->pendingAutoToggle = false;
+    return toggled;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

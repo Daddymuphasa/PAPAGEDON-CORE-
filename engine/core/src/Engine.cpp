@@ -9,12 +9,12 @@ Engine::~Engine() {
     Shutdown();
 }
 
-bool Engine::Initialize() {
+bool Engine::Initialize(const std::string& audioPath) {
     if (initialized_) {
         return true;
     }
 
-    initialized_ = runtime_.Initialize();
+    initialized_ = runtime_.Initialize(audioPath);
     if (initialized_) {
         logger_.INFO("Engine initialized.");
     }

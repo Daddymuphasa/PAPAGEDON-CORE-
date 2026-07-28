@@ -1,5 +1,6 @@
 add_library(papagedon-experience
     ExperienceGraph.cpp
+    AutoDirector.cpp
     presets/ExperiencePreset.cpp
     presets/PresetManager.cpp
 )

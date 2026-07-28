@@ -12,13 +12,17 @@ namespace papagedon::runtime {
 Runtime::Runtime(utilities::Logger& logger) noexcept
     : logger_{logger} {}
 
-bool Runtime::Initialize() {
+bool Runtime::Initialize(const std::string& audioPath) {
     if (initialized_) {
         return true;
     }
-    if (!audioInput_.Load("test.mp3")) {
-        logger_.INFO("Failed to load test.mp3. Ensure it is present in the working directory.");
+    const std::string path = audioPath.empty() ? std::string{"test.mp3"} : audioPath;
+    if (!audioInput_.Load(path)) {
+        logger_.INFO("Failed to load audio file '" + path +
+                     "'. Ensure it exists in the working directory.");
         // We do not fail initialization here, we can run without audio.
+    } else {
+        logger_.INFO("Loaded audio file '" + path + "'.");
     }
 
     if (!audioPlayer_.Initialize()) {
@@ -43,6 +47,11 @@ bool Runtime::Initialize() {
         if (demoCycleSeconds_ > 0.0) {
             logger_.INFO("Demo preset auto-cycle enabled.");
         }
+    }
+
+    if (std::getenv("PAPAGEDON_AUTOVJ") != nullptr) {
+        autoMode_ = true;
+        logger_.INFO("Auto-VJ enabled at startup.");
     }
 
     logger_.INFO("Runtime initialized.");
@@ -114,13 +123,19 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     // ── 0. Preset input ───────────────────────────────────────────────────────
     // Drain any F1..F6 preset request the renderer latched last frame.  Applying
     // it only swaps an index in the PresetManager — no allocation, no restart.
+    if (renderer_.ConsumeAutoToggle()) {
+        autoMode_ = !autoMode_;
+        logger_.INFO(autoMode_ ? "Auto-VJ enabled." : "Auto-VJ disabled.");
+    }
+
     const int presetRequest = renderer_.ConsumePresetRequest();
     if (presetRequest >= 0) {
         presetManager_.SetPreset(static_cast<PresetId>(presetRequest));
+        autoMode_ = false; // manual selection hands control back to the operator
     }
 
-    // Optional demo auto-cycle: step presets on a fixed interval.
-    if (demoCycleSeconds_ > 0.0) {
+    // Optional demo auto-cycle: step presets on a fixed interval (off in Auto-VJ).
+    if (!autoMode_ && demoCycleSeconds_ > 0.0) {
         demoCycleElapsed_ += deltaTime.count();
         if (demoCycleElapsed_ >= demoCycleSeconds_) {
             presetManager_.NextPreset();
@@ -155,6 +170,13 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     // ── 3. ExperienceGraph ────────────────────────────────────────────────────
     const ExperienceGraphOutput graphOutput = experienceGraph_.Update(signals);
 
+    // ── 3.5 Auto-VJ ───────────────────────────────────────────────────────────
+    // When enabled, the director picks the preset from the live experience.
+    if (autoMode_) {
+        presetManager_.SetPreset(
+            autoDirector_.Update(graphOutput, static_cast<float>(deltaTime.count())));
+    }
+
     // ── 4. SceneDNA ───────────────────────────────────────────────────────────
     sceneDNA_.Update(graphOutput);
 
@@ -171,6 +193,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
                                         ? currentScene.activeProfile->sceneId.c_str()
                                         : "None";
     debugState.currentPreset      = activePreset.name;
+    debugState.autoMode           = autoMode_;
     debugState.transitionProgress = currentScene.transitionProgress;
 
     renderer_.BeginFrame();

@@ -26,11 +26,15 @@ public:
     virtual void Shutdown() noexcept = 0;
 
     /// Returns the preset index (0..kPresetCount-1) requested via the temporary
-    /// F1..F6 controls since the previous call, or -1 if none.  Consuming the
+    /// F1..F12 controls since the previous call, or -1 if none.  Consuming the
     /// request clears it.  This is a Stage 5.3 stop-gap until a dedicated input
     /// system exists; keeping it generic avoids coupling the backend to preset
     /// semantics beyond "function key N was pressed".
     [[nodiscard]] virtual int ConsumePresetRequest() noexcept = 0;
+
+    /// Returns true once for each press of the Auto-VJ toggle key ('A') since the
+    /// previous call.  Consuming the event clears it.
+    [[nodiscard]] virtual bool ConsumeAutoToggle() noexcept = 0;
 };
 
 } // namespace papagedon
