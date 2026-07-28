@@ -73,6 +73,20 @@ struct ShaderUniforms final {
 
     /// Fractal detail emphasis — higher retains more fine high-frequency structure.
     float detail = 1.0F;
+
+    // ── Theme look ──────────────────────────────────────────────────────────────
+    // Post-look controls supplied by the active visual::Theme.  The palette above
+    // (colorLow/Mid/High/background) is likewise sourced from the theme, so the
+    // whole colour identity of the frame is theme-driven — nothing is hardcoded in
+    // the shader.
+    /// Final-image contrast (1 = neutral, >1 harder, <1 softer).
+    float contrast = 1.0F;
+
+    /// Additive glow lift applied across the frame (0 = off).
+    float glow     = 0.0F;
+
+    /// Highlight bloom strength (0 = off; 0.35 matches the engine default).
+    float bloom    = 0.35F;
 };
 
 } // namespace papagedon

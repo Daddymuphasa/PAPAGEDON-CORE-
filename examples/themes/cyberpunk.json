@@ -1,0 +1,18 @@
+{
+  "id": "cyberpunk",
+  "name": "Cyberpunk",
+  "palette": {
+    "primary": "#00E5FF",
+    "secondary": "#7B2CBF",
+    "accent": "#FF2A6D",
+    "background": "#05010F"
+  },
+  "contrast": 1.25,
+  "glowStrength": 0.45,
+  "bloomStrength": 0.55,
+  "particleStyle": "Sparks",
+  "motionStyle": "Pulsing",
+  "geometryStyle": "Grid",
+  "noiseStyle": "Digital",
+  "transitionStyle": "Glitch"
+}

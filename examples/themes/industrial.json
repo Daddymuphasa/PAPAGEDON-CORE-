@@ -1,0 +1,18 @@
+{
+  "id": "industrial",
+  "name": "Industrial",
+  "palette": {
+    "primary": "#FFB000",
+    "secondary": "#6E7B8B",
+    "accent": "#C0432B",
+    "background": "#0B0B0C"
+  },
+  "contrast": 1.3,
+  "glowStrength": 0.12,
+  "bloomStrength": 0.18,
+  "particleStyle": "Embers",
+  "motionStyle": "Aggressive",
+  "geometryStyle": "Grid",
+  "noiseStyle": "Film",
+  "transitionStyle": "Wipe"
+}

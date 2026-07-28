@@ -86,6 +86,9 @@ uniform int   uPrevPattern;
 uniform float uPatternBlend;
 uniform float uWarp;
 uniform float uDetail;
+uniform float uContrast;   // theme: final-image contrast (1 = neutral)
+uniform float uGlow;       // theme: additive glow lift (0 = off)
+uniform float uBloom;      // theme: highlight bloom strength
 
 const float kPi  = 3.14159265358979;
 const float kTau = 6.28318530717959;
@@ -343,9 +346,12 @@ void main() {
     // Contrast pop — an S-curve deepens the darks and lifts the highlights so
     // structure reads hard instead of washing out to a soft glow.
     pattern = smoothstep(0.04, 0.85, pattern);
+    // Theme contrast — an extra S-curve around the mid-grey, so a theme can push
+    // the whole image harder or softer (1 = neutral).
+    pattern = clamp((pattern - 0.5) * uContrast + 0.5, 0.0, 1.0);
 
     // ── Colour ────────────────────────────────────────────────────────────
-    // The active preset's palette maps across the pattern intensity.  Bass pushes
+    // The active theme's palette maps across the pattern intensity.  Bass pushes
     // the ramp lookup so heavy low-end slams toward the palette's bright stop.
     vec3 color = palette(pattern + uBass * 0.18);
 
@@ -359,8 +365,12 @@ void main() {
     float brightness = 0.22 + uEnergy * 0.95;
     color *= brightness * (0.5 + 0.75 * pattern);
 
-    // Ambient background fills the dark regions with the preset's base tone.
+    // Ambient background fills the dark regions with the theme's base tone.
     color += uBackground * (1.0 - pattern) * 1.5;
+
+    // Theme glow — a soft additive lift proportional to what is already lit, so
+    // brighter themes bloom outward while restrained ones stay crisp.
+    color += color * uGlow;
 
     // ── Beat strobe ─────────────────────────────────────────────────────────
     // The kick fires a hard flash — palette-tinted plus a white pop — sharpened
@@ -370,7 +380,8 @@ void main() {
     color += vec3(0.14) * strobe;
 
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
-    color += color * color * 0.35;
+    // Strength is theme-driven so each identity blooms to its own degree.
+    color += color * color * uBloom;
 
     // Subtle mood tint.
     color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));
@@ -481,6 +492,9 @@ bool ShaderManager::Compile(
     locPatternBlend_    = glGetUniformLocation(program_, "uPatternBlend");
     locWarp_            = glGetUniformLocation(program_, "uWarp");
     locDetail_          = glGetUniformLocation(program_, "uDetail");
+    locContrast_        = glGetUniformLocation(program_, "uContrast");
+    locGlow_            = glGetUniformLocation(program_, "uGlow");
+    locBloom_           = glGetUniformLocation(program_, "uBloom");
 
     return true;
 }
@@ -524,6 +538,9 @@ void ShaderManager::SetUniforms(
     if (locPatternBlend_    >= 0) glUniform1f(locPatternBlend_,    u.patternBlend);
     if (locWarp_            >= 0) glUniform1f(locWarp_,            u.warp);
     if (locDetail_          >= 0) glUniform1f(locDetail_,          u.detail);
+    if (locContrast_        >= 0) glUniform1f(locContrast_,        u.contrast);
+    if (locGlow_            >= 0) glUniform1f(locGlow_,            u.glow);
+    if (locBloom_           >= 0) glUniform1f(locBloom_,           u.bloom);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -551,6 +568,9 @@ void ShaderManager::Shutdown() noexcept {
         locPatternBlend_    = -1;
         locWarp_            = -1;
         locDetail_          = -1;
+        locContrast_        = -1;
+        locGlow_            = -1;
+        locBloom_           = -1;
     }
 }
 

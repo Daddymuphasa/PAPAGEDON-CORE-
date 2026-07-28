@@ -11,6 +11,7 @@ struct DebugState final {
     const char* currentExperience = "";
     const char* currentScene = "";
     const char* currentPreset = "";
+    const char* currentTheme = "";
     bool  autoMode = false;
     float transitionProgress = 0.0F;
 };

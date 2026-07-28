@@ -25,10 +25,11 @@ void Renderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
     const audio::ExperienceSignals& signals,
-    const ExperiencePreset& preset) {
+    const ExperiencePreset& preset,
+    const visual::Theme& theme) {
 
     if (backend_ != nullptr) {
-        backend_->Render(state, debugState, signals, preset);
+        backend_->Render(state, debugState, signals, preset, theme);
     }
 }
 
@@ -42,6 +43,10 @@ int Renderer::ConsumePresetRequest() noexcept {
 
 bool Renderer::ConsumeAutoToggle() noexcept {
     return backend_ != nullptr && backend_->ConsumeAutoToggle();
+}
+
+bool Renderer::ConsumeThemeToggle() noexcept {
+    return backend_ != nullptr && backend_->ConsumeThemeToggle();
 }
 
 void Renderer::Shutdown() noexcept {

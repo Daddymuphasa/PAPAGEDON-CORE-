@@ -11,6 +11,7 @@
 #include <presets/PresetManager.h>
 #include <SceneDNA.h>
 #include <Renderer.h>
+#include <ThemeManager.h>
 
 namespace papagedon::utilities {
 class Logger;
@@ -46,6 +47,7 @@ private:
     ExperienceGraph experienceGraph_;
     PresetManager presetManager_;
     AutoDirector autoDirector_;
+    visual::ThemeManager themeManager_;
     SceneDNA sceneDNA_;
     Renderer renderer_;
     std::atomic_bool running_{false};

@@ -7,6 +7,8 @@
 
 namespace papagedon {
 
+namespace visual { struct Theme; }
+
 struct SceneState;
 struct DebugState;
 
@@ -25,7 +27,8 @@ public:
         const SceneState&    state,
         const DebugState&    debugState,
         const audio::ExperienceSignals& signals,
-        const ExperiencePreset& preset);
+        const ExperiencePreset& preset,
+        const visual::Theme& theme);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
@@ -36,6 +39,9 @@ public:
 
     /// True once per press of the Auto-VJ toggle key. See IRenderer::ConsumeAutoToggle.
     [[nodiscard]] bool ConsumeAutoToggle() noexcept;
+
+    /// True once per press of the theme-cycle key. See IRenderer::ConsumeThemeToggle.
+    [[nodiscard]] bool ConsumeThemeToggle() noexcept;
 
 private:
     std::unique_ptr<IRenderer> backend_;

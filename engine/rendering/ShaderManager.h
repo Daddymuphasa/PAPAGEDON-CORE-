@@ -78,6 +78,9 @@ private:
     int locPatternBlend_    = -1;
     int locWarp_            = -1;
     int locDetail_          = -1;
+    int locContrast_        = -1;
+    int locGlow_            = -1;
+    int locBloom_           = -1;
 };
 
 } // namespace papagedon

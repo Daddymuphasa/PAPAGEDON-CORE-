@@ -3,6 +3,8 @@
 #include "../ShaderUniforms.h"
 #include "DebugOverlayRenderer.h"
 
+#include <Theme.h>
+
 #include <glad/glad.h>
 
 #define GLFW_INCLUDE_NONE
@@ -29,6 +31,23 @@ namespace {
 
 Color3 ToColor3(const PresetColor& c) noexcept {
     return Color3{c.r, c.g, c.b};
+}
+
+Color3 ToColor3(const visual::ThemeColor& c) noexcept {
+    return Color3{c.r, c.g, c.b};
+}
+
+// How fast the image eases into a newly selected theme, per its TransitionStyle.
+// Higher is snappier; Cut is effectively an instant swap, Dissolve a slow melt.
+float ThemeTransitionRate(const visual::TransitionStyle style) noexcept {
+    switch (style) {
+    case visual::TransitionStyle::Cut:      return 40.0F;
+    case visual::TransitionStyle::Glitch:   return 14.0F;
+    case visual::TransitionStyle::Wipe:     return 8.0F;
+    case visual::TransitionStyle::Fade:     return 5.0F;
+    case visual::TransitionStyle::Dissolve: return 3.0F;
+    }
+    return 5.0F;
 }
 
 Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
@@ -86,6 +105,11 @@ public:
     // Runtime via ConsumeAutoToggle.
     bool autoKeyWasPressed  = false;
     bool pendingAutoToggle  = false;
+
+    // 'T' cycles the active visual::Theme; rising edges are latched here and
+    // drained by the Runtime via ConsumeThemeToggle.
+    bool themeKeyWasPressed = false;
+    bool pendingThemeToggle = false;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -178,7 +202,8 @@ void OpenGLRenderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
     const audio::ExperienceSignals& signals,
-    const ExperiencePreset& preset) {
+    const ExperiencePreset& preset,
+    const visual::Theme&  theme) {
 
     if (!initialized_) {
         return;
@@ -218,19 +243,32 @@ void OpenGLRenderer::Render(
     // Mood is a slow scene property, not a transient — follow it gently.
     smoothed.mood = Follow(smoothed.mood, state.mood, deltaTime, 6.0f, 6.0f);
 
-    // ── Preset palette & style ─────────────────────────────────────────────────
-    // Every colour and style constant comes from the active preset — nothing is
-    // hardcoded here.  The preset's transitionSpeed drives the easing rate, so
-    // switching presets cross-fades the whole image instead of popping.  Each
-    // update is a handful of float lerps on the persistent smoothed uniforms,
-    // so a preset switch performs no heap allocation.
+    // ── Theme colour identity ──────────────────────────────────────────────────
+    // Colour, contrast, glow and bloom come from the active visual::Theme — this
+    // is what makes switching themes transform the whole visual identity while the
+    // same music plays.  The palette maps secondary → primary → accent across the
+    // pattern's dark → bright ramp, with `background` filling the darkest regions.
+    // The theme's TransitionStyle sets the ease rate, so a switch cross-fades (or
+    // cuts) the whole image.  Every update is a few float lerps on the persistent
+    // smoothed uniforms — a theme switch performs no heap allocation.
+    const float themeAlpha =
+        1.0f - std::exp(-deltaTime * ThemeTransitionRate(theme.transitionStyle));
+
+    smoothed.colorLow   = LerpColor(smoothed.colorLow,   ToColor3(theme.palette.secondary),  themeAlpha);
+    smoothed.colorMid   = LerpColor(smoothed.colorMid,   ToColor3(theme.palette.primary),    themeAlpha);
+    smoothed.colorHigh  = LerpColor(smoothed.colorHigh,  ToColor3(theme.palette.accent),     themeAlpha);
+    smoothed.background = LerpColor(smoothed.background, ToColor3(theme.palette.background), themeAlpha);
+    smoothed.contrast += (theme.contrast      - smoothed.contrast) * themeAlpha;
+    smoothed.glow     += (theme.glowStrength  - smoothed.glow)     * themeAlpha;
+    smoothed.bloom     += (theme.bloomStrength - smoothed.bloom)   * themeAlpha;
+
+    // ── Preset form & behaviour ─────────────────────────────────────────────────
+    // The preset owns the *form* axis — which signature pattern is drawn and how
+    // it moves/saturates — orthogonal to the theme's colour identity.  Its
+    // transitionSpeed eases these form parameters across a preset switch.
     const float presetAlpha =
         1.0f - std::exp(-deltaTime * std::max(preset.transitionSpeed, 0.0f));
 
-    smoothed.colorLow    = LerpColor(smoothed.colorLow,    ToColor3(preset.colorLow),   presetAlpha);
-    smoothed.colorMid    = LerpColor(smoothed.colorMid,    ToColor3(preset.colorMid),   presetAlpha);
-    smoothed.colorHigh   = LerpColor(smoothed.colorHigh,   ToColor3(preset.colorHigh),  presetAlpha);
-    smoothed.background  = LerpColor(smoothed.background,  ToColor3(preset.background), presetAlpha);
     smoothed.saturationBase  += (preset.saturationBase  - smoothed.saturationBase)  * presetAlpha;
     smoothed.saturationScale += (preset.saturationScale - smoothed.saturationScale) * presetAlpha;
     smoothed.motion          += (preset.motionIntensity - smoothed.motion)          * presetAlpha;
@@ -336,6 +374,14 @@ bool OpenGLRenderer::EndFrame() {
     }
     implementation_->autoKeyWasPressed = autoKeyIsPressed;
 
+    // 'T' cycles the active visual theme.
+    const bool themeKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_T) == GLFW_PRESS;
+    if (themeKeyIsPressed && !implementation_->themeKeyWasPressed) {
+        implementation_->pendingThemeToggle = true;
+    }
+    implementation_->themeKeyWasPressed = themeKeyIsPressed;
+
     // FPS counter and window title update.
     ++implementation_->renderedFrameCount;
     const double currentTime  = glfwGetTime();
@@ -374,6 +420,15 @@ bool OpenGLRenderer::ConsumeAutoToggle() noexcept {
     }
     const bool toggled = implementation_->pendingAutoToggle;
     implementation_->pendingAutoToggle = false;
+    return toggled;
+}
+
+bool OpenGLRenderer::ConsumeThemeToggle() noexcept {
+    if (implementation_ == nullptr) {
+        return false;
+    }
+    const bool toggled = implementation_->pendingThemeToggle;
+    implementation_->pendingThemeToggle = false;
     return toggled;
 }
 

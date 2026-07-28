@@ -18,4 +18,5 @@ target_link_libraries(papagedon-runtime
         papagedon::rendering
         papagedon::scene
         papagedon::utilities
+        papagedon::visual
 )

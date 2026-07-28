@@ -123,6 +123,7 @@ void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int 
     ss << "Current Experience:  " << state.currentExperience << "\n";
     ss << "Current Scene:       " << state.currentScene << "\n";
     ss << "Current Preset:      " << state.currentPreset << "\n";
+    ss << "Current Theme:       " << state.currentTheme << "\n";
     ss << "Auto-VJ:             " << (state.autoMode ? "ON" : "OFF") << "\n";
     ss << "Transition Progress: " << std::fixed << std::setprecision(2) << (state.transitionProgress * 100.0F) << "%\n";
 

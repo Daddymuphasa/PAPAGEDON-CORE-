@@ -1,0 +1,18 @@
+{
+  "id": "neon-rave",
+  "name": "Neon Rave",
+  "palette": {
+    "primary": "#39FF14",
+    "secondary": "#FF00A0",
+    "accent": "#FFF400",
+    "background": "#0A0014"
+  },
+  "contrast": 1.35,
+  "glowStrength": 0.6,
+  "bloomStrength": 0.7,
+  "particleStyle": "Confetti",
+  "motionStyle": "Strobing",
+  "geometryStyle": "Radial",
+  "noiseStyle": "Digital",
+  "transitionStyle": "Cut"
+}

@@ -22,12 +22,14 @@ public:
         const SceneState&    state,
         const DebugState&    debugState,
         const audio::ExperienceSignals& signals,
-        const ExperiencePreset& preset) override;
+        const ExperiencePreset& preset,
+        const visual::Theme& theme) override;
     [[nodiscard]] bool EndFrame() override;
     void Shutdown() noexcept override;
 
     [[nodiscard]] int ConsumePresetRequest() noexcept override;
     [[nodiscard]] bool ConsumeAutoToggle() noexcept override;
+    [[nodiscard]] bool ConsumeThemeToggle() noexcept override;
 
 private:
     class Implementation;

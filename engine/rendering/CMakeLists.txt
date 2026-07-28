@@ -21,6 +21,10 @@ target_include_directories(papagedon-rendering
         # module.  This is a header-only include (the struct definition) — no link
         # dependency — so the renderer stays backend-neutral and allocation-free.
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/engine/experience>
+        # The OpenGL backend reads the active visual::Theme when building
+        # ShaderUniforms.  Header-only too (it only reads theme data members), so
+        # the renderer needs the include path but no link to the visual library.
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/engine/visual>
 )
 
 target_link_libraries(papagedon-rendering

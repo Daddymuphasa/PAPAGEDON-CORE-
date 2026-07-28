@@ -54,6 +54,25 @@ bool Runtime::Initialize(const std::string& audioPath) {
         logger_.INFO("Auto-VJ enabled at startup.");
     }
 
+    // Optional theme selection. PAPAGEDON_THEME_FILE loads a theme from JSON on
+    // disk (and exercises ReloadTheme); PAPAGEDON_THEME selects a built-in by id.
+    if (const char* const themeFile = std::getenv("PAPAGEDON_THEME_FILE")) {
+        std::string error;
+        if (themeManager_.LoadTheme(themeFile, &error)) {
+            logger_.INFO("Loaded theme '" + themeManager_.CurrentTheme().name +
+                         "' from '" + std::string(themeFile) + "'.");
+        } else {
+            logger_.INFO("Failed to load theme file: " + error);
+        }
+    } else if (const char* const themeId = std::getenv("PAPAGEDON_THEME")) {
+        if (themeManager_.SetTheme(themeId)) {
+            logger_.INFO("Active theme: " + themeManager_.CurrentTheme().name + ".");
+        } else {
+            logger_.INFO("Unknown theme id '" + std::string(themeId) +
+                         "'; keeping default (" + themeManager_.CurrentTheme().name + ").");
+        }
+    }
+
     logger_.INFO("Runtime initialized.");
     return true;
 }
@@ -128,6 +147,12 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         logger_.INFO(autoMode_ ? "Auto-VJ enabled." : "Auto-VJ disabled.");
     }
 
+    // 'T' cycles the active visual theme — the same music, a new visual identity.
+    if (renderer_.ConsumeThemeToggle()) {
+        themeManager_.NextTheme();
+        logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
+    }
+
     const int presetRequest = renderer_.ConsumePresetRequest();
     if (presetRequest >= 0) {
         presetManager_.SetPreset(static_cast<PresetId>(presetRequest));
@@ -187,6 +212,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     // ── 5. Renderer ───────────────────────────────────────────────────────────
     const SceneState& currentScene = sceneDNA_.GetCurrentScene();
     const ExperiencePreset& activePreset = presetManager_.CurrentPreset();
+    const visual::Theme& activeTheme = themeManager_.CurrentTheme();
 
     DebugState debugState{};
     debugState.bpm                = signals.bpm;
@@ -197,11 +223,12 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
                                         ? currentScene.activeProfile->sceneId.c_str()
                                         : "None";
     debugState.currentPreset      = activePreset.name;
+    debugState.currentTheme       = activeTheme.name.c_str();
     debugState.autoMode           = autoMode_;
     debugState.transitionProgress = currentScene.transitionProgress;
 
     renderer_.BeginFrame();
-    renderer_.Render(currentScene, debugState, signals, activePreset);
+    renderer_.Render(currentScene, debugState, signals, activePreset, activeTheme);
     if (!renderer_.EndFrame()) {
         RequestStop();
     }
