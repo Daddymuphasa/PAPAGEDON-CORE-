@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -29,25 +30,8 @@ namespace papagedon {
 // ──────────────────────────────────────────────────────────────────────────────
 namespace {
 
-Color3 ToColor3(const PresetColor& c) noexcept {
-    return Color3{c.r, c.g, c.b};
-}
-
 Color3 ToColor3(const visual::ThemeColor& c) noexcept {
     return Color3{c.r, c.g, c.b};
-}
-
-// How fast the image eases into a newly selected theme, per its TransitionStyle.
-// Higher is snappier; Cut is effectively an instant swap, Dissolve a slow melt.
-float ThemeTransitionRate(const visual::TransitionStyle style) noexcept {
-    switch (style) {
-    case visual::TransitionStyle::Cut:      return 40.0F;
-    case visual::TransitionStyle::Glitch:   return 14.0F;
-    case visual::TransitionStyle::Wipe:     return 8.0F;
-    case visual::TransitionStyle::Fade:     return 5.0F;
-    case visual::TransitionStyle::Dissolve: return 3.0F;
-    }
-    return 5.0F;
 }
 
 Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
@@ -94,22 +78,23 @@ public:
     float patternBlend        = 1.0f;
     bool  patternInitialized  = false;
 
-    // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
-    // F1..F12 select a preset.  Rising edges are latched in EndFrame (where events
-    // are polled) and drained by the Runtime via ConsumePresetRequest.
-    static constexpr int kPresetKeyCount = 12;
-    bool presetKeyWasPressed[kPresetKeyCount] = {};
-    int  pendingPresetRequest = -1;
+    // ── Live controls (Task 7) ──────────────────────────────────────────────────
+    // F1..F7 select a theme slot; Space toggles play/pause; R reloads the theme
+    // JSON; A toggles Auto-VJ.  Rising edges are latched in EndFrame (where events
+    // are polled) and drained by the Runtime via the Consume* methods.  F12
+    // (overlay) and ESC (exit) are handled inside EndFrame directly.
+    static constexpr int kThemeKeyCount = 7;
+    bool themeKeyWasPressed[kThemeKeyCount] = {};
+    int  pendingThemeRequest = -1;
 
-    // 'A' toggles Auto-VJ mode; rising edges are latched here and drained by the
-    // Runtime via ConsumeAutoToggle.
-    bool autoKeyWasPressed  = false;
-    bool pendingAutoToggle  = false;
+    bool spaceWasPressed  = false;
+    bool pendingPlayPause = false;
 
-    // 'T' cycles the active visual::Theme; rising edges are latched here and
-    // drained by the Runtime via ConsumeThemeToggle.
-    bool themeKeyWasPressed = false;
-    bool pendingThemeToggle = false;
+    bool reloadKeyWasPressed = false;
+    bool pendingReload       = false;
+
+    bool autoKeyWasPressed = false;
+    bool pendingAutoToggle = false;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -159,6 +144,11 @@ bool OpenGLRenderer::Initialize() {
         return false;
     }
 
+    // Allow disabling vsync (PAPAGEDON_VSYNC=0) to uncap the frame rate on
+    // high-refresh displays — useful for hitting the 120 FPS desktop target.
+    if (const char* const vsyncEnv = std::getenv("PAPAGEDON_VSYNC")) {
+        vsyncEnabled_ = vsyncEnv[0] != '0';
+    }
     glfwSwapInterval(vsyncEnabled_ ? 1 : 0);
 
     // ── Fullscreen VAO ──────────────────────────────────────────────────────
@@ -243,36 +233,37 @@ void OpenGLRenderer::Render(
     // Mood is a slow scene property, not a transient — follow it gently.
     smoothed.mood = Follow(smoothed.mood, state.mood, deltaTime, 6.0f, 6.0f);
 
-    // ── Theme colour identity ──────────────────────────────────────────────────
-    // Colour, contrast, glow and bloom come from the active visual::Theme — this
-    // is what makes switching themes transform the whole visual identity while the
-    // same music plays.  The palette maps secondary → primary → accent across the
-    // pattern's dark → bright ramp, with `background` filling the darkest regions.
-    // The theme's TransitionStyle sets the ease rate, so a switch cross-fades (or
-    // cuts) the whole image.  Every update is a few float lerps on the persistent
-    // smoothed uniforms — a theme switch performs no heap allocation.
+    // ── Theme colour identity & look ────────────────────────────────────────────
+    // Colour, glow, bloom, motion, noise and distortion all come from the active
+    // visual::Theme — this is what makes switching themes transform the whole
+    // visual identity while the same music plays.  The palette maps
+    // secondary → primary → accent across the pattern's dark → bright ramp, with
+    // `background` filling the darkest regions.  The theme's transitionSpeed sets
+    // the ease rate, so a switch cross-fades the whole image.  Every update is a
+    // few float lerps on the persistent smoothed uniforms — a theme switch
+    // performs no heap allocation.  All easing is frame-rate independent.
     const float themeAlpha =
-        1.0f - std::exp(-deltaTime * ThemeTransitionRate(theme.transitionStyle));
+        1.0f - std::exp(-deltaTime * std::max(theme.transitionSpeed, 0.0f));
 
-    smoothed.colorLow   = LerpColor(smoothed.colorLow,   ToColor3(theme.palette.secondary),  themeAlpha);
-    smoothed.colorMid   = LerpColor(smoothed.colorMid,   ToColor3(theme.palette.primary),    themeAlpha);
-    smoothed.colorHigh  = LerpColor(smoothed.colorHigh,  ToColor3(theme.palette.accent),     themeAlpha);
-    smoothed.background = LerpColor(smoothed.background, ToColor3(theme.palette.background), themeAlpha);
-    smoothed.contrast += (theme.contrast      - smoothed.contrast) * themeAlpha;
-    smoothed.glow     += (theme.glowStrength  - smoothed.glow)     * themeAlpha;
-    smoothed.bloom     += (theme.bloomStrength - smoothed.bloom)   * themeAlpha;
+    smoothed.primaryColor   = LerpColor(smoothed.primaryColor,   ToColor3(theme.palette.primary),    themeAlpha);
+    smoothed.secondaryColor = LerpColor(smoothed.secondaryColor, ToColor3(theme.palette.secondary),  themeAlpha);
+    smoothed.accentColor    = LerpColor(smoothed.accentColor,    ToColor3(theme.palette.accent),     themeAlpha);
+    smoothed.background     = LerpColor(smoothed.background,     ToColor3(theme.palette.background), themeAlpha);
+    smoothed.glow       += (theme.glow       - smoothed.glow)       * themeAlpha;
+    smoothed.bloom      += (theme.bloom      - smoothed.bloom)      * themeAlpha;
+    smoothed.motion     += (theme.motion     - smoothed.motion)     * themeAlpha;
+    smoothed.noise      += (theme.noise      - smoothed.noise)      * themeAlpha;
+    smoothed.distortion += (theme.distortion - smoothed.distortion) * themeAlpha;
 
     // ── Preset form & behaviour ─────────────────────────────────────────────────
-    // The preset owns the *form* axis — which signature pattern is drawn and how
-    // it moves/saturates — orthogonal to the theme's colour identity.  Its
+    // The preset owns the *form* axis — which signature pattern is drawn and its
+    // saturation / detail — orthogonal to the theme's colour identity.  Its
     // transitionSpeed eases these form parameters across a preset switch.
     const float presetAlpha =
         1.0f - std::exp(-deltaTime * std::max(preset.transitionSpeed, 0.0f));
 
     smoothed.saturationBase  += (preset.saturationBase  - smoothed.saturationBase)  * presetAlpha;
     smoothed.saturationScale += (preset.saturationScale - smoothed.saturationScale) * presetAlpha;
-    smoothed.motion          += (preset.motionIntensity - smoothed.motion)          * presetAlpha;
-    smoothed.warp            += (preset.warp            - smoothed.warp)            * presetAlpha;
     smoothed.detail          += (preset.detail          - smoothed.detail)          * presetAlpha;
 
     // ── Signature form cross-fade ──────────────────────────────────────────────
@@ -340,33 +331,39 @@ bool OpenGLRenderer::EndFrame() {
     glfwSwapBuffers(implementation_->window);
     glfwPollEvents();
 
-    // ── Temporary preset controls (Stage 5.3) ─────────────────────────────────
-    // F1..F12 request presets 0..11.  We latch the rising edge of the most recent
-    // key here (events were just polled) and let the Runtime drain it via
-    // ConsumePresetRequest, keeping preset ownership in the Runtime.
-    constexpr int kPresetKeys[Implementation::kPresetKeyCount] = {
-        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3,  GLFW_KEY_F4,
-        GLFW_KEY_F5, GLFW_KEY_F6, GLFW_KEY_F7,  GLFW_KEY_F8,
-        GLFW_KEY_F9, GLFW_KEY_F10, GLFW_KEY_F11, GLFW_KEY_F12,
+    // ── Live controls (Task 7) ──────────────────────────────────────────────────
+    // F1..F7 request theme slots 0..6.  Latch the rising edge here (events were
+    // just polled) and let the Runtime drain it via ConsumeThemeRequest.
+    constexpr int kThemeKeys[Implementation::kThemeKeyCount] = {
+        GLFW_KEY_F1, GLFW_KEY_F2, GLFW_KEY_F3, GLFW_KEY_F4,
+        GLFW_KEY_F5, GLFW_KEY_F6, GLFW_KEY_F7,
     };
-    for (int i = 0; i < Implementation::kPresetKeyCount; ++i) {
+    for (int i = 0; i < Implementation::kThemeKeyCount; ++i) {
         const bool pressed =
-            glfwGetKey(implementation_->window, kPresetKeys[i]) == GLFW_PRESS;
-        if (pressed && !implementation_->presetKeyWasPressed[i]) {
-            implementation_->pendingPresetRequest = i;
+            glfwGetKey(implementation_->window, kThemeKeys[i]) == GLFW_PRESS;
+        if (pressed && !implementation_->themeKeyWasPressed[i]) {
+            implementation_->pendingThemeRequest = i;
         }
-        implementation_->presetKeyWasPressed[i] = pressed;
+        implementation_->themeKeyWasPressed[i] = pressed;
     }
 
-    // The grave/tilde (`) key toggles the debug overlay (F1 now selects a preset).
-    const bool debugKeyIsPressed =
-        glfwGetKey(implementation_->window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS;
-    if (debugKeyIsPressed && !implementation_->debugKeyWasPressed) {
-        implementation_->showDebugOverlay = !implementation_->showDebugOverlay;
+    // Space toggles audio play/pause.
+    const bool spaceIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_SPACE) == GLFW_PRESS;
+    if (spaceIsPressed && !implementation_->spaceWasPressed) {
+        implementation_->pendingPlayPause = true;
     }
-    implementation_->debugKeyWasPressed = debugKeyIsPressed;
+    implementation_->spaceWasPressed = spaceIsPressed;
 
-    // 'A' toggles Auto-VJ mode.
+    // 'R' reloads the current theme's JSON from disk (no restart).
+    const bool reloadIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_R) == GLFW_PRESS;
+    if (reloadIsPressed && !implementation_->reloadKeyWasPressed) {
+        implementation_->pendingReload = true;
+    }
+    implementation_->reloadKeyWasPressed = reloadIsPressed;
+
+    // 'A' toggles Auto-VJ (automatic preset/form selection).
     const bool autoKeyIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_A) == GLFW_PRESS;
     if (autoKeyIsPressed && !implementation_->autoKeyWasPressed) {
@@ -374,13 +371,18 @@ bool OpenGLRenderer::EndFrame() {
     }
     implementation_->autoKeyWasPressed = autoKeyIsPressed;
 
-    // 'T' cycles the active visual theme.
-    const bool themeKeyIsPressed =
-        glfwGetKey(implementation_->window, GLFW_KEY_T) == GLFW_PRESS;
-    if (themeKeyIsPressed && !implementation_->themeKeyWasPressed) {
-        implementation_->pendingThemeToggle = true;
+    // F12 toggles the debug overlay.
+    const bool debugKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_F12) == GLFW_PRESS;
+    if (debugKeyIsPressed && !implementation_->debugKeyWasPressed) {
+        implementation_->showDebugOverlay = !implementation_->showDebugOverlay;
     }
-    implementation_->themeKeyWasPressed = themeKeyIsPressed;
+    implementation_->debugKeyWasPressed = debugKeyIsPressed;
+
+    // ESC requests application exit (EndFrame then reports the close).
+    if (glfwGetKey(implementation_->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(implementation_->window, GLFW_TRUE);
+    }
 
     // FPS counter and window title update.
     ++implementation_->renderedFrameCount;
@@ -405,13 +407,31 @@ bool OpenGLRenderer::EndFrame() {
 // ──────────────────────────────────────────────────────────────────────────────
 // ConsumePresetRequest
 // ──────────────────────────────────────────────────────────────────────────────
-int OpenGLRenderer::ConsumePresetRequest() noexcept {
+int OpenGLRenderer::ConsumeThemeRequest() noexcept {
     if (implementation_ == nullptr) {
         return -1;
     }
-    const int request = implementation_->pendingPresetRequest;
-    implementation_->pendingPresetRequest = -1;
+    const int request = implementation_->pendingThemeRequest;
+    implementation_->pendingThemeRequest = -1;
     return request;
+}
+
+bool OpenGLRenderer::ConsumePlayPauseToggle() noexcept {
+    if (implementation_ == nullptr) {
+        return false;
+    }
+    const bool toggled = implementation_->pendingPlayPause;
+    implementation_->pendingPlayPause = false;
+    return toggled;
+}
+
+bool OpenGLRenderer::ConsumeReloadRequest() noexcept {
+    if (implementation_ == nullptr) {
+        return false;
+    }
+    const bool requested = implementation_->pendingReload;
+    implementation_->pendingReload = false;
+    return requested;
 }
 
 bool OpenGLRenderer::ConsumeAutoToggle() noexcept {
@@ -420,15 +440,6 @@ bool OpenGLRenderer::ConsumeAutoToggle() noexcept {
     }
     const bool toggled = implementation_->pendingAutoToggle;
     implementation_->pendingAutoToggle = false;
-    return toggled;
-}
-
-bool OpenGLRenderer::ConsumeThemeToggle() noexcept {
-    if (implementation_ == nullptr) {
-        return false;
-    }
-    const bool toggled = implementation_->pendingThemeToggle;
-    implementation_->pendingThemeToggle = false;
     return toggled;
 }
 

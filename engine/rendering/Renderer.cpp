@@ -37,16 +37,20 @@ bool Renderer::EndFrame() {
     return backend_ != nullptr && backend_->EndFrame();
 }
 
-int Renderer::ConsumePresetRequest() noexcept {
-    return backend_ != nullptr ? backend_->ConsumePresetRequest() : -1;
+int Renderer::ConsumeThemeRequest() noexcept {
+    return backend_ != nullptr ? backend_->ConsumeThemeRequest() : -1;
+}
+
+bool Renderer::ConsumePlayPauseToggle() noexcept {
+    return backend_ != nullptr && backend_->ConsumePlayPauseToggle();
+}
+
+bool Renderer::ConsumeReloadRequest() noexcept {
+    return backend_ != nullptr && backend_->ConsumeReloadRequest();
 }
 
 bool Renderer::ConsumeAutoToggle() noexcept {
     return backend_ != nullptr && backend_->ConsumeAutoToggle();
-}
-
-bool Renderer::ConsumeThemeToggle() noexcept {
-    return backend_ != nullptr && backend_->ConsumeThemeToggle();
 }
 
 void Renderer::Shutdown() noexcept {

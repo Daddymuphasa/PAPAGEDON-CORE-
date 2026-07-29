@@ -1,0 +1,16 @@
+{
+  "id": "industrial",
+  "name": "Industrial",
+  "palette": {
+    "primary": "#FFB000",
+    "secondary": "#6E7B8B",
+    "accent": "#C0432B",
+    "background": "#0B0B0C"
+  },
+  "glow": 0.14,
+  "bloom": 0.18,
+  "motion": 1,
+  "noise": 0.28,
+  "distortion": 0.85,
+  "transitionSpeed": 7
+}

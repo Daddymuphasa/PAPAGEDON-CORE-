@@ -28,7 +28,13 @@ public:
     void Play();
     void Pause();
     void Stop();
-    
+
+    /// Toggles between playing and paused.
+    void TogglePlayPause();
+
+    /// True while audio is actively being played out.
+    [[nodiscard]] bool IsPlaying() const noexcept;
+
     /// Seeks to a specific frame.
     void Seek(std::uint64_t frameIndex);
 

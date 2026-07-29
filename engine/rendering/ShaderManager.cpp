@@ -74,32 +74,32 @@ uniform float uMid;
 uniform float uTreble;
 uniform float uBeat;
 uniform float uMood;
-uniform vec3  uColorLow;
-uniform vec3  uColorMid;
-uniform vec3  uColorHigh;
+uniform vec3  uPrimaryColour;
+uniform vec3  uSecondaryColour;
+uniform vec3  uAccentColour;
 uniform vec3  uBackground;
+uniform float uGlow;         // theme: additive glow lift (0 = off)
+uniform float uBloom;        // theme: highlight bloom strength
+uniform float uMotion;       // theme: animation-speed multiplier
+uniform float uNoise;        // theme: grain amount (0 = clean)
+uniform float uDistortion;   // theme: domain-warp strength
 uniform float uSaturationBase;
 uniform float uSaturationScale;
-uniform float uMotion;
 uniform int   uPattern;
 uniform int   uPrevPattern;
 uniform float uPatternBlend;
-uniform float uWarp;
 uniform float uDetail;
-uniform float uContrast;   // theme: final-image contrast (1 = neutral)
-uniform float uGlow;       // theme: additive glow lift (0 = off)
-uniform float uBloom;      // theme: highlight bloom strength
 
 const float kPi  = 3.14159265358979;
 const float kTau = 6.28318530717959;
 
 // ── Palette ────────────────────────────────────────────────────────────────
-// Three-stop palette ramp: low → mid → high across t in [0, 1].
+// Three-stop theme ramp across t in [0, 1]: secondary → primary → accent.
 vec3 palette(float t) {
     t = clamp(t, 0.0, 1.0);
     return t < 0.5
-        ? mix(uColorLow, uColorMid,  t * 2.0)
-        : mix(uColorMid, uColorHigh, (t - 0.5) * 2.0);
+        ? mix(uSecondaryColour, uPrimaryColour, t * 2.0)
+        : mix(uPrimaryColour,   uAccentColour,  (t - 0.5) * 2.0);
 }
 
 // ── Noise toolkit ────────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ float fbm(vec2 p) {
 float warpedFbm(vec2 p, float t) {
     vec2 q = vec2(fbm(p + vec2(0.0, t * 0.10)),
                   fbm(p + vec2(5.2, 1.3) - vec2(t * 0.08, 0.0)));
-    return fbm(p + uWarp * q);
+    return fbm(p + uDistortion * q);
 }
 
 // ── Signature forms ──────────────────────────────────────────────────────────
@@ -346,9 +346,6 @@ void main() {
     // Contrast pop — an S-curve deepens the darks and lifts the highlights so
     // structure reads hard instead of washing out to a soft glow.
     pattern = smoothstep(0.04, 0.85, pattern);
-    // Theme contrast — an extra S-curve around the mid-grey, so a theme can push
-    // the whole image harder or softer (1 = neutral).
-    pattern = clamp((pattern - 0.5) * uContrast + 0.5, 0.0, 1.0);
 
     // ── Colour ────────────────────────────────────────────────────────────
     // The active theme's palette maps across the pattern intensity.  Bass pushes
@@ -376,7 +373,7 @@ void main() {
     // The kick fires a hard flash — palette-tinted plus a white pop — sharpened
     // by squaring the (decaying) beat so it reads as a strike, not a fade.
     float strobe = uBeat * uBeat;
-    color += mix(uColorHigh, vec3(1.0), 0.5) * strobe * (0.4 + 0.6 * pattern);
+    color += mix(uAccentColour, vec3(1.0), 0.5) * strobe * (0.4 + 0.6 * pattern);
     color += vec3(0.14) * strobe;
 
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
@@ -385,6 +382,12 @@ void main() {
 
     // Subtle mood tint.
     color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));
+
+    // Theme grain — film / digital noise overlay, per-pixel and time-varying.
+    if (uNoise > 0.0001) {
+        float grain = hash21(gl_FragCoord.xy + fract(uTime) * 137.0) - 0.5;
+        color += grain * uNoise * 0.28;
+    }
 
     // Light vignette — edges stay lit so the visual fills the screen/wall.
     float d = length(uv);
@@ -480,21 +483,21 @@ bool ShaderManager::Compile(
     locTreble_     = glGetUniformLocation(program_, "uTreble");
     locBeat_       = glGetUniformLocation(program_, "uBeat");
     locMood_       = glGetUniformLocation(program_, "uMood");
-    locColorLow_   = glGetUniformLocation(program_, "uColorLow");
-    locColorMid_   = glGetUniformLocation(program_, "uColorMid");
-    locColorHigh_  = glGetUniformLocation(program_, "uColorHigh");
+    locPrimaryColour_   = glGetUniformLocation(program_, "uPrimaryColour");
+    locSecondaryColour_ = glGetUniformLocation(program_, "uSecondaryColour");
+    locAccentColour_    = glGetUniformLocation(program_, "uAccentColour");
     locBackground_      = glGetUniformLocation(program_, "uBackground");
+    locGlow_            = glGetUniformLocation(program_, "uGlow");
+    locBloom_           = glGetUniformLocation(program_, "uBloom");
+    locMotion_          = glGetUniformLocation(program_, "uMotion");
+    locNoise_           = glGetUniformLocation(program_, "uNoise");
+    locDistortion_      = glGetUniformLocation(program_, "uDistortion");
     locSaturationBase_  = glGetUniformLocation(program_, "uSaturationBase");
     locSaturationScale_ = glGetUniformLocation(program_, "uSaturationScale");
-    locMotion_          = glGetUniformLocation(program_, "uMotion");
     locPattern_         = glGetUniformLocation(program_, "uPattern");
     locPrevPattern_     = glGetUniformLocation(program_, "uPrevPattern");
     locPatternBlend_    = glGetUniformLocation(program_, "uPatternBlend");
-    locWarp_            = glGetUniformLocation(program_, "uWarp");
     locDetail_          = glGetUniformLocation(program_, "uDetail");
-    locContrast_        = glGetUniformLocation(program_, "uContrast");
-    locGlow_            = glGetUniformLocation(program_, "uGlow");
-    locBloom_           = glGetUniformLocation(program_, "uBloom");
 
     return true;
 }
@@ -526,21 +529,21 @@ void ShaderManager::SetUniforms(
     if (locTreble_     >= 0) glUniform1f(locTreble_,      u.treble);
     if (locBeat_       >= 0) glUniform1f(locBeat_,        u.beat);
     if (locMood_       >= 0) glUniform1f(locMood_,        u.mood);
-    if (locColorLow_   >= 0) glUniform3f(locColorLow_,    u.colorLow.r,  u.colorLow.g,  u.colorLow.b);
-    if (locColorMid_   >= 0) glUniform3f(locColorMid_,    u.colorMid.r,  u.colorMid.g,  u.colorMid.b);
-    if (locColorHigh_  >= 0) glUniform3f(locColorHigh_,   u.colorHigh.r, u.colorHigh.g, u.colorHigh.b);
-    if (locBackground_      >= 0) glUniform3f(locBackground_, u.background.r, u.background.g, u.background.b);
+    if (locPrimaryColour_   >= 0) glUniform3f(locPrimaryColour_,   u.primaryColor.r,   u.primaryColor.g,   u.primaryColor.b);
+    if (locSecondaryColour_ >= 0) glUniform3f(locSecondaryColour_, u.secondaryColor.r, u.secondaryColor.g, u.secondaryColor.b);
+    if (locAccentColour_    >= 0) glUniform3f(locAccentColour_,    u.accentColor.r,    u.accentColor.g,    u.accentColor.b);
+    if (locBackground_      >= 0) glUniform3f(locBackground_,      u.background.r,     u.background.g,     u.background.b);
+    if (locGlow_            >= 0) glUniform1f(locGlow_,            u.glow);
+    if (locBloom_           >= 0) glUniform1f(locBloom_,           u.bloom);
+    if (locMotion_          >= 0) glUniform1f(locMotion_,          u.motion);
+    if (locNoise_           >= 0) glUniform1f(locNoise_,           u.noise);
+    if (locDistortion_      >= 0) glUniform1f(locDistortion_,      u.distortion);
     if (locSaturationBase_  >= 0) glUniform1f(locSaturationBase_,  u.saturationBase);
     if (locSaturationScale_ >= 0) glUniform1f(locSaturationScale_, u.saturationScale);
-    if (locMotion_          >= 0) glUniform1f(locMotion_,          u.motion);
     if (locPattern_         >= 0) glUniform1i(locPattern_,         u.patternMode);
     if (locPrevPattern_     >= 0) glUniform1i(locPrevPattern_,     u.previousPatternMode);
     if (locPatternBlend_    >= 0) glUniform1f(locPatternBlend_,    u.patternBlend);
-    if (locWarp_            >= 0) glUniform1f(locWarp_,            u.warp);
     if (locDetail_          >= 0) glUniform1f(locDetail_,          u.detail);
-    if (locContrast_        >= 0) glUniform1f(locContrast_,        u.contrast);
-    if (locGlow_            >= 0) glUniform1f(locGlow_,            u.glow);
-    if (locBloom_           >= 0) glUniform1f(locBloom_,           u.bloom);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -556,21 +559,21 @@ void ShaderManager::Shutdown() noexcept {
         locTreble_    = -1;
         locBeat_      = -1;
         locMood_      = -1;
-        locColorLow_  = -1;
-        locColorMid_  = -1;
-        locColorHigh_ = -1;
+        locPrimaryColour_   = -1;
+        locSecondaryColour_ = -1;
+        locAccentColour_    = -1;
         locBackground_      = -1;
+        locGlow_            = -1;
+        locBloom_           = -1;
+        locMotion_          = -1;
+        locNoise_           = -1;
+        locDistortion_      = -1;
         locSaturationBase_  = -1;
         locSaturationScale_ = -1;
-        locMotion_          = -1;
         locPattern_         = -1;
         locPrevPattern_     = -1;
         locPatternBlend_    = -1;
-        locWarp_            = -1;
         locDetail_          = -1;
-        locContrast_        = -1;
-        locGlow_            = -1;
-        locBloom_           = -1;
     }
 }
 

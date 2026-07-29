@@ -11,95 +11,8 @@
 namespace papagedon::visual {
 namespace {
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Enum ⇄ string tables
-// ──────────────────────────────────────────────────────────────────────────────
-template <typename E>
-struct NameEntry final {
-    E value;
-    std::string_view name;
-};
-
-constexpr std::array kParticleNames{
-    NameEntry{ParticleStyle::None,     "None"},
-    NameEntry{ParticleStyle::Sparks,   "Sparks"},
-    NameEntry{ParticleStyle::Embers,   "Embers"},
-    NameEntry{ParticleStyle::Dust,     "Dust"},
-    NameEntry{ParticleStyle::Snow,     "Snow"},
-    NameEntry{ParticleStyle::Rain,     "Rain"},
-    NameEntry{ParticleStyle::Bokeh,    "Bokeh"},
-    NameEntry{ParticleStyle::Confetti, "Confetti"},
-};
-
-constexpr std::array kMotionNames{
-    NameEntry{MotionStyle::Smooth,     "Smooth"},
-    NameEntry{MotionStyle::Flowing,    "Flowing"},
-    NameEntry{MotionStyle::Pulsing,    "Pulsing"},
-    NameEntry{MotionStyle::Aggressive, "Aggressive"},
-    NameEntry{MotionStyle::Strobing,   "Strobing"},
-    NameEntry{MotionStyle::Hypnotic,   "Hypnotic"},
-};
-
-constexpr std::array kGeometryNames{
-    NameEntry{GeometryStyle::Organic, "Organic"},
-    NameEntry{GeometryStyle::Grid,    "Grid"},
-    NameEntry{GeometryStyle::Radial,  "Radial"},
-    NameEntry{GeometryStyle::Fractal, "Fractal"},
-    NameEntry{GeometryStyle::Tunnel,  "Tunnel"},
-    NameEntry{GeometryStyle::Waves,   "Waves"},
-};
-
-constexpr std::array kNoiseNames{
-    NameEntry{NoiseStyle::None,      "None"},
-    NameEntry{NoiseStyle::Film,      "Film"},
-    NameEntry{NoiseStyle::Digital,   "Digital"},
-    NameEntry{NoiseStyle::Turbulent, "Turbulent"},
-    NameEntry{NoiseStyle::Scanline,  "Scanline"},
-};
-
-constexpr std::array kTransitionNames{
-    NameEntry{TransitionStyle::Cut,      "Cut"},
-    NameEntry{TransitionStyle::Fade,     "Fade"},
-    NameEntry{TransitionStyle::Dissolve, "Dissolve"},
-    NameEntry{TransitionStyle::Wipe,     "Wipe"},
-    NameEntry{TransitionStyle::Glitch,   "Glitch"},
-};
-
 char Lower(const char c) noexcept {
     return (c >= 'A' && c <= 'Z') ? static_cast<char>(c - 'A' + 'a') : c;
-}
-
-bool IEquals(const std::string_view a, const std::string_view b) noexcept {
-    if (a.size() != b.size()) {
-        return false;
-    }
-    for (std::size_t i = 0; i < a.size(); ++i) {
-        if (Lower(a[i]) != Lower(b[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template <typename Table, typename E>
-std::string_view NameOf(const Table& table, const E value) noexcept {
-    for (const auto& entry : table) {
-        if (entry.value == value) {
-            return entry.name;
-        }
-    }
-    return table.front().name;
-}
-
-template <typename Table, typename E>
-bool ParseName(const Table& table, const std::string_view text, E& out) noexcept {
-    for (const auto& entry : table) {
-        if (IEquals(entry.name, text)) {
-            out = entry.value;
-            return true;
-        }
-    }
-    return false;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -442,21 +355,6 @@ std::string Num(const float value) {
 } // namespace
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Enum ⇄ string — public
-// ──────────────────────────────────────────────────────────────────────────────
-std::string_view ToString(const ParticleStyle v) noexcept   { return NameOf(kParticleNames, v); }
-std::string_view ToString(const MotionStyle v) noexcept     { return NameOf(kMotionNames, v); }
-std::string_view ToString(const GeometryStyle v) noexcept   { return NameOf(kGeometryNames, v); }
-std::string_view ToString(const NoiseStyle v) noexcept      { return NameOf(kNoiseNames, v); }
-std::string_view ToString(const TransitionStyle v) noexcept { return NameOf(kTransitionNames, v); }
-
-bool FromString(const std::string_view s, ParticleStyle& out) noexcept   { return ParseName(kParticleNames, s, out); }
-bool FromString(const std::string_view s, MotionStyle& out) noexcept     { return ParseName(kMotionNames, s, out); }
-bool FromString(const std::string_view s, GeometryStyle& out) noexcept   { return ParseName(kGeometryNames, s, out); }
-bool FromString(const std::string_view s, NoiseStyle& out) noexcept      { return ParseName(kNoiseNames, s, out); }
-bool FromString(const std::string_view s, TransitionStyle& out) noexcept { return ParseName(kTransitionNames, s, out); }
-
-// ──────────────────────────────────────────────────────────────────────────────
 // Serialization — public
 // ──────────────────────────────────────────────────────────────────────────────
 std::string ToJson(const Theme& t) {
@@ -470,14 +368,12 @@ std::string ToJson(const Theme& t) {
     o << "    \"accent\": \""     << ToHexColor(t.palette.accent)     << "\",\n";
     o << "    \"background\": \""  << ToHexColor(t.palette.background) << "\"\n";
     o << "  },\n";
-    o << "  \"contrast\": "      << Num(t.contrast)      << ",\n";
-    o << "  \"glowStrength\": "  << Num(t.glowStrength)  << ",\n";
-    o << "  \"bloomStrength\": " << Num(t.bloomStrength) << ",\n";
-    o << "  \"particleStyle\": "   << Quote(ToString(t.particleStyle))   << ",\n";
-    o << "  \"motionStyle\": "     << Quote(ToString(t.motionStyle))     << ",\n";
-    o << "  \"geometryStyle\": "   << Quote(ToString(t.geometryStyle))   << ",\n";
-    o << "  \"noiseStyle\": "      << Quote(ToString(t.noiseStyle))      << ",\n";
-    o << "  \"transitionStyle\": " << Quote(ToString(t.transitionStyle));
+    o << "  \"glow\": "            << Num(t.glow)            << ",\n";
+    o << "  \"bloom\": "           << Num(t.bloom)           << ",\n";
+    o << "  \"motion\": "          << Num(t.motion)          << ",\n";
+    o << "  \"noise\": "           << Num(t.noise)           << ",\n";
+    o << "  \"distortion\": "      << Num(t.distortion)      << ",\n";
+    o << "  \"transitionSpeed\": " << Num(t.transitionSpeed);
 
     if (!t.shaderParameters.empty()) {
         // Sort keys so serialization is deterministic across runs.
@@ -529,20 +425,15 @@ bool FromJson(const std::string_view json, Theme& out, std::string* error) {
             dst = static_cast<float>(v->number);
         }
     };
-    const auto readEnum = [&](const char* key, auto& dst) {
-        if (const JsonValue* v = root.Find(key); v != nullptr &&
-            v->type == JsonValue::Type::String) {
-            // Unknown values leave `dst` at its default — that is intentional, so
-            // the [[nodiscard]] result is deliberately discarded.
-            static_cast<void>(FromString(v->string, dst));
-        }
-    };
 
     readString("id", theme.id);
     readString("name", theme.name);
-    readNumber("contrast", theme.contrast);
-    readNumber("glowStrength", theme.glowStrength);
-    readNumber("bloomStrength", theme.bloomStrength);
+    readNumber("glow", theme.glow);
+    readNumber("bloom", theme.bloom);
+    readNumber("motion", theme.motion);
+    readNumber("noise", theme.noise);
+    readNumber("distortion", theme.distortion);
+    readNumber("transitionSpeed", theme.transitionSpeed);
 
     if (const JsonValue* pal = root.Find("palette");
         pal != nullptr && pal->type == JsonValue::Type::Object) {
@@ -551,12 +442,6 @@ bool FromJson(const std::string_view json, Theme& out, std::string* error) {
         if (const JsonValue* c = pal->Find("accent"))     { ReadColor(*c, theme.palette.accent); }
         if (const JsonValue* c = pal->Find("background")) { ReadColor(*c, theme.palette.background); }
     }
-
-    readEnum("particleStyle", theme.particleStyle);
-    readEnum("motionStyle", theme.motionStyle);
-    readEnum("geometryStyle", theme.geometryStyle);
-    readEnum("noiseStyle", theme.noiseStyle);
-    readEnum("transitionStyle", theme.transitionStyle);
 
     if (const JsonValue* sp = root.Find("shaderParameters");
         sp != nullptr && sp->type == JsonValue::Type::Object) {

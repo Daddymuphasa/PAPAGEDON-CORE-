@@ -1,0 +1,16 @@
+{
+  "id": "aurora",
+  "name": "Aurora",
+  "palette": {
+    "primary": "#2AF5D0",
+    "secondary": "#1E6091",
+    "accent": "#B5FFE1",
+    "background": "#02040A"
+  },
+  "glow": 0.4,
+  "bloom": 0.45,
+  "motion": 0.7,
+  "noise": 0.03,
+  "distortion": 1.5,
+  "transitionSpeed": 4
+}

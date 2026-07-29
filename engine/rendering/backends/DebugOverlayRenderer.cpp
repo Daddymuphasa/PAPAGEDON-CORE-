@@ -114,18 +114,25 @@ bool DebugOverlayRenderer::Initialize() {
 void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int windowHeight) {
     if (!initialized_) return;
 
+    const float frameTimeMs = state.fps > 0.0F ? 1000.0F / state.fps : 0.0F;
+
     std::ostringstream ss;
+    ss << std::fixed;
     ss << "PAPAGEDON Debug Overlay\n\n";
-    ss << "FPS:                 " << state.fps << "\n";
-    ss << "BPM:                 " << state.bpm << "\n";
-    ss << "Energy:              " << std::fixed << std::setprecision(2) << state.energy << "\n";
-    ss << "Intensity:           " << std::fixed << std::setprecision(2) << state.intensity << "\n";
-    ss << "Current Experience:  " << state.currentExperience << "\n";
-    ss << "Current Scene:       " << state.currentScene << "\n";
-    ss << "Current Preset:      " << state.currentPreset << "\n";
-    ss << "Current Theme:       " << state.currentTheme << "\n";
-    ss << "Auto-VJ:             " << (state.autoMode ? "ON" : "OFF") << "\n";
-    ss << "Transition Progress: " << std::fixed << std::setprecision(2) << (state.transitionProgress * 100.0F) << "%\n";
+    ss << std::setprecision(0);
+    ss << "FPS:               " << state.fps << "\n";
+    ss << std::setprecision(2);
+    ss << "Frame Time:        " << frameTimeMs << " ms\n";
+    ss << "Current Theme:     " << state.currentTheme << "\n";
+    ss << std::setprecision(1);
+    ss << "BPM:               " << state.bpm << "\n";
+    ss << std::setprecision(2);
+    ss << "Bass:              " << state.bass << "\n";
+    ss << "Mid:               " << state.mid << "\n";
+    ss << "Treble:            " << state.treble << "\n";
+    ss << "Energy:            " << state.energy << "\n";
+    ss << "Beat:              " << (state.beat ? "*" : "-") << "\n";
+    ss << "ExperienceState:   " << state.currentExperience << "\n";
 
     RenderText(ss.str().c_str(), 10.0F, windowHeight - 20.0F, 2.0F, windowWidth, windowHeight);
 }

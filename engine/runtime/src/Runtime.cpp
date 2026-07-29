@@ -5,7 +5,9 @@
 
 #include <span>
 #include <algorithm>
+#include <cstddef>
 #include <cstdlib>
+#include <string>
 
 namespace papagedon::runtime {
 
@@ -52,6 +54,20 @@ bool Runtime::Initialize(const std::string& audioPath) {
     if (std::getenv("PAPAGEDON_AUTOVJ") != nullptr) {
         autoMode_ = true;
         logger_.INFO("Auto-VJ enabled at startup.");
+    }
+
+    // Load theme JSON files so they can be edited and hot-reloaded (R key)
+    // without a rebuild.  A missing directory is fine — the seven built-in themes
+    // remain the fallback.  Override the location with PAPAGEDON_THEME_DIR.
+    {
+        const char* const dirEnv = std::getenv("PAPAGEDON_THEME_DIR");
+        const std::string themeDir = (dirEnv != nullptr) ? std::string(dirEnv)
+                                                         : std::string("themes");
+        if (const std::size_t loaded = themeManager_.LoadThemesFromDirectory(themeDir);
+            loaded > 0) {
+            logger_.INFO("Loaded " + std::to_string(loaded) + " theme file(s) from '" +
+                         themeDir + "'.");
+        }
     }
 
     // Optional theme selection. PAPAGEDON_THEME_FILE loads a theme from JSON on
@@ -139,24 +155,34 @@ bool Runtime::IsRunning() const noexcept {
 // deltaTime is available for future frame-rate-independent interpolation.
 // ──────────────────────────────────────────────────────────────────────────────
 void Runtime::Update(const FrameDuration deltaTime) noexcept {
-    // ── 0. Preset input ───────────────────────────────────────────────────────
-    // Drain any F1..F6 preset request the renderer latched last frame.  Applying
-    // it only swaps an index in the PresetManager — no allocation, no restart.
+    // ── 0. Live controls (Task 7) ──────────────────────────────────────────────
+    // Space: play / pause the audio (the AudioPlayer owns the device).
+    if (renderer_.ConsumePlayPauseToggle()) {
+        audioPlayer_.TogglePlayPause();
+        logger_.INFO(audioPlayer_.IsPlaying() ? "Playback resumed." : "Playback paused.");
+    }
+
+    // F1..F7: switch theme instantly — same music, a new visual identity.
+    if (const int themeSlot = renderer_.ConsumeThemeRequest(); themeSlot >= 0) {
+        if (themeManager_.SetThemeByIndex(static_cast<std::size_t>(themeSlot))) {
+            logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
+        }
+    }
+
+    // R: reload the current theme's JSON from disk, live.
+    if (renderer_.ConsumeReloadRequest()) {
+        std::string reloadError;
+        if (themeManager_.ReloadTheme(&reloadError)) {
+            logger_.INFO("Reloaded theme '" + themeManager_.CurrentTheme().name + "'.");
+        } else {
+            logger_.INFO("Theme reload skipped: " + reloadError);
+        }
+    }
+
+    // A: toggle Auto-VJ (automatic preset/form selection).
     if (renderer_.ConsumeAutoToggle()) {
         autoMode_ = !autoMode_;
         logger_.INFO(autoMode_ ? "Auto-VJ enabled." : "Auto-VJ disabled.");
-    }
-
-    // 'T' cycles the active visual theme — the same music, a new visual identity.
-    if (renderer_.ConsumeThemeToggle()) {
-        themeManager_.NextTheme();
-        logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
-    }
-
-    const int presetRequest = renderer_.ConsumePresetRequest();
-    if (presetRequest >= 0) {
-        presetManager_.SetPreset(static_cast<PresetId>(presetRequest));
-        autoMode_ = false; // manual selection hands control back to the operator
     }
 
     // Optional demo auto-cycle: step presets on a fixed interval (off in Auto-VJ).
@@ -218,7 +244,11 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     debugState.bpm                = signals.bpm;
     debugState.energy             = signals.energy;
     debugState.intensity          = signals.intensity;
-    debugState.currentExperience  = ToString(graphOutput.event);
+    debugState.bass               = signals.bass;
+    debugState.mid                = signals.mid;
+    debugState.treble             = signals.treble;
+    debugState.beat               = signals.beat;
+    debugState.currentExperience  = ToString(graphOutput.state);
     debugState.currentScene       = currentScene.activeProfile
                                         ? currentScene.activeProfile->sceneId.c_str()
                                         : "None";

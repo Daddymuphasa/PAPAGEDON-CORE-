@@ -1,0 +1,16 @@
+{
+  "id": "matrix",
+  "name": "Matrix",
+  "palette": {
+    "primary": "#00FF41",
+    "secondary": "#008F11",
+    "accent": "#CCFFCC",
+    "background": "#000500"
+  },
+  "glow": 0.35,
+  "bloom": 0.4,
+  "motion": 1.2,
+  "noise": 0.3,
+  "distortion": 0.8,
+  "transitionSpeed": 9
+}

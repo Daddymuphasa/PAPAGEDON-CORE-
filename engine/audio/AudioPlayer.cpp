@@ -120,6 +120,18 @@ void AudioPlayer::Stop() {
     Seek(0);
 }
 
+void AudioPlayer::TogglePlayPause() {
+    if (impl_->isPlaying.load(std::memory_order_acquire)) {
+        Pause();
+    } else {
+        Play();
+    }
+}
+
+bool AudioPlayer::IsPlaying() const noexcept {
+    return impl_->isPlaying.load(std::memory_order_acquire);
+}
+
 void AudioPlayer::Seek(std::uint64_t frameIndex) {
     if (impl_->currentInput) {
         const std::uint64_t total = impl_->currentInput->FrameCount();

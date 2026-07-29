@@ -28,20 +28,22 @@ public:
     virtual bool EndFrame() = 0;
     virtual void Shutdown() noexcept = 0;
 
-    /// Returns the preset index (0..kPresetCount-1) requested via the temporary
-    /// F1..F12 controls since the previous call, or -1 if none.  Consuming the
-    /// request clears it.  This is a Stage 5.3 stop-gap until a dedicated input
-    /// system exists; keeping it generic avoids coupling the backend to preset
-    /// semantics beyond "function key N was pressed".
-    [[nodiscard]] virtual int ConsumePresetRequest() noexcept = 0;
+    // ── Live controls (temporary; drained by the Runtime each frame) ────────────
+    // Rising edges are latched in EndFrame (where events are polled) and cleared
+    // when consumed.  ESC (exit) and F12 (debug overlay) are handled inside the
+    // backend and surface via EndFrame()/the overlay rather than these consumers.
 
-    /// Returns true once for each press of the Auto-VJ toggle key ('A') since the
-    /// previous call.  Consuming the event clears it.
+    /// Theme slot requested via F1..F7 since the previous call (0..6), or -1.
+    [[nodiscard]] virtual int ConsumeThemeRequest() noexcept = 0;
+
+    /// True once per Space press — toggles audio play/pause.
+    [[nodiscard]] virtual bool ConsumePlayPauseToggle() noexcept = 0;
+
+    /// True once per R press — reload the current theme's JSON from disk.
+    [[nodiscard]] virtual bool ConsumeReloadRequest() noexcept = 0;
+
+    /// True once per A press — toggles Auto-VJ (automatic preset/form selection).
     [[nodiscard]] virtual bool ConsumeAutoToggle() noexcept = 0;
-
-    /// Returns true once for each press of the theme-cycle key ('T') since the
-    /// previous call.  Consuming the event clears it.
-    [[nodiscard]] virtual bool ConsumeThemeToggle() noexcept = 0;
 };
 
 } // namespace papagedon

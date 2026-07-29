@@ -66,21 +66,21 @@ private:
     int locTreble_     = -1;
     int locBeat_       = -1;
     int locMood_       = -1;
-    int locColorLow_   = -1;
-    int locColorMid_   = -1;
-    int locColorHigh_  = -1;
+    int locPrimaryColour_   = -1;
+    int locSecondaryColour_ = -1;
+    int locAccentColour_    = -1;
     int locBackground_      = -1;
+    int locGlow_            = -1;
+    int locBloom_           = -1;
+    int locMotion_          = -1;
+    int locNoise_           = -1;
+    int locDistortion_      = -1;
     int locSaturationBase_  = -1;
     int locSaturationScale_ = -1;
-    int locMotion_          = -1;
     int locPattern_         = -1;
     int locPrevPattern_     = -1;
     int locPatternBlend_    = -1;
-    int locWarp_            = -1;
     int locDetail_          = -1;
-    int locContrast_        = -1;
-    int locGlow_            = -1;
-    int locBloom_           = -1;
 };
 
 } // namespace papagedon

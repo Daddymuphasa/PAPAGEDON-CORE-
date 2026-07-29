@@ -33,15 +33,17 @@ public:
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
 
-    /// Preset index requested via the temporary F1..F12 controls, or -1 if none.
-    /// See IRenderer::ConsumePresetRequest.
-    [[nodiscard]] int ConsumePresetRequest() noexcept;
+    /// Theme slot requested via F1..F7 (0..6), or -1. See IRenderer.
+    [[nodiscard]] int ConsumeThemeRequest() noexcept;
 
-    /// True once per press of the Auto-VJ toggle key. See IRenderer::ConsumeAutoToggle.
+    /// True once per Space press (play/pause). See IRenderer.
+    [[nodiscard]] bool ConsumePlayPauseToggle() noexcept;
+
+    /// True once per R press (reload theme JSON). See IRenderer.
+    [[nodiscard]] bool ConsumeReloadRequest() noexcept;
+
+    /// True once per A press (Auto-VJ toggle). See IRenderer.
     [[nodiscard]] bool ConsumeAutoToggle() noexcept;
-
-    /// True once per press of the theme-cycle key. See IRenderer::ConsumeThemeToggle.
-    [[nodiscard]] bool ConsumeThemeToggle() noexcept;
 
 private:
     std::unique_ptr<IRenderer> backend_;

@@ -17,70 +17,42 @@ namespace papagedon::visual {
 //
 // The same music, rendered under two different themes, produces two completely
 // different visual identities: the Renderer combines the live ExperienceSignals
-// with the Theme when it builds ShaderUniforms.  Themes are orthogonal to the
-// ExperiencePreset "form" axis — a theme recolours and re-styles whatever form
-// is currently playing.
+// with the Theme when it builds ShaderUniforms.  A theme recolours and re-styles
+// whatever pattern form is currently playing.
+//
+// Every non-colour parameter is a plain float multiplier so a theme can be
+// authored and hot-reloaded from JSON with no engine changes.
 // ──────────────────────────────────────────────────────────────────────────────
-
-/// Ambient particle character of a theme.
-enum class ParticleStyle { None, Sparks, Embers, Dust, Snow, Rain, Bokeh, Confetti };
-
-/// How motion feels — pacing and attack of the animation.
-enum class MotionStyle { Smooth, Flowing, Pulsing, Aggressive, Strobing, Hypnotic };
-
-/// The dominant geometric character of the imagery.
-enum class GeometryStyle { Organic, Grid, Radial, Fractal, Tunnel, Waves };
-
-/// Grain / texture overlay style.
-enum class NoiseStyle { None, Film, Digital, Turbulent, Scanline };
-
-/// How the visuals change when switching to this theme.
-enum class TransitionStyle { Cut, Fade, Dissolve, Wipe, Glitch };
-
 struct Theme final {
     std::string id;    ///< Stable machine identifier, e.g. "cyberpunk".
     std::string name;  ///< Human-readable display name, e.g. "Cyberpunk".
 
     // ── Colour identity ────────────────────────────────────────────────────────
-    ThemePalette palette;
+    ThemePalette palette;  ///< primary / secondary / accent / background.
 
-    // ── Look ───────────────────────────────────────────────────────────────────
-    /// Contrast of the final image (1 = neutral, >1 harder, <1 softer).
-    float contrast = 1.0F;
-
-    /// Overall additive glow lift (0 = off).
-    float glowStrength = 0.0F;
+    // ── Look multipliers ────────────────────────────────────────────────────────
+    /// Additive glow intensity (0 = off).
+    float glow = 0.0F;
 
     /// Highlight bloom strength (0 = off; 0.35 matches the engine default).
-    float bloomStrength = 0.35F;
+    float bloom = 0.35F;
 
-    // ── Style axes (data — consumed by the renderer / future subsystems) ────────
-    ParticleStyle   particleStyle   = ParticleStyle::None;
-    MotionStyle     motionStyle     = MotionStyle::Smooth;
-    GeometryStyle   geometryStyle   = GeometryStyle::Organic;
-    NoiseStyle      noiseStyle      = NoiseStyle::None;
-    TransitionStyle transitionStyle = TransitionStyle::Fade;
+    /// Animation-speed multiplier (1 = nominal).
+    float motion = 1.0F;
+
+    /// Film/digital grain amount (0 = clean).
+    float noise = 0.0F;
+
+    /// Domain-warp / distortion strength (1 = nominal).
+    float distortion = 1.0F;
+
+    /// How fast the image eases into this theme on a switch (higher = snappier).
+    float transitionSpeed = 6.0F;
 
     // ── Free-form tunables ──────────────────────────────────────────────────────
-    /// Named scalar parameters a theme can carry for shaders/effects that opt in.
-    /// Kept generic so new effects need no change to the Theme contract.
+    /// Named scalar parameters a theme can carry for effects that opt in.
     std::unordered_map<std::string, float> shaderParameters;
 };
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Enum ⇄ string (used by JSON and tooling)
-// ──────────────────────────────────────────────────────────────────────────────
-[[nodiscard]] std::string_view ToString(ParticleStyle) noexcept;
-[[nodiscard]] std::string_view ToString(MotionStyle) noexcept;
-[[nodiscard]] std::string_view ToString(GeometryStyle) noexcept;
-[[nodiscard]] std::string_view ToString(NoiseStyle) noexcept;
-[[nodiscard]] std::string_view ToString(TransitionStyle) noexcept;
-
-[[nodiscard]] bool FromString(std::string_view, ParticleStyle&) noexcept;
-[[nodiscard]] bool FromString(std::string_view, MotionStyle&) noexcept;
-[[nodiscard]] bool FromString(std::string_view, GeometryStyle&) noexcept;
-[[nodiscard]] bool FromString(std::string_view, NoiseStyle&) noexcept;
-[[nodiscard]] bool FromString(std::string_view, TransitionStyle&) noexcept;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // JSON serialization
@@ -95,7 +67,8 @@ struct Theme final {
 
 /// Parses a theme from a JSON document.  Returns false on malformed input, and
 /// on failure writes a human-readable reason to `error` when it is non-null;
-/// `out` is left unchanged in that case.
+/// `out` is left unchanged in that case.  Fields absent from the document keep
+/// their default value, so partial theme files are valid.
 [[nodiscard]] bool FromJson(std::string_view json, Theme& out, std::string* error = nullptr);
 
 } // namespace papagedon::visual

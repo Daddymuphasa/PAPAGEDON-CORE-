@@ -10,6 +10,7 @@ namespace papagedon::audio {
 constexpr size_t kFftSize = 1024;
 constexpr size_t kBeatHistorySize = 43; // adaptive-threshold window (bass energy samples)
 constexpr float kBeatThresholdMultiplier = 1.4f;
+constexpr float kBeatOnsetThreshold      = 0.12f; // min bass rise/frame for an onset
 
 // Tempo tracking (all in seconds on the audio playback timeline).
 constexpr double kMinBeatIntervalSeconds = 0.15;  // debounce; rejects <=400 BPM doubles
@@ -45,6 +46,7 @@ void AudioAnalyzer::Reset() noexcept {
     std::fill(bassHistory_.begin(), bassHistory_.end(), 0.0f);
     bassHistorySum_ = 0.0f;
     bassHistoryIndex_ = 0;
+    previousBass_ = 0.0f;
     lastBeatTimeSeconds_ = -1.0;
     beatBpmHistory_.clear();
     beatBpmIndex_ = 0;
@@ -124,10 +126,19 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     midEnergy = std::clamp(midEnergy * 25.0f, 0.0f, 1.0f);
     trebleEnergy = std::clamp(trebleEnergy * 40.0f, 0.0f, 1.0f);
 
-    // 4. Beat detection — a bass-energy spike above the recent adaptive average.
+    // 4. Beat detection — a bass spike, detected two complementary ways so kicks
+    //    still register when they ride on top of a sustained bassline:
+    //      * level:  bass energy rises clearly above its recent adaptive average.
+    //      * onset:  a sharp positive jump in bass energy since the last frame.
+    //    Either one arms a beat candidate (gated by time below).
     const float averageBass = bassHistorySum_ / static_cast<float>(kBeatHistorySize);
-    const bool bassSpike =
-        bassEnergy > averageBass * kBeatThresholdMultiplier && bassEnergy > 0.15f;
+    const float bassFlux    = bassEnergy - previousBass_;
+    previousBass_ = bassEnergy;
+
+    const bool levelSpike = bassEnergy > averageBass * kBeatThresholdMultiplier &&
+                            bassEnergy > 0.15f;
+    const bool onsetSpike = bassFlux > kBeatOnsetThreshold && bassEnergy > 0.22f;
+    const bool bassSpike  = levelSpike || onsetSpike;
 
     // Update the rolling bass history feeding the adaptive threshold above.
     bassHistorySum_ -= bassHistory_[bassHistoryIndex_];

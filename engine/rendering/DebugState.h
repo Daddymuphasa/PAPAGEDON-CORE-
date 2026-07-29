@@ -8,6 +8,10 @@ struct DebugState final {
     float bpm = 0.0F;
     float energy = 0.0F;
     float intensity = 0.0F;
+    float bass = 0.0F;
+    float mid = 0.0F;
+    float treble = 0.0F;
+    bool  beat = false;
     const char* currentExperience = "";
     const char* currentScene = "";
     const char* currentPreset = "";

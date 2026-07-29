@@ -1,0 +1,16 @@
+{
+  "id": "nebula",
+  "name": "Nebula",
+  "palette": {
+    "primary": "#B24BF3",
+    "secondary": "#3B1E6D",
+    "accent": "#FFC857",
+    "background": "#0A0417"
+  },
+  "glow": 0.5,
+  "bloom": 0.6,
+  "motion": 0.6,
+  "noise": 0.05,
+  "distortion": 1.6,
+  "transitionSpeed": 4
+}

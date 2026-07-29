@@ -45,10 +45,11 @@ private:
     std::vector<float> monoBuffer_;
     std::vector<std::complex<float>> fftOutput_;
 
-    // Beat detection state (adaptive bass-energy threshold)
+    // Beat detection state (adaptive bass-energy threshold + onset flux)
     float bassHistorySum_ = 0.0f;
     std::vector<float> bassHistory_;
     size_t bassHistoryIndex_ = 0;
+    float previousBass_ = 0.0f;
 
     // Tempo tracking — timed from the audio playback clock, so it is
     // independent of how fast the render loop calls the analyzer.

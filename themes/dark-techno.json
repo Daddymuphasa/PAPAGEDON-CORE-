@@ -1,0 +1,16 @@
+{
+  "id": "dark-techno",
+  "name": "Dark Techno",
+  "palette": {
+    "primary": "#AEB6C2",
+    "secondary": "#1B2A4A",
+    "accent": "#E23B3B",
+    "background": "#040406"
+  },
+  "glow": 0.22,
+  "bloom": 0.22,
+  "motion": 0.9,
+  "noise": 0.15,
+  "distortion": 1,
+  "transitionSpeed": 5
+}
