@@ -1,5 +1,6 @@
 add_library(papagedon-audio
     AudioAnalyzer.cpp
+    AudioCapture.cpp
     AudioFrame.cpp
     AudioInput.cpp
     AudioPlayer.cpp

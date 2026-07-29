@@ -161,6 +161,8 @@ bool DemoConfig::Load(const std::string& path) {
         else if (key == "targetFPS")        asInt(targetFPS);
         else if (key == "theme")            asStr(theme);
         else if (key == "audioFile")        asStr(audioFile);
+        else if (key == "audioSource")      asStr(audioSource);
+        else if (key == "captureDevice")    asInt(captureDevice);
         else if (key == "showDebugOverlay") asBool(showDebugOverlay);
         else if (key == "masterBrightness") asFloat(masterBrightness);
         else if (key == "masterGlow")       asFloat(masterGlow);
@@ -189,6 +191,8 @@ bool DemoConfig::Save(const std::string& path) const {
     file << "  \"targetFPS\": "        << targetFPS                << ",\n";
     file << "  \"theme\": "            << quote(theme)             << ",\n";
     file << "  \"audioFile\": "        << quote(audioFile)         << ",\n";
+    file << "  \"audioSource\": "      << quote(audioSource)       << ",\n";
+    file << "  \"captureDevice\": "    << captureDevice            << ",\n";
     file << "  \"showDebugOverlay\": " << boolean(showDebugOverlay) << ",\n";
     file << "  \"masterBrightness\": " << masterBrightness         << ",\n";
     file << "  \"masterGlow\": "       << masterGlow               << ",\n";

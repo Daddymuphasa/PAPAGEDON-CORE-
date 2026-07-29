@@ -85,28 +85,58 @@ bool Runtime::Initialize(const std::string& audioPath) {
         splash("Theme: " + themeManager_.CurrentTheme().name, 0.50F);
     }
 
-    // ── Audio (non-fatal end to end) ─────────────────────────────────────────────
-    // Precedence: explicit CLI path > config audioFile > none.
-    std::string clip = !audioPath.empty() ? audioPath : config_.audioFile;
-    if (clip.empty()) {
-        logger_.INFO("No audio file configured — running visuals without audio.");
-    } else if (!audioInput_.Load(clip)) {
-        logger_.ERROR("Could not load audio file '" + clip + "' — running without audio.");
-        clip.clear();
-    } else {
-        audioFileName_ = clip;
-        logger_.INFO("Loaded audio file '" + clip + "'.");
-        splash("Loaded audio: " + clip, 0.70F);
+    // ── Audio source ─────────────────────────────────────────────────────────────
+    // "input"/"loopback" react to a LIVE device (the DJ booth); "file" plays a clip.
+    // Env overrides: PAPAGEDON_AUDIO=input|loopback|file, PAPAGEDON_CAPTURE_DEVICE=<n>.
+    std::string audioSource = config_.audioSource;
+    if (const char* const src = std::getenv("PAPAGEDON_AUDIO")) {
+        audioSource = src;
+    }
+    int captureDevice = config_.captureDevice;
+    if (const char* const dev = std::getenv("PAPAGEDON_CAPTURE_DEVICE")) {
+        captureDevice = std::atoi(dev);
     }
 
-    if (!audioPlayer_.Initialize()) {
-        logger_.ERROR("Audio device unavailable — running visuals without playback.");
-        audioReady_ = false;
-    } else {
-        audioPlayer_.Load(&audioInput_);
-        audioReady_ = !clip.empty();
-        logger_.INFO("Audio device ready.");
-        splash("Audio device ready...", 0.90F);
+    if (audioSource == "input" || audioSource == "loopback") {
+        const bool loopback = (audioSource == "loopback");
+        if (audioCapture_.Initialize(captureDevice, loopback) && audioCapture_.Start()) {
+            liveAudio_     = true;
+            audioReady_    = true;
+            audioFileName_ = "LIVE - " + audioCapture_.DeviceName();
+            logger_.INFO("Live audio input: " + audioCapture_.DeviceName() + " @ " +
+                         std::to_string(audioCapture_.SampleRate()) + " Hz, " +
+                         std::to_string(audioCapture_.Channels()) + " ch.");
+            splash("Live audio: " + audioCapture_.DeviceName(), 0.90F);
+        } else {
+            logger_.ERROR("Could not open live audio (" + audioSource +
+                          ") — falling back to file.");
+        }
+    }
+
+    // ── Audio file (used unless a live source is active) ─────────────────────────
+    if (!liveAudio_) {
+        // Precedence: explicit CLI path > config audioFile > none.
+        std::string clip = !audioPath.empty() ? audioPath : config_.audioFile;
+        if (clip.empty()) {
+            logger_.INFO("No audio file configured — running visuals without audio.");
+        } else if (!audioInput_.Load(clip)) {
+            logger_.ERROR("Could not load audio file '" + clip + "' — running without audio.");
+            clip.clear();
+        } else {
+            audioFileName_ = clip;
+            logger_.INFO("Loaded audio file '" + clip + "'.");
+            splash("Loaded audio: " + clip, 0.70F);
+        }
+
+        if (!audioPlayer_.Initialize()) {
+            logger_.ERROR("Audio device unavailable — running visuals without playback.");
+            audioReady_ = false;
+        } else {
+            audioPlayer_.Load(&audioInput_);
+            audioReady_ = !clip.empty();
+            logger_.INFO("Audio device ready.");
+            splash("Audio device ready...", 0.90F);
+        }
     }
 
     // ── Apply demo settings ──────────────────────────────────────────────────────
@@ -147,9 +177,13 @@ void Runtime::Run() {
     auto previousFrameTime = std::chrono::steady_clock::now();
     logger_.INFO("Runtime loop started.");
 
-    audioPlayer_.Play();
-    if (audioReady_) {
-        logger_.INFO("Playback started.");
+    if (liveAudio_) {
+        logger_.INFO("Live capture active — reacting to the booth.");
+    } else {
+        audioPlayer_.Play();
+        if (audioReady_) {
+            logger_.INFO("Playback started.");
+        }
     }
 
     while (running_.load(std::memory_order_acquire)) {
@@ -171,8 +205,10 @@ void Runtime::Shutdown() noexcept {
 
     // Persist the last selected theme / audio so the next launch restores them.
     try {
-        config_.theme     = std::string(themeManager_.CurrentId());
-        config_.audioFile = audioFileName_;
+        config_.theme = std::string(themeManager_.CurrentId());
+        if (!liveAudio_) {
+            config_.audioFile = audioFileName_;  // don't overwrite with a live device name
+        }
         if (config_.Save(configPath_)) {
             logger_.INFO("Saved demo config '" + configPath_ + "'.");
         }
@@ -180,6 +216,7 @@ void Runtime::Shutdown() noexcept {
         // Persisting config is best-effort; never let it break shutdown.
     }
 
+    audioCapture_.Shutdown();
     audioPlayer_.Shutdown();
     audioInput_.Close();
     renderer_.Shutdown();
@@ -253,30 +290,45 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     }
 
-    // ── 1. AudioPlayer ────────────────────────────────────────────────────────
-    audioPlayer_.Update();
+    // ── 1. AudioPlayer (file mode only) ────────────────────────────────────────
+    if (!liveAudio_) {
+        audioPlayer_.Update();
+    }
 
-    // ── 2. AudioInput & AudioAnalyzer ─────────────────────────────────────────
+    // ── 2. Audio window → AudioAnalyzer ────────────────────────────────────────
     audio::AudioFrame audioFrame{};
-    
-    const uint64_t currentFrame = audioPlayer_.GetPlaybackPositionInFrames();
-    const uint32_t channels = audioInput_.Channels();
-    const uint32_t sampleRate = audioInput_.SampleRate();
-    const uint64_t totalFrames = audioInput_.FrameCount();
-    
-    if (sampleRate > 0 && totalFrames > 0 && currentFrame < totalFrames) {
-        // Read up to 1024 frames starting from the current playback position
-        const uint64_t framesToRead = std::min<uint64_t>(1024, totalFrames - currentFrame);
-        const std::span<const float> samples = audioInput_.GetSamples();
-        const float* src = samples.data() + (currentFrame * channels);
-        
-        audioFrame.samples = std::span<const float>(src, framesToRead * channels);
-        audioFrame.sampleRate = sampleRate;
-        audioFrame.channelCount = channels;
-        // Audio-clock timestamp of this window; keeps tempo/beat timing
-        // independent of the render frame rate.
-        audioFrame.timestampSeconds =
-            static_cast<double>(currentFrame) / static_cast<double>(sampleRate);
+
+    if (liveAudio_) {
+        // Live: the most recent window captured from the DJ booth / interface.
+        const uint32_t channels = audioCapture_.Channels();
+        const uint32_t sampleRate = audioCapture_.SampleRate();
+        audioCapture_.ReadLatest(captureBuffer_, 1024);
+        if (channels > 0 && !captureBuffer_.empty()) {
+            audioFrame.samples          = std::span<const float>(captureBuffer_.data(), captureBuffer_.size());
+            audioFrame.sampleRate       = sampleRate;
+            audioFrame.channelCount     = channels;
+            audioFrame.timestampSeconds = audioCapture_.CapturedSeconds();
+        }
+    } else {
+        // File: read the window at the current playback position.
+        const uint64_t currentFrame = audioPlayer_.GetPlaybackPositionInFrames();
+        const uint32_t channels = audioInput_.Channels();
+        const uint32_t sampleRate = audioInput_.SampleRate();
+        const uint64_t totalFrames = audioInput_.FrameCount();
+
+        if (sampleRate > 0 && totalFrames > 0 && currentFrame < totalFrames) {
+            const uint64_t framesToRead = std::min<uint64_t>(1024, totalFrames - currentFrame);
+            const std::span<const float> samples = audioInput_.GetSamples();
+            const float* src = samples.data() + (currentFrame * channels);
+
+            audioFrame.samples = std::span<const float>(src, framesToRead * channels);
+            audioFrame.sampleRate = sampleRate;
+            audioFrame.channelCount = channels;
+            // Audio-clock timestamp of this window; keeps tempo/beat timing
+            // independent of the render frame rate.
+            audioFrame.timestampSeconds =
+                static_cast<double>(currentFrame) / static_cast<double>(sampleRate);
+        }
     }
 
     const audio::ExperienceSignals signals = audioAnalyzer_.Update(audioFrame);

@@ -26,6 +26,11 @@ struct DemoConfig final {
     std::string theme     = "cyberpunk";  ///< Theme id to select on launch.
     std::string audioFile;                ///< Audio clip to auto-load ("" = none).
 
+    /// Audio source: "file" (play audioFile), "input" (live capture device), or
+    /// "loopback" (capture system output). Live modes react to the DJ booth.
+    std::string audioSource   = "file";
+    int         captureDevice = -1;        ///< Capture/output device index (-1 = default).
+
     bool showDebugOverlay = false;
 
     // ── Master output trims (operator globals; 1.0 = neutral) ───────────────────

@@ -124,6 +124,7 @@ void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int 
     ss << std::setprecision(2);
     ss << "Frame Time:        " << frameTimeMs << " ms\n";
     ss << "Current Theme:     " << state.currentTheme << "\n";
+    ss << "Current Shader:    " << state.currentShader << "\n";
     ss << std::setprecision(1);
     ss << "BPM:               " << state.bpm << "\n";
     ss << std::setprecision(2);
@@ -176,6 +177,17 @@ void DebugOverlayRenderer::RenderSplash(const char* version, const char* status,
     const float statusScale = 2.0F;
     RenderText(status, centeredX(static_cast<int>(std::string(status).size()), statusScale),
                static_cast<float>(windowHeight) * 0.34F, statusScale, windowWidth, windowHeight);
+}
+
+void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int windowHeight) {
+    if (!initialized_ || text == nullptr || *text == '\0') {
+        return;
+    }
+    const int len = static_cast<int>(std::string(text).size());
+    const float scale = 3.0F;
+    const float x = (static_cast<float>(windowWidth) - static_cast<float>(len) * 8.0F * scale) * 0.5F;
+    const float y = static_cast<float>(windowHeight) * 0.12F;
+    RenderText(text, x, y, scale, windowWidth, windowHeight);
 }
 
 void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float scale, int windowWidth, int windowHeight) {

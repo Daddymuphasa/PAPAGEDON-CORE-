@@ -11,12 +11,17 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace papagedon {
 
@@ -68,6 +73,19 @@ public:
     bool        debugKeyWasPressed  = false;
     DebugOverlayRenderer debugOverlay;
     ShaderUniforms smoothedUniforms;
+
+    // ── Shader library ──────────────────────────────────────────────────────────
+    // Slot 0 is the built-in reactive shader (its own 12 forms via Auto-VJ); the
+    // rest are premium pack shaders (e.g. Badman Experience) compiled from .frag
+    // files at startup. '[' / ']' cycle the active shader live for a VJ set.
+    std::vector<std::unique_ptr<ShaderManager>> shaderLib;   // extra shaders (slot 1..N)
+    std::vector<std::string>                    shaderNames; // names for every slot (0..N)
+    int  activeShader        = 0;
+    bool prevShaderKeyPressed = false;
+    bool nextShaderKeyPressed = false;
+    // Brief on-screen name toast after a switch.
+    std::string toastText;
+    double      toastUntil = 0.0;
 
     // ── Pattern cross-fade state ───────────────────────────────────────────────
     // Tracks the signature form the shader is drawing.  When the preset's pattern
@@ -197,7 +215,8 @@ bool OpenGLRenderer::Initialize() {
     // gl_VertexID.  An empty VAO is still required by the OpenGL core profile.
     glGenVertexArrays(1, &fullscreenVAO_);
 
-    // ── Shader ──────────────────────────────────────────────────────────────
+    // ── Shader library ────────────────────────────────────────────────────────
+    // Slot 0: the built-in reactive shader (12 Auto-VJ forms).
     if (!shaderManager_.Compile(
             ShaderManager::DefaultVertexSource(),
             ShaderManager::DefaultFragmentSource())) {
@@ -207,6 +226,56 @@ bool OpenGLRenderer::Initialize() {
         implementation_->window = nullptr;
         glfwTerminate();
         return false;
+    }
+    implementation_->shaderNames.push_back("Signature (Auto-VJ forms)");
+
+    // Slots 1..N: premium pack shaders compiled from .frag files (Badman
+    // Experience by default). A file that fails to compile is skipped so a bad
+    // shader never stops the show. Override the folder with PAPAGEDON_SHADER_DIR.
+    {
+        namespace fs = std::filesystem;
+        const char* const dirEnv = std::getenv("PAPAGEDON_SHADER_DIR");
+        const std::string dir = dirEnv != nullptr
+            ? std::string(dirEnv)
+            : std::string("engine/rendering/shaders/BadmanExperiencePack/shaders");
+        std::error_code ec;
+        if (fs::is_directory(dir, ec)) {
+            std::vector<std::string> files;
+            for (const auto& entry : fs::directory_iterator(dir, ec)) {
+                if (!ec && entry.is_regular_file() && entry.path().extension() == ".frag") {
+                    files.push_back(entry.path().string());
+                }
+            }
+            std::sort(files.begin(), files.end());
+            for (const std::string& file : files) {
+                std::ifstream in(file, std::ios::binary);
+                if (!in) continue;
+                std::ostringstream ss; ss << in.rdbuf();
+                auto sm = std::make_unique<ShaderManager>();
+                if (sm->Compile(ShaderManager::DefaultVertexSource(), ss.str().c_str())) {
+                    std::string name = fs::path(file).stem().string();
+                    if (name.size() > 3 && name[2] == '_' &&
+                        std::isdigit(static_cast<unsigned char>(name[0]))) {
+                        name = name.substr(3);                 // strip "NN_"
+                    }
+                    for (char& ch : name) if (ch == '_') ch = ' ';
+                    if (!name.empty()) name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
+                    implementation_->shaderLib.push_back(std::move(sm));
+                    implementation_->shaderNames.push_back(name);
+                } else {
+                    std::fprintf(stderr, "[ShaderLib] skipped (compile failed): %s\n", file.c_str());
+                }
+            }
+        }
+    }
+
+    // Optional starting shader (index into the library: 0 = signature, 1..N = pack).
+    if (const char* const startShader = std::getenv("PAPAGEDON_START_SHADER")) {
+        const int idx = std::atoi(startShader);
+        const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
+        if (idx >= 0 && idx < count) {
+            implementation_->activeShader = idx;
+        }
     }
 
     // ── Debug overlay ────────────────────────────────────────────────────────
@@ -451,10 +520,16 @@ void OpenGLRenderer::Render(
     glClear(GL_COLOR_BUFFER_BIT);
 
     // ── Fullscreen shader pass ────────────────────────────────────────────
+    // The active library slot draws; the same ShaderUniforms feed every shader
+    // (each uses whichever uniforms it declares), so audio + theme reactivity is
+    // identical across the whole pack.
     const float time = static_cast<float>(currentTime);
 
-    shaderManager_.Bind();
-    shaderManager_.SetUniforms(smoothed, time, width, height);
+    ShaderManager& active = (implementation_->activeShader == 0)
+        ? shaderManager_
+        : *implementation_->shaderLib[implementation_->activeShader - 1];
+    active.Bind();
+    active.SetUniforms(smoothed, time, width, height);
 
     glBindVertexArray(fullscreenVAO_);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -467,7 +542,15 @@ void OpenGLRenderer::Render(
         stateWithFps.rendererBackend = BackendName();
         stateWithFps.windowWidth     = width;
         stateWithFps.windowHeight    = height;
+        stateWithFps.currentShader   = implementation_->shaderNames[
+                                          static_cast<std::size_t>(implementation_->activeShader)].c_str();
         implementation_->debugOverlay.Render(stateWithFps, width, height);
+    }
+
+    // Brief shader-name toast after a switch (shown even with the overlay off).
+    if (currentTime < implementation_->toastUntil) {
+        implementation_->debugOverlay.RenderToast(
+            implementation_->toastText.c_str(), width, height);
     }
 }
 
@@ -545,6 +628,22 @@ bool OpenGLRenderer::EndFrame() {
         SetFullscreen(!implementation_->isFullscreen);
     }
     implementation_->fullscreenKeyWasPressed = fsKeyIsPressed;
+
+    // '[' / ']' cycle the active shader through the library (signature + pack).
+    const int shaderCount = 1 + static_cast<int>(implementation_->shaderLib.size());
+    const auto switchShader = [&](int delta) {
+        implementation_->activeShader =
+            (implementation_->activeShader + delta + shaderCount) % shaderCount;
+        implementation_->toastText =
+            implementation_->shaderNames[static_cast<std::size_t>(implementation_->activeShader)];
+        implementation_->toastUntil = glfwGetTime() + 2.2;
+    };
+    const bool prevSh = glfwGetKey(implementation_->window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS;
+    if (prevSh && !implementation_->prevShaderKeyPressed && shaderCount > 1) switchShader(-1);
+    implementation_->prevShaderKeyPressed = prevSh;
+    const bool nextSh = glfwGetKey(implementation_->window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS;
+    if (nextSh && !implementation_->nextShaderKeyPressed && shaderCount > 1) switchShader(1);
+    implementation_->nextShaderKeyPressed = nextSh;
 
     // F12 toggles the debug overlay.
     const bool debugKeyIsPressed =
@@ -654,6 +753,10 @@ void OpenGLRenderer::Shutdown() noexcept {
     implementation_->debugOverlay.Shutdown();
 
     shaderManager_.Shutdown();
+    for (auto& sm : implementation_->shaderLib) {
+        if (sm) sm->Shutdown();
+    }
+    implementation_->shaderLib.clear();
 
     if (fullscreenVAO_ != 0u) {
         glDeleteVertexArrays(1, &fullscreenVAO_);

@@ -3,9 +3,11 @@
 #include <atomic>
 #include <chrono>
 #include <string>
+#include <vector>
 #include <AudioInput.h>
 #include <AudioPlayer.h>
 #include <AudioAnalyzer.h>
+#include <AudioCapture.h>
 #include <ExperienceGraph.h>
 #include <AutoDirector.h>
 #include <presets/PresetManager.h>
@@ -44,6 +46,7 @@ private:
     utilities::Logger& logger_;
     audio::AudioInput audioInput_;
     audio::AudioPlayer audioPlayer_;
+    audio::AudioCapture audioCapture_;
     audio::AudioAnalyzer audioAnalyzer_;
     ExperienceGraph experienceGraph_;
     PresetManager presetManager_;
@@ -57,8 +60,10 @@ private:
     // ── Demo Mode ───────────────────────────────────────────────────────────────
     DemoConfig  config_;
     std::string configPath_ = "config/demo.json";
-    std::string audioFileName_;      ///< Loaded clip name, for the overlay.
+    std::string audioFileName_;      ///< Loaded clip / live device name, for the overlay.
     bool        audioReady_ = false; ///< False when audio is unavailable.
+    bool        liveAudio_  = false; ///< True when reacting to a live capture device.
+    std::vector<float> captureBuffer_; ///< Reused live-audio window (no per-frame alloc).
 
     // Auto-VJ: when enabled, the AutoDirector chooses presets from the live
     // experience.  Toggled with 'A', or started on with PAPAGEDON_AUTOVJ; any

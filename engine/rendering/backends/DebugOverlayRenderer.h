@@ -20,6 +20,10 @@ public:
     void RenderSplash(const char* version, const char* status, float progress,
                       int windowWidth, int windowHeight);
 
+    /// Draws a short centred text toast near the bottom of the frame — used to
+    /// flash the active shader name when the operator switches shaders live.
+    void RenderToast(const char* text, int windowWidth, int windowHeight);
+
     void Shutdown() noexcept;
 
 private:

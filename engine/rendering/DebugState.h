@@ -16,6 +16,7 @@ struct DebugState final {
     const char* currentScene = "";
     const char* currentPreset = "";
     const char* currentTheme = "";
+    const char* currentShader = "";
     const char* currentAudioFile = "";
     const char* rendererBackend = "";
     int   windowWidth = 0;
