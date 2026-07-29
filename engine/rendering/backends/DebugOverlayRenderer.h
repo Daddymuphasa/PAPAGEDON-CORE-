@@ -14,6 +14,12 @@ public:
 
     bool Initialize();
     void Render(const DebugState& state, int windowWidth, int windowHeight);
+
+    /// Draws the startup splash: logo, engine version, a status line, and a text
+    /// progress bar (progress in [0, 1]).  Used while the engine initializes.
+    void RenderSplash(const char* version, const char* status, float progress,
+                      int windowWidth, int windowHeight);
+
     void Shutdown() noexcept;
 
 private:

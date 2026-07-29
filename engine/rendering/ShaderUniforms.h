@@ -54,6 +54,11 @@ struct ShaderUniforms final {
     int   previousPatternMode = 0;    ///< Outgoing PatternMode during a switch.
     float patternBlend        = 1.0F; ///< 0 = previous form, 1 = active form.
     float detail              = 1.0F; ///< Fractal detail emphasis.
+
+    // ── Master output trims (Demo Mode operator globals; 1.0 = neutral) ─────────
+    float masterBrightness = 1.0F;  ///< Final linear gain.
+    float masterGlow       = 1.0F;  ///< Scales the glow contribution.
+    float masterExposure   = 1.0F;  ///< Pre-bloom scene gain.
 };
 
 } // namespace papagedon

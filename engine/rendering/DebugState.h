@@ -16,6 +16,10 @@ struct DebugState final {
     const char* currentScene = "";
     const char* currentPreset = "";
     const char* currentTheme = "";
+    const char* currentAudioFile = "";
+    const char* rendererBackend = "";
+    int   windowWidth = 0;
+    int   windowHeight = 0;
     bool  autoMode = false;
     float transitionProgress = 0.0F;
 };

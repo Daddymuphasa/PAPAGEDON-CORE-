@@ -11,6 +11,40 @@ Renderer::~Renderer() {
     Shutdown();
 }
 
+void Renderer::Configure(bool fullscreen, bool vsync) {
+    if (backend_ != nullptr) {
+        backend_->Configure(fullscreen, vsync);
+    }
+}
+
+void Renderer::SetMasterControls(float brightness, float glow, float exposure) {
+    if (backend_ != nullptr) {
+        backend_->SetMasterControls(brightness, glow, exposure);
+    }
+}
+
+void Renderer::SetDemoMode(bool enabled) {
+    if (backend_ != nullptr) {
+        backend_->SetDemoMode(enabled);
+    }
+}
+
+void Renderer::SetDebugOverlay(bool visible) {
+    if (backend_ != nullptr) {
+        backend_->SetDebugOverlay(visible);
+    }
+}
+
+void Renderer::PresentSplash(const std::string& status, float progress) {
+    if (backend_ != nullptr) {
+        backend_->PresentSplash(status, progress);
+    }
+}
+
+const char* Renderer::BackendName() const noexcept {
+    return backend_ != nullptr ? backend_->BackendName() : "None";
+}
+
 bool Renderer::Initialize() {
     return backend_ != nullptr && backend_->Initialize();
 }

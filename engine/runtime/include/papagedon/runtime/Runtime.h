@@ -12,6 +12,7 @@
 #include <SceneDNA.h>
 #include <Renderer.h>
 #include <ThemeManager.h>
+#include <papagedon/runtime/DemoConfig.h>
 
 namespace papagedon::utilities {
 class Logger;
@@ -52,6 +53,12 @@ private:
     Renderer renderer_;
     std::atomic_bool running_{false};
     bool initialized_ = false;
+
+    // ── Demo Mode ───────────────────────────────────────────────────────────────
+    DemoConfig  config_;
+    std::string configPath_ = "config/demo.json";
+    std::string audioFileName_;      ///< Loaded clip name, for the overlay.
+    bool        audioReady_ = false; ///< False when audio is unavailable.
 
     // Auto-VJ: when enabled, the AutoDirector chooses presets from the live
     // experience.  Toggled with 'A', or started on with PAPAGEDON_AUTOVJ; any

@@ -95,6 +95,27 @@ public:
 
     bool autoKeyWasPressed = false;
     bool pendingAutoToggle = false;
+
+    // ── Demo Mode state ─────────────────────────────────────────────────────────
+    float masterBrightness = 1.0f;
+    float masterGlow       = 1.0f;
+    float masterExposure   = 1.0f;
+    bool  fxEnabled        = true;   // F10 toggles visual FX (glow/bloom/noise)
+    bool  demoMode         = false;  // F9 toggles presentation mode
+
+    // Fullscreen toggle bookkeeping — windowed geometry to restore.
+    bool isFullscreen = false;
+    int  windowedX = 100, windowedY = 100, windowedW = 1280, windowedH = 720;
+
+    // Cursor auto-hide (demo/fullscreen): hide after a few idle seconds.
+    double lastActivityTime = 0.0;
+    double lastCursorX = 0.0, lastCursorY = 0.0;
+    bool   cursorHidden = false;
+
+    // Extra control edges.
+    bool demoKeyWasPressed       = false; // F9
+    bool fxKeyWasPressed         = false; // F10
+    bool fullscreenKeyWasPressed = false; // F11
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -126,15 +147,35 @@ bool OpenGLRenderer::Initialize() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    implementation_->window = glfwCreateWindow(
-        1280, 720,
-        "PAPAGEDON Core v0.0.1",
-        nullptr, nullptr);
+    // Fullscreen when requested (falls back to a window on any failure), so a
+    // bad display setup never stops the app from starting.
+    GLFWmonitor* windowMonitor = nullptr;
+    int createW = 1280;
+    int createH = 720;
+    if (fullscreenRequested_) {
+        if (GLFWmonitor* const monitor = glfwGetPrimaryMonitor(); monitor != nullptr) {
+            if (const GLFWvidmode* const mode = glfwGetVideoMode(monitor); mode != nullptr) {
+                createW = mode->width;
+                createH = mode->height;
+                windowMonitor = monitor;
+            }
+        }
+    }
 
+    implementation_->window = glfwCreateWindow(
+        createW, createH, "PAPAGEDON Core v0.0.1", windowMonitor, nullptr);
+
+    if (implementation_->window == nullptr && windowMonitor != nullptr) {
+        // Fullscreen creation failed — retry windowed.
+        implementation_->window =
+            glfwCreateWindow(1280, 720, "PAPAGEDON Core v0.0.1", nullptr, nullptr);
+        windowMonitor = nullptr;
+    }
     if (implementation_->window == nullptr) {
         glfwTerminate();
         return false;
     }
+    implementation_->isFullscreen = (windowMonitor != nullptr);
 
     glfwMakeContextCurrent(implementation_->window);
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
@@ -174,8 +215,106 @@ bool OpenGLRenderer::Initialize() {
     implementation_->renderedFrameCount = 0;
     implementation_->debugOverlay.Initialize();
 
+    // Cursor-activity baseline for demo-mode auto-hide.
+    implementation_->lastActivityTime = glfwGetTime();
+    glfwGetCursorPos(implementation_->window,
+                     &implementation_->lastCursorX, &implementation_->lastCursorY);
+
     initialized_ = true;
     return true;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Demo-mode configuration
+// ──────────────────────────────────────────────────────────────────────────────
+void OpenGLRenderer::Configure(const bool fullscreen, const bool vsync) {
+    fullscreenRequested_ = fullscreen;
+    vsyncEnabled_        = vsync;
+}
+
+void OpenGLRenderer::SetMasterControls(const float brightness, const float glow,
+                                       const float exposure) {
+    implementation_->masterBrightness = brightness;
+    implementation_->masterGlow       = glow;
+    implementation_->masterExposure   = exposure;
+}
+
+void OpenGLRenderer::SetDemoMode(const bool enabled) {
+    implementation_->demoMode = enabled;
+    if (implementation_->window == nullptr) {
+        return;
+    }
+    // Demo mode goes fullscreen and suppresses the overlay; leaving it restores
+    // the cursor and a window.
+    if (enabled) {
+        if (!implementation_->isFullscreen) {
+            SetFullscreen(true);
+        }
+        implementation_->showDebugOverlay = false;
+    } else {
+        glfwSetInputMode(implementation_->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        implementation_->cursorHidden = false;
+    }
+    implementation_->lastActivityTime = glfwGetTime();
+}
+
+void OpenGLRenderer::SetDebugOverlay(const bool visible) {
+    implementation_->showDebugOverlay = visible;
+}
+
+const char* OpenGLRenderer::BackendName() const noexcept {
+    return "OpenGL 4.6 Core";
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PresentSplash — one branded loading frame
+// ──────────────────────────────────────────────────────────────────────────────
+void OpenGLRenderer::PresentSplash(const std::string& status, const float progress) {
+    if (!initialized_ || implementation_->window == nullptr) {
+        return;
+    }
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(implementation_->window, &width, &height);
+    glViewport(0, 0, width, height);
+    glClearColor(0.02F, 0.01F, 0.05F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    implementation_->debugOverlay.RenderSplash(
+        "PAPAGEDON Core  v0.0.1", status.c_str(), progress, width, height);
+
+    glfwSwapBuffers(implementation_->window);
+    glfwPollEvents();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// SetFullscreen
+// ──────────────────────────────────────────────────────────────────────────────
+void OpenGLRenderer::SetFullscreen(const bool enable) {
+    if (implementation_->window == nullptr || enable == implementation_->isFullscreen) {
+        return;
+    }
+    if (enable) {
+        glfwGetWindowPos(implementation_->window,
+                         &implementation_->windowedX, &implementation_->windowedY);
+        glfwGetWindowSize(implementation_->window,
+                          &implementation_->windowedW, &implementation_->windowedH);
+        GLFWmonitor* const monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* const mode = monitor != nullptr ? glfwGetVideoMode(monitor) : nullptr;
+        if (mode == nullptr) {
+            return; // no display info — stay windowed rather than fail
+        }
+        glfwSetWindowMonitor(implementation_->window, monitor, 0, 0,
+                             mode->width, mode->height, mode->refreshRate);
+        implementation_->isFullscreen = true;
+    } else {
+        glfwSetWindowMonitor(implementation_->window, nullptr,
+                             implementation_->windowedX, implementation_->windowedY,
+                             implementation_->windowedW, implementation_->windowedH, 0);
+        implementation_->isFullscreen = false;
+    }
+    // Changing the monitor can reset the swap interval — re-apply it.
+    glfwSwapInterval(vsyncEnabled_ ? 1 : 0);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -249,11 +388,20 @@ void OpenGLRenderer::Render(
     smoothed.secondaryColor = LerpColor(smoothed.secondaryColor, ToColor3(theme.palette.secondary),  themeAlpha);
     smoothed.accentColor    = LerpColor(smoothed.accentColor,    ToColor3(theme.palette.accent),     themeAlpha);
     smoothed.background     = LerpColor(smoothed.background,     ToColor3(theme.palette.background), themeAlpha);
-    smoothed.glow       += (theme.glow       - smoothed.glow)       * themeAlpha;
-    smoothed.bloom      += (theme.bloom      - smoothed.bloom)      * themeAlpha;
-    smoothed.motion     += (theme.motion     - smoothed.motion)     * themeAlpha;
-    smoothed.noise      += (theme.noise      - smoothed.noise)      * themeAlpha;
-    smoothed.distortion += (theme.distortion - smoothed.distortion) * themeAlpha;
+    // Visual FX (F10) gate glow/bloom/noise; when off they ease smoothly to zero,
+    // leaving the clean base pattern.  Motion and distortion are core animation,
+    // not "FX", so they are unaffected.
+    const float fx = implementation_->fxEnabled ? 1.0f : 0.0f;
+    smoothed.glow       += (theme.glow  * fx    - smoothed.glow)       * themeAlpha;
+    smoothed.bloom      += (theme.bloom * fx    - smoothed.bloom)      * themeAlpha;
+    smoothed.motion     += (theme.motion        - smoothed.motion)     * themeAlpha;
+    smoothed.noise      += (theme.noise * fx    - smoothed.noise)      * themeAlpha;
+    smoothed.distortion += (theme.distortion    - smoothed.distortion) * themeAlpha;
+
+    // Master output trims (Demo Mode operator globals) — applied directly.
+    smoothed.masterBrightness = implementation_->masterBrightness;
+    smoothed.masterGlow       = implementation_->masterGlow;
+    smoothed.masterExposure   = implementation_->masterExposure;
 
     // ── Preset form & behaviour ─────────────────────────────────────────────────
     // The preset owns the *form* axis — which signature pattern is drawn and its
@@ -315,7 +463,10 @@ void OpenGLRenderer::Render(
     // ── Debug overlay (rendered on top, uses its own program internally) ──
     if (implementation_->showDebugOverlay) {
         DebugState stateWithFps = debugState;
-        stateWithFps.fps = static_cast<float>(implementation_->currentFps);
+        stateWithFps.fps             = static_cast<float>(implementation_->currentFps);
+        stateWithFps.rendererBackend = BackendName();
+        stateWithFps.windowWidth     = width;
+        stateWithFps.windowHeight    = height;
         implementation_->debugOverlay.Render(stateWithFps, width, height);
     }
 }
@@ -355,9 +506,9 @@ bool OpenGLRenderer::EndFrame() {
     }
     implementation_->spaceWasPressed = spaceIsPressed;
 
-    // 'R' reloads the current theme's JSON from disk (no restart).
+    // F8 reloads the current theme's JSON from disk (no restart).
     const bool reloadIsPressed =
-        glfwGetKey(implementation_->window, GLFW_KEY_R) == GLFW_PRESS;
+        glfwGetKey(implementation_->window, GLFW_KEY_F8) == GLFW_PRESS;
     if (reloadIsPressed && !implementation_->reloadKeyWasPressed) {
         implementation_->pendingReload = true;
     }
@@ -371,6 +522,30 @@ bool OpenGLRenderer::EndFrame() {
     }
     implementation_->autoKeyWasPressed = autoKeyIsPressed;
 
+    // F9 toggles demo presentation mode (fullscreen + cursor hide + no overlay).
+    const bool demoKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_F9) == GLFW_PRESS;
+    if (demoKeyIsPressed && !implementation_->demoKeyWasPressed) {
+        SetDemoMode(!implementation_->demoMode);
+    }
+    implementation_->demoKeyWasPressed = demoKeyIsPressed;
+
+    // F10 toggles visual FX (glow / bloom / noise).
+    const bool fxKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_F10) == GLFW_PRESS;
+    if (fxKeyIsPressed && !implementation_->fxKeyWasPressed) {
+        implementation_->fxEnabled = !implementation_->fxEnabled;
+    }
+    implementation_->fxKeyWasPressed = fxKeyIsPressed;
+
+    // F11 toggles fullscreen.
+    const bool fsKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_F11) == GLFW_PRESS;
+    if (fsKeyIsPressed && !implementation_->fullscreenKeyWasPressed) {
+        SetFullscreen(!implementation_->isFullscreen);
+    }
+    implementation_->fullscreenKeyWasPressed = fsKeyIsPressed;
+
     // F12 toggles the debug overlay.
     const bool debugKeyIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_F12) == GLFW_PRESS;
@@ -382,6 +557,31 @@ bool OpenGLRenderer::EndFrame() {
     // ESC requests application exit (EndFrame then reports the close).
     if (glfwGetKey(implementation_->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(implementation_->window, GLFW_TRUE);
+    }
+
+    // Cursor auto-hide: hide after a few idle seconds in demo/fullscreen, and
+    // restore the moment the mouse moves.
+    {
+        double cx = 0.0;
+        double cy = 0.0;
+        glfwGetCursorPos(implementation_->window, &cx, &cy);
+        const double now = glfwGetTime();
+        const double dx = cx - implementation_->lastCursorX;
+        const double dy = cy - implementation_->lastCursorY;
+        if (dx * dx + dy * dy > 4.0) { // moved more than ~2 px
+            implementation_->lastActivityTime = now;
+            implementation_->lastCursorX = cx;
+            implementation_->lastCursorY = cy;
+            if (implementation_->cursorHidden) {
+                glfwSetInputMode(implementation_->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                implementation_->cursorHidden = false;
+            }
+        } else if (!implementation_->cursorHidden &&
+                   (implementation_->demoMode || implementation_->isFullscreen) &&
+                   now - implementation_->lastActivityTime > 3.0) {
+            glfwSetInputMode(implementation_->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            implementation_->cursorHidden = true;
+        }
     }
 
     // FPS counter and window title update.

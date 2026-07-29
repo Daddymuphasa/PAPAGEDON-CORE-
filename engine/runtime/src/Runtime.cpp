@@ -18,47 +18,49 @@ bool Runtime::Initialize(const std::string& audioPath) {
     if (initialized_) {
         return true;
     }
-    const std::string path = audioPath.empty() ? std::string{"test.mp3"} : audioPath;
-    if (!audioInput_.Load(path)) {
-        logger_.INFO("Failed to load audio file '" + path +
-                     "'. Ensure it exists in the working directory.");
-        // We do not fail initialization here, we can run without audio.
+
+    logger_.INFO("PAPAGEDON engine starting up.");
+
+    // ── Configuration ───────────────────────────────────────────────────────────
+    if (const char* const cfgEnv = std::getenv("PAPAGEDON_CONFIG")) {
+        configPath_ = cfgEnv;
+    }
+    if (config_.Load(configPath_)) {
+        logger_.INFO("Loaded demo config '" + configPath_ + "'.");
     } else {
-        logger_.INFO("Loaded audio file '" + path + "'.");
+        logger_.INFO("No demo config at '" + configPath_ + "' — using defaults.");
+    }
+    if (std::getenv("PAPAGEDON_VSYNC") != nullptr) {
+        config_.vsync = std::getenv("PAPAGEDON_VSYNC")[0] != '0';
     }
 
-    if (!audioPlayer_.Initialize()) {
-        logger_.ERROR("AudioPlayer failed to initialize.");
+    // ── Renderer first, so a splash can show while the rest initializes ──────────
+    // Renderer failure (window/context/shader) is the one unrecoverable error for
+    // a visualizer; log it clearly and exit cleanly rather than crash.
+    renderer_.Configure(config_.fullscreen, config_.vsync);
+    if (!renderer_.Initialize()) {
+        logger_.ERROR("Renderer initialization failed (window / GL context / shader "
+                      "compilation). Cannot continue.");
         return false;
     }
-    audioPlayer_.Load(&audioInput_);
+    logger_.INFO("Renderer initialized: " + std::string(renderer_.BackendName()) +
+                 ". Shaders compiled.");
 
-    initialized_ = sceneDNA_.Initialize();
-    if (!initialized_) {
-        logger_.ERROR("Scene DNA failed to initialize.");
-        return false;
-    }
-    initialized_ = renderer_.Initialize();
-    if (!initialized_) {
-        sceneDNA_.Shutdown();
-        logger_.ERROR("Renderer failed to initialize.");
-        return false;
-    }
-    if (const char* const cycle = std::getenv("PAPAGEDON_DEMO_CYCLE")) {
-        demoCycleSeconds_ = std::atof(cycle);
-        if (demoCycleSeconds_ > 0.0) {
-            logger_.INFO("Demo preset auto-cycle enabled.");
-        }
+    const auto splashStart = std::chrono::steady_clock::now();
+    const auto splash = [&](const std::string& message, float progress) {
+        logger_.INFO(message);
+        renderer_.PresentSplash(message, progress);
+    };
+    splash("Initializing engine...", 0.15F);
+
+    // ── Scene DNA (non-fatal) ────────────────────────────────────────────────────
+    if (!sceneDNA_.Initialize()) {
+        logger_.ERROR("Scene DNA failed to initialize — continuing with defaults.");
+    } else {
+        splash("Scene DNA ready...", 0.30F);
     }
 
-    if (std::getenv("PAPAGEDON_AUTOVJ") != nullptr) {
-        autoMode_ = true;
-        logger_.INFO("Auto-VJ enabled at startup.");
-    }
-
-    // Load theme JSON files so they can be edited and hot-reloaded (R key)
-    // without a rebuild.  A missing directory is fine — the seven built-in themes
-    // remain the fallback.  Override the location with PAPAGEDON_THEME_DIR.
+    // ── Themes ───────────────────────────────────────────────────────────────────
     {
         const char* const dirEnv = std::getenv("PAPAGEDON_THEME_DIR");
         const std::string themeDir = (dirEnv != nullptr) ? std::string(dirEnv)
@@ -67,29 +69,71 @@ bool Runtime::Initialize(const std::string& audioPath) {
             loaded > 0) {
             logger_.INFO("Loaded " + std::to_string(loaded) + " theme file(s) from '" +
                          themeDir + "'.");
+        } else {
+            logger_.INFO("No theme files in '" + themeDir + "' — using built-in themes.");
         }
     }
-
-    // Optional theme selection. PAPAGEDON_THEME_FILE loads a theme from JSON on
-    // disk (and exercises ReloadTheme); PAPAGEDON_THEME selects a built-in by id.
-    if (const char* const themeFile = std::getenv("PAPAGEDON_THEME_FILE")) {
-        std::string error;
-        if (themeManager_.LoadTheme(themeFile, &error)) {
-            logger_.INFO("Loaded theme '" + themeManager_.CurrentTheme().name +
-                         "' from '" + std::string(themeFile) + "'.");
-        } else {
-            logger_.INFO("Failed to load theme file: " + error);
+    {   // Select the configured theme (PAPAGEDON_THEME overrides the config value).
+        std::string themeId = config_.theme;
+        if (const char* const themeEnv = std::getenv("PAPAGEDON_THEME")) {
+            themeId = themeEnv;
         }
-    } else if (const char* const themeId = std::getenv("PAPAGEDON_THEME")) {
-        if (themeManager_.SetTheme(themeId)) {
-            logger_.INFO("Active theme: " + themeManager_.CurrentTheme().name + ".");
-        } else {
-            logger_.INFO("Unknown theme id '" + std::string(themeId) +
-                         "'; keeping default (" + themeManager_.CurrentTheme().name + ").");
+        if (!themeId.empty() && !themeManager_.SetTheme(themeId)) {
+            logger_.INFO("Unknown theme id '" + themeId + "' — keeping '" +
+                         themeManager_.CurrentTheme().name + "'.");
         }
+        splash("Theme: " + themeManager_.CurrentTheme().name, 0.50F);
     }
 
-    logger_.INFO("Runtime initialized.");
+    // ── Audio (non-fatal end to end) ─────────────────────────────────────────────
+    // Precedence: explicit CLI path > config audioFile > none.
+    std::string clip = !audioPath.empty() ? audioPath : config_.audioFile;
+    if (clip.empty()) {
+        logger_.INFO("No audio file configured — running visuals without audio.");
+    } else if (!audioInput_.Load(clip)) {
+        logger_.ERROR("Could not load audio file '" + clip + "' — running without audio.");
+        clip.clear();
+    } else {
+        audioFileName_ = clip;
+        logger_.INFO("Loaded audio file '" + clip + "'.");
+        splash("Loaded audio: " + clip, 0.70F);
+    }
+
+    if (!audioPlayer_.Initialize()) {
+        logger_.ERROR("Audio device unavailable — running visuals without playback.");
+        audioReady_ = false;
+    } else {
+        audioPlayer_.Load(&audioInput_);
+        audioReady_ = !clip.empty();
+        logger_.INFO("Audio device ready.");
+        splash("Audio device ready...", 0.90F);
+    }
+
+    // ── Apply demo settings ──────────────────────────────────────────────────────
+    renderer_.SetMasterControls(config_.masterBrightness, config_.masterGlow,
+                                config_.masterExposure);
+    renderer_.SetDebugOverlay(config_.showDebugOverlay);
+    renderer_.SetDemoMode(config_.demoMode);
+
+    if (const char* const cycle = std::getenv("PAPAGEDON_DEMO_CYCLE")) {
+        demoCycleSeconds_ = std::atof(cycle);
+        if (demoCycleSeconds_ > 0.0) {
+            logger_.INFO("Demo preset auto-cycle enabled.");
+        }
+    }
+    if (std::getenv("PAPAGEDON_AUTOVJ") != nullptr) {
+        autoMode_ = true;
+        logger_.INFO("Auto-VJ enabled at startup.");
+    }
+
+    // Hold the splash briefly so it is actually seen before the show begins.
+    using namespace std::chrono_literals;
+    while (std::chrono::steady_clock::now() - splashStart < 1200ms) {
+        renderer_.PresentSplash("Ready", 1.0F);
+    }
+
+    initialized_ = true;
+    logger_.INFO("Runtime initialized — starting show.");
     return true;
 }
 
@@ -104,6 +148,9 @@ void Runtime::Run() {
     logger_.INFO("Runtime loop started.");
 
     audioPlayer_.Play();
+    if (audioReady_) {
+        logger_.INFO("Playback started.");
+    }
 
     while (running_.load(std::memory_order_acquire)) {
         const auto currentFrameTime = std::chrono::steady_clock::now();
@@ -121,6 +168,18 @@ void Runtime::Shutdown() noexcept {
         return;
     }
     RequestStop();
+
+    // Persist the last selected theme / audio so the next launch restores them.
+    try {
+        config_.theme     = std::string(themeManager_.CurrentId());
+        config_.audioFile = audioFileName_;
+        if (config_.Save(configPath_)) {
+            logger_.INFO("Saved demo config '" + configPath_ + "'.");
+        }
+    } catch (...) {
+        // Persisting config is best-effort; never let it break shutdown.
+    }
+
     audioPlayer_.Shutdown();
     audioInput_.Close();
     renderer_.Shutdown();
@@ -254,6 +313,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
                                         : "None";
     debugState.currentPreset      = activePreset.name;
     debugState.currentTheme       = activeTheme.name.c_str();
+    debugState.currentAudioFile   = audioReady_ ? audioFileName_.c_str() : "none";
     debugState.autoMode           = autoMode_;
     debugState.transitionProgress = currentScene.transitionProgress;
 

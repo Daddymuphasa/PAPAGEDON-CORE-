@@ -89,6 +89,9 @@ uniform int   uPattern;
 uniform int   uPrevPattern;
 uniform float uPatternBlend;
 uniform float uDetail;
+uniform float uMasterBrightness;  // demo: final linear gain
+uniform float uMasterGlow;        // demo: scales the glow contribution
+uniform float uMasterExposure;    // demo: pre-bloom scene gain
 
 const float kPi  = 3.14159265358979;
 const float kTau = 6.28318530717959;
@@ -362,12 +365,15 @@ void main() {
     float brightness = 0.22 + uEnergy * 0.95;
     color *= brightness * (0.5 + 0.75 * pattern);
 
+    // Master exposure — operator pre-bloom scene gain (1 = neutral).
+    color *= uMasterExposure;
+
     // Ambient background fills the dark regions with the theme's base tone.
     color += uBackground * (1.0 - pattern) * 1.5;
 
-    // Theme glow — a soft additive lift proportional to what is already lit, so
-    // brighter themes bloom outward while restrained ones stay crisp.
-    color += color * uGlow;
+    // Theme glow — a soft additive lift proportional to what is already lit,
+    // scaled by the master glow trim.
+    color += color * uGlow * uMasterGlow;
 
     // ── Beat strobe ─────────────────────────────────────────────────────────
     // The kick fires a hard flash — palette-tinted plus a white pop — sharpened
@@ -392,6 +398,9 @@ void main() {
     // Light vignette — edges stay lit so the visual fills the screen/wall.
     float d = length(uv);
     color *= 1.0 - 0.35 * smoothstep(0.85, 1.7, d);
+
+    // Master brightness — final operator output gain (1 = neutral).
+    color *= uMasterBrightness;
 
     fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }
@@ -498,6 +507,9 @@ bool ShaderManager::Compile(
     locPrevPattern_     = glGetUniformLocation(program_, "uPrevPattern");
     locPatternBlend_    = glGetUniformLocation(program_, "uPatternBlend");
     locDetail_          = glGetUniformLocation(program_, "uDetail");
+    locMasterBrightness_ = glGetUniformLocation(program_, "uMasterBrightness");
+    locMasterGlow_       = glGetUniformLocation(program_, "uMasterGlow");
+    locMasterExposure_   = glGetUniformLocation(program_, "uMasterExposure");
 
     return true;
 }
@@ -544,6 +556,9 @@ void ShaderManager::SetUniforms(
     if (locPrevPattern_     >= 0) glUniform1i(locPrevPattern_,     u.previousPatternMode);
     if (locPatternBlend_    >= 0) glUniform1f(locPatternBlend_,    u.patternBlend);
     if (locDetail_          >= 0) glUniform1f(locDetail_,          u.detail);
+    if (locMasterBrightness_ >= 0) glUniform1f(locMasterBrightness_, u.masterBrightness);
+    if (locMasterGlow_       >= 0) glUniform1f(locMasterGlow_,       u.masterGlow);
+    if (locMasterExposure_   >= 0) glUniform1f(locMasterExposure_,   u.masterExposure);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -574,6 +589,9 @@ void ShaderManager::Shutdown() noexcept {
         locPrevPattern_     = -1;
         locPatternBlend_    = -1;
         locDetail_          = -1;
+        locMasterBrightness_ = -1;
+        locMasterGlow_       = -1;
+        locMasterExposure_   = -1;
     }
 }
 

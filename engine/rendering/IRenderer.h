@@ -4,6 +4,8 @@
 
 #include <presets/ExperiencePreset.h>
 
+#include <string>
+
 namespace papagedon {
 
 namespace visual { struct Theme; }
@@ -15,6 +17,30 @@ struct DebugState;
 class IRenderer {
 public:
     virtual ~IRenderer() = default;
+
+    // ── Demo-mode configuration (applied before / around Initialize) ────────────
+    /// Requests the initial window mode and vsync.  Must be called before
+    /// Initialize().  A fullscreen request that cannot be honoured falls back to
+    /// a window rather than failing.
+    virtual void Configure(bool fullscreen, bool vsync) = 0;
+
+    /// Sets the master output trims (operator globals; 1.0 = neutral).
+    virtual void SetMasterControls(float brightness, float glow, float exposure) = 0;
+
+    /// Enables/disables demo presentation mode (fullscreen + cursor auto-hide +
+    /// overlay suppressed).  Safe to call before or after Initialize().
+    virtual void SetDemoMode(bool enabled) = 0;
+
+    /// Sets whether the debug overlay is visible.
+    virtual void SetDebugOverlay(bool visible) = 0;
+
+    /// Draws one splash frame (logo + version + status + progress bar) and
+    /// presents it.  Requires the window/context to already exist (post
+    /// Initialize()).  `progress` is in [0, 1].
+    virtual void PresentSplash(const std::string& status, float progress) = 0;
+
+    /// Human-readable renderer backend name, e.g. "OpenGL 4.6 Core".
+    [[nodiscard]] virtual const char* BackendName() const noexcept = 0;
 
     virtual bool Initialize() = 0;
     virtual void BeginFrame() = 0;

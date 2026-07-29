@@ -1,5 +1,6 @@
 add_library(papagedon-runtime
     src/Runtime.cpp
+    src/DemoConfig.cpp
 )
 
 add_library(papagedon::runtime ALIAS papagedon-runtime)

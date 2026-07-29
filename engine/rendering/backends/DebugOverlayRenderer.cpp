@@ -133,8 +133,49 @@ void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int 
     ss << "Energy:            " << state.energy << "\n";
     ss << "Beat:              " << (state.beat ? "*" : "-") << "\n";
     ss << "ExperienceState:   " << state.currentExperience << "\n";
+    ss << "Audio File:        " << state.currentAudioFile << "\n";
+    ss << "Renderer:          " << state.rendererBackend << "\n";
+    ss << "Resolution:        " << state.windowWidth << "x" << state.windowHeight << "\n";
 
     RenderText(ss.str().c_str(), 10.0F, windowHeight - 20.0F, 2.0F, windowWidth, windowHeight);
+}
+
+void DebugOverlayRenderer::RenderSplash(const char* version, const char* status,
+                                        float progress, int windowWidth, int windowHeight) {
+    if (!initialized_) {
+        return;
+    }
+    progress = progress < 0.0F ? 0.0F : (progress > 1.0F ? 1.0F : progress);
+
+    const auto centeredX = [&](int chars, float scale) {
+        return (static_cast<float>(windowWidth) - static_cast<float>(chars) * 8.0F * scale) * 0.5F;
+    };
+
+    // Logo (placeholder wordmark).
+    const char* kLogo = "PAPAGEDON";
+    const float logoScale = 6.0F;
+    RenderText(kLogo, centeredX(9, logoScale),
+               static_cast<float>(windowHeight) * 0.60F, logoScale, windowWidth, windowHeight);
+
+    // Version.
+    const float verScale = 2.0F;
+    RenderText(version, centeredX(static_cast<int>(std::string(version).size()), verScale),
+               static_cast<float>(windowHeight) * 0.50F, verScale, windowWidth, windowHeight);
+
+    // Text progress bar: [########      ]
+    constexpr int kCells = 24;
+    const int filled = static_cast<int>(progress * kCells + 0.5F);
+    std::string bar = "[";
+    for (int i = 0; i < kCells; ++i) bar += (i < filled) ? '#' : ' ';
+    bar += "]";
+    const float barScale = 2.0F;
+    RenderText(bar.c_str(), centeredX(static_cast<int>(bar.size()), barScale),
+               static_cast<float>(windowHeight) * 0.40F, barScale, windowWidth, windowHeight);
+
+    // Status line.
+    const float statusScale = 2.0F;
+    RenderText(status, centeredX(static_cast<int>(std::string(status).size()), statusScale),
+               static_cast<float>(windowHeight) * 0.34F, statusScale, windowWidth, windowHeight);
 }
 
 void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float scale, int windowWidth, int windowHeight) {

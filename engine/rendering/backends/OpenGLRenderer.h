@@ -16,6 +16,13 @@ public:
     OpenGLRenderer(const OpenGLRenderer&) = delete;
     OpenGLRenderer& operator=(const OpenGLRenderer&) = delete;
 
+    void Configure(bool fullscreen, bool vsync) override;
+    void SetMasterControls(float brightness, float glow, float exposure) override;
+    void SetDemoMode(bool enabled) override;
+    void SetDebugOverlay(bool visible) override;
+    void PresentSplash(const std::string& status, float progress) override;
+    [[nodiscard]] const char* BackendName() const noexcept override;
+
     bool Initialize() override;
     void BeginFrame() override;
     void Render(
@@ -35,11 +42,15 @@ public:
 private:
     class Implementation;
 
+    /// Switches between fullscreen and windowed, preserving windowed geometry.
+    void SetFullscreen(bool enable);
+
     std::unique_ptr<Implementation> implementation_;
     ShaderManager shaderManager_;
     unsigned int  fullscreenVAO_ = 0u;
-    bool vsyncEnabled_ = true;
-    bool initialized_  = false;
+    bool vsyncEnabled_        = true;
+    bool fullscreenRequested_ = false;
+    bool initialized_         = false;
 };
 
 } // namespace papagedon

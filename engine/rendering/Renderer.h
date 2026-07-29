@@ -21,6 +21,14 @@ public:
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
 
+    /// Demo-mode configuration — see IRenderer.
+    void Configure(bool fullscreen, bool vsync);
+    void SetMasterControls(float brightness, float glow, float exposure);
+    void SetDemoMode(bool enabled);
+    void SetDebugOverlay(bool visible);
+    void PresentSplash(const std::string& status, float progress);
+    [[nodiscard]] const char* BackendName() const noexcept;
+
     bool Initialize();
     void BeginFrame();
     void Render(

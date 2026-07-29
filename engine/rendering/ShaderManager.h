@@ -81,6 +81,9 @@ private:
     int locPrevPattern_     = -1;
     int locPatternBlend_    = -1;
     int locDetail_          = -1;
+    int locMasterBrightness_ = -1;
+    int locMasterGlow_       = -1;
+    int locMasterExposure_   = -1;
 };
 
 } // namespace papagedon
