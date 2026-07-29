@@ -1,0 +1,40 @@
+{
+  "pack": "Badman Experience Pack",
+  "volume": 1,
+  "version": "1.0.0",
+  "author": "PAPAGEDON",
+  "description": "Twelve premium cinematic GLSL fragment shaders for the Badman Experience rave brand. Dark-luxury underground: Afro House, Amapiano, Tech House. Designed for LED walls, festival projection mapping and large concert screens.",
+  "theme": "badman-theme.json",
+  "recommendedTheme": "badman",
+  "artDirection": {
+    "primary": "#A30D18",
+    "secondary": "#050505",
+    "accent": "#D6A53A",
+    "highlight": "#F6F1EB",
+    "shadow": "#180202",
+    "mood": ["luxury", "dark", "aggressive", "premium", "minimal", "atmospheric", "cinematic"]
+  },
+  "shaderStage": "fragment",
+  "glslVersion": "460 core",
+  "vertexStage": "engine fullscreen-triangle (gl_VertexID -> vUV)",
+  "uniforms": [
+    "uTime", "uResolution",
+    "uBass", "uMid", "uTreble", "uBeat", "uEnergy", "uIntensity",
+    "uPrimaryColour", "uSecondaryColour", "uAccentColour", "uBackground"
+  ],
+  "notes": "Theme colours fall back to the brand palette when unbound. All animation is frame-rate independent (driven by uTime). Compiles against papagedon ShaderManager without engine changes.",
+  "shaders": [
+    { "index": 1,  "id": "hellsmoke",       "name": "Hellsmoke",        "shader": "shaders/01_hellsmoke.frag",        "metadata": "metadata/01_hellsmoke.json",        "energyLevel": "medium" },
+    { "index": 2,  "id": "red-chapel",      "name": "Red Chapel",       "shader": "shaders/02_red_chapel.frag",       "metadata": "metadata/02_red_chapel.json",       "energyLevel": "medium" },
+    { "index": 3,  "id": "inferno-lasers",  "name": "Inferno Lasers",   "shader": "shaders/03_inferno_lasers.frag",   "metadata": "metadata/03_inferno_lasers.json",   "energyLevel": "high" },
+    { "index": 4,  "id": "obsidian-tunnel", "name": "Obsidian Tunnel",  "shader": "shaders/04_obsidian_tunnel.frag",  "metadata": "metadata/04_obsidian_tunnel.json",  "energyLevel": "high" },
+    { "index": 5,  "id": "blood-pulse",     "name": "Blood Pulse",      "shader": "shaders/05_blood_pulse.frag",      "metadata": "metadata/05_blood_pulse.json",      "energyLevel": "medium" },
+    { "index": 6,  "id": "ember-field",     "name": "Ember Field",      "shader": "shaders/06_ember_field.frag",      "metadata": "metadata/06_ember_field.json",      "energyLevel": "low" },
+    { "index": 7,  "id": "liquid-crimson",  "name": "Liquid Crimson",   "shader": "shaders/07_liquid_crimson.frag",   "metadata": "metadata/07_liquid_crimson.json",   "energyLevel": "medium" },
+    { "index": 8,  "id": "black-sun",       "name": "Black Sun",        "shader": "shaders/08_black_sun.frag",        "metadata": "metadata/08_black_sun.json",        "energyLevel": "high" },
+    { "index": 9,  "id": "rave-grid",       "name": "Rave Grid",        "shader": "shaders/09_rave_grid.frag",        "metadata": "metadata/09_rave_grid.json",        "energyLevel": "high" },
+    { "index": 10, "id": "void-temple",     "name": "Void Temple",      "shader": "shaders/10_void_temple.frag",      "metadata": "metadata/10_void_temple.json",      "energyLevel": "low" },
+    { "index": 11, "id": "phantom-crowd",   "name": "Phantom Crowd",    "shader": "shaders/11_phantom_crowd.frag",    "metadata": "metadata/11_phantom_crowd.json",    "energyLevel": "medium" },
+    { "index": 12, "id": "final-ascension", "name": "Final Ascension",  "shader": "shaders/12_final_ascension.frag",  "metadata": "metadata/12_final_ascension.json",  "energyLevel": "peak" }
+  ]
+}

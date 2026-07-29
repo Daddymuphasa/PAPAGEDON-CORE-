@@ -1,0 +1,11 @@
+{
+  "id": "final-ascension",
+  "index": 12,
+  "name": "Final Ascension",
+  "shader": "shaders/12_final_ascension.frag",
+  "description": "The climax combination: tunnel, smoke, laser sheets, expanding energy rings, rising particles and a cream ascension core, all blended and bloomed. Built for the peak of the set.",
+  "mood": ["aggressive", "cinematic", "premium"],
+  "recommendedBpmRange": [126, 132],
+  "recommendedTheme": "badman",
+  "energyLevel": "peak"
+}

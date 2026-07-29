@@ -1,0 +1,11 @@
+{
+  "id": "black-sun",
+  "index": 8,
+  "name": "Black Sun",
+  "shader": "shaders/08_black_sun.frag",
+  "description": "A dark eclipse ringed by a burning corona. Energy waves ripple outward, bass shakes the corona, treble throws sparks off the rim. Iconic and monolithic.",
+  "mood": ["cinematic", "aggressive", "premium"],
+  "recommendedBpmRange": [122, 128],
+  "recommendedTheme": "badman",
+  "energyLevel": "high"
+}

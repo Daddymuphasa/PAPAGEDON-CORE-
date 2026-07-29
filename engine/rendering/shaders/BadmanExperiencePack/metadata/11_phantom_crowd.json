@@ -1,0 +1,11 @@
+{
+  "id": "phantom-crowd",
+  "index": 11,
+  "name": "Phantom Crowd",
+  "shader": "shaders/11_phantom_crowd.frag",
+  "description": "Abstract crowd silhouettes against a red backlit stage, bobbing to the beat through drifting smoke. Pure shadow shapes — never actual people.",
+  "mood": ["atmospheric", "dark", "premium"],
+  "recommendedBpmRange": [118, 126],
+  "recommendedTheme": "badman",
+  "energyLevel": "medium"
+}

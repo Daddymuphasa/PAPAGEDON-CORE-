@@ -1,0 +1,11 @@
+{
+  "id": "red-chapel",
+  "index": 2,
+  "name": "Red Chapel",
+  "shader": "shaders/02_red_chapel.frag",
+  "description": "Cathedral-scale volumetric light shafts sweeping through fog. Soft god rays, gold hot-cores, beats flash the lights. Sacred and premium.",
+  "mood": ["cinematic", "atmospheric", "premium"],
+  "recommendedBpmRange": [120, 124],
+  "recommendedTheme": "badman",
+  "energyLevel": "medium"
+}

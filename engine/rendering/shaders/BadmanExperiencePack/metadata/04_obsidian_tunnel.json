@@ -1,0 +1,11 @@
+{
+  "id": "obsidian-tunnel",
+  "index": 4,
+  "name": "Obsidian Tunnel",
+  "shader": "shaders/04_obsidian_tunnel.frag",
+  "description": "An infinite black tunnel with red-illuminated ring edges. The camera travels forward forever; beats expand the throat. Hypnotic, driving tech-house energy.",
+  "mood": ["hypnotic", "dark", "aggressive"],
+  "recommendedBpmRange": [122, 128],
+  "recommendedTheme": "badman",
+  "energyLevel": "high"
+}

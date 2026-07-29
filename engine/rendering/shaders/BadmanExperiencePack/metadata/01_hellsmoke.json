@@ -1,0 +1,11 @@
+{
+  "id": "hellsmoke",
+  "index": 1,
+  "name": "Hellsmoke",
+  "shader": "shaders/01_hellsmoke.frag",
+  "description": "Large volumetric smoke lit from within. Bass expands the plume, beats fire radial pressure waves, treble scatters glowing embers. Slow, heavy, cinematic.",
+  "mood": ["dark", "atmospheric", "aggressive"],
+  "recommendedBpmRange": [118, 126],
+  "recommendedTheme": "badman",
+  "energyLevel": "medium"
+}

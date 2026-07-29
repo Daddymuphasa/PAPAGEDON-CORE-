@@ -1,0 +1,11 @@
+{
+  "id": "inferno-lasers",
+  "index": 3,
+  "name": "Inferno Lasers",
+  "shader": "shaders/03_inferno_lasers.frag",
+  "description": "Massive moving walls of light — laser sheets, not thin lines. Treble rotates the rig, bass thickens the beams, volumetric haze fills the room.",
+  "mood": ["aggressive", "premium", "dark"],
+  "recommendedBpmRange": [124, 130],
+  "recommendedTheme": "badman",
+  "energyLevel": "high"
+}

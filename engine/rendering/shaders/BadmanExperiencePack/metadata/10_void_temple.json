@@ -1,0 +1,11 @@
+{
+  "id": "void-temple",
+  "index": 10,
+  "name": "Void Temple",
+  "shader": "shaders/10_void_temple.frag",
+  "description": "Ancient-futuristic architecture: colossal pillars floating in volumetric fog, edged in gold, with a slow camera drift. Reverent, vast, luxury.",
+  "mood": ["luxury", "cinematic", "atmospheric"],
+  "recommendedBpmRange": [110, 120],
+  "recommendedTheme": "badman",
+  "energyLevel": "low"
+}

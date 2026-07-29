@@ -1,0 +1,11 @@
+{
+  "id": "blood-pulse",
+  "index": 5,
+  "name": "Blood Pulse",
+  "shader": "shaders/05_blood_pulse.frag",
+  "description": "The entire world breathes. A heartbeat compresses the environment and bloom spikes on every thump. No particles — pure atmospheric pressure.",
+  "mood": ["atmospheric", "aggressive", "minimal"],
+  "recommendedBpmRange": [116, 124],
+  "recommendedTheme": "badman",
+  "energyLevel": "medium"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "ember-field",
+  "index": 6,
+  "name": "Ember Field",
+  "shader": "shaders/06_ember_field.frag",
+  "description": "Floating embers and ash drifting upward through heat. Treble strikes cream sparks, bass bends the air with rising heat distortion. Delicate but dangerous.",
+  "mood": ["atmospheric", "premium", "minimal"],
+  "recommendedBpmRange": [110, 120],
+  "recommendedTheme": "badman",
+  "energyLevel": "low"
+}

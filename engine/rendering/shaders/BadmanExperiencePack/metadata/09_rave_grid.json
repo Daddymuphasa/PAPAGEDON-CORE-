@@ -1,0 +1,11 @@
+{
+  "id": "rave-grid",
+  "index": 9,
+  "name": "Rave Grid",
+  "shader": "shaders/09_rave_grid.frag",
+  "description": "Minimal industrial geometry: a neon-red wireframe floor racing to a hazy horizon. Perspective distortion, light haze, beats bend the grid. Pure tech-house.",
+  "mood": ["minimal", "aggressive", "dark"],
+  "recommendedBpmRange": [124, 130],
+  "recommendedTheme": "badman",
+  "energyLevel": "high"
+}

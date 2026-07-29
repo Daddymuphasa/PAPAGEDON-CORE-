@@ -1,0 +1,11 @@
+{
+  "id": "liquid-crimson",
+  "index": 7,
+  "name": "Liquid Crimson",
+  "shader": "shaders/07_liquid_crimson.frag",
+  "description": "Molten plasma and smoke folded together — organic, slow, hypnotic. Mid frequencies distort the flow, gold veins glint through the crimson.",
+  "mood": ["atmospheric", "luxury", "cinematic"],
+  "recommendedBpmRange": [112, 122],
+  "recommendedTheme": "badman",
+  "energyLevel": "medium"
+}
