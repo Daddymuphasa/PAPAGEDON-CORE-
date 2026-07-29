@@ -134,6 +134,10 @@ public:
     bool demoKeyWasPressed       = false; // F9
     bool fxKeyWasPressed         = false; // F10
     bool fullscreenKeyWasPressed = false; // F11
+
+    // Soundcheck input-level meter (M).
+    bool showMeter        = false;
+    bool meterKeyWasPressed = false;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -267,6 +271,11 @@ bool OpenGLRenderer::Initialize() {
                 }
             }
         }
+    }
+
+    // Launch straight into the soundcheck level meter when requested.
+    if (const char* const meterEnv = std::getenv("PAPAGEDON_METER")) {
+        implementation_->showMeter = meterEnv[0] != '0';
     }
 
     // Optional starting shader (index into the library: 0 = signature, 1..N = pack).
@@ -552,6 +561,11 @@ void OpenGLRenderer::Render(
         implementation_->debugOverlay.RenderToast(
             implementation_->toastText.c_str(), width, height);
     }
+
+    // Soundcheck input-level meter.
+    if (implementation_->showMeter) {
+        implementation_->debugOverlay.RenderMeter(debugState, width, height);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -644,6 +658,14 @@ bool OpenGLRenderer::EndFrame() {
     const bool nextSh = glfwGetKey(implementation_->window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS;
     if (nextSh && !implementation_->nextShaderKeyPressed && shaderCount > 1) switchShader(1);
     implementation_->nextShaderKeyPressed = nextSh;
+
+    // 'M' toggles the soundcheck input-level meter.
+    const bool meterKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_M) == GLFW_PRESS;
+    if (meterKeyIsPressed && !implementation_->meterKeyWasPressed) {
+        implementation_->showMeter = !implementation_->showMeter;
+    }
+    implementation_->meterKeyWasPressed = meterKeyIsPressed;
 
     // F12 toggles the debug overlay.
     const bool debugKeyIsPressed =

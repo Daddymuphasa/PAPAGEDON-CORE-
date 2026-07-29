@@ -24,6 +24,10 @@ public:
     /// flash the active shader name when the operator switches shaders live.
     void RenderToast(const char* text, int windowWidth, int windowHeight);
 
+    /// Draws a compact input-level meter (bass / mid / treble / energy bars + a
+    /// signal indicator) for confirming live audio during soundcheck.
+    void RenderMeter(const DebugState& state, int windowWidth, int windowHeight);
+
     void Shutdown() noexcept;
 
 private:

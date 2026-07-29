@@ -190,6 +190,37 @@ void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int wi
     RenderText(text, x, y, scale, windowWidth, windowHeight);
 }
 
+void DebugOverlayRenderer::RenderMeter(const DebugState& state, int windowWidth, int windowHeight) {
+    if (!initialized_) {
+        return;
+    }
+    const auto bar = [](float v) {
+        v = v < 0.0F ? 0.0F : (v > 1.0F ? 1.0F : v);
+        constexpr int kCells = 22;
+        const int filled = static_cast<int>(v * kCells + 0.5F);
+        std::string b = "[";
+        for (int i = 0; i < kCells; ++i) b += (i < filled) ? '#' : ' ';
+        b += "]";
+        return b;
+    };
+    float level = state.bass;
+    level = state.mid > level ? state.mid : level;
+    level = state.treble > level ? state.treble : level;
+    level = state.energy > level ? state.energy : level;
+
+    std::ostringstream ss;
+    ss << "INPUT LEVEL  (M to hide)\n\n";
+    ss << "BASS    " << bar(state.bass)   << "\n";
+    ss << "MID     " << bar(state.mid)    << "\n";
+    ss << "TREBLE  " << bar(state.treble) << "\n";
+    ss << "ENERGY  " << bar(state.energy) << "\n\n";
+    ss << (level > 0.02F ? "SIGNAL: OK" : "SIGNAL: -- (silent)") << "\n";
+    ss << "SOURCE: " << state.currentAudioFile << "\n";
+
+    RenderText(ss.str().c_str(), 40.0F, static_cast<float>(windowHeight) * 0.72F,
+               2.5F, windowWidth, windowHeight);
+}
+
 void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float scale, int windowWidth, int windowHeight) {
     glUseProgram(shaderProgram_);
     glActiveTexture(GL_TEXTURE0);
