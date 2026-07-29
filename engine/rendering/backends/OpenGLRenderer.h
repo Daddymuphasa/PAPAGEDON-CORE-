@@ -45,6 +45,9 @@ private:
     /// Switches between fullscreen and windowed, preserving windowed geometry.
     void SetFullscreen(bool enable);
 
+    /// Begins a fade-through-black transition to the given library shader index.
+    void BeginShaderTransition(int target);
+
     std::unique_ptr<Implementation> implementation_;
     ShaderManager shaderManager_;
     unsigned int  fullscreenVAO_ = 0u;

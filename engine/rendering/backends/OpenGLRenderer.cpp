@@ -39,6 +39,49 @@ Color3 ToColor3(const visual::ThemeColor& c) noexcept {
     return Color3{c.r, c.g, c.b};
 }
 
+// Fullscreen black quad used to fade the frame in / out during a shader
+// transition — works over any shader, needs no render targets.
+constexpr const char* kFadeFragment = R"GLSL(
+#version 460 core
+in  vec2 vUV;
+out vec4 fragColor;
+uniform float uAlpha;
+void main() { fragColor = vec4(0.0, 0.0, 0.0, uAlpha); }
+)GLSL";
+
+// Compiles a vertex + fragment pair into a linked program (0 on failure).
+[[nodiscard]] unsigned int CompileGLProgram(const char* vs, const char* fs) noexcept {
+    const auto stage = [](GLenum type, const char* src) -> unsigned int {
+        const unsigned int sh = glCreateShader(type);
+        glShaderSource(sh, 1, &src, nullptr);
+        glCompileShader(sh);
+        int ok = 0;
+        glGetShaderiv(sh, GL_COMPILE_STATUS, &ok);
+        if (ok == 0) {
+            char log[512];
+            glGetShaderInfoLog(sh, 512, nullptr, log);
+            std::fprintf(stderr, "[fade] shader error: %s\n", log);
+            glDeleteShader(sh);
+            return 0u;
+        }
+        return sh;
+    };
+    const unsigned int v = stage(GL_VERTEX_SHADER, vs);
+    if (v == 0u) return 0u;
+    const unsigned int f = stage(GL_FRAGMENT_SHADER, fs);
+    if (f == 0u) { glDeleteShader(v); return 0u; }
+    const unsigned int p = glCreateProgram();
+    glAttachShader(p, v);
+    glAttachShader(p, f);
+    glLinkProgram(p);
+    glDeleteShader(v);
+    glDeleteShader(f);
+    int ok = 0;
+    glGetProgramiv(p, GL_LINK_STATUS, &ok);
+    if (ok == 0) { glDeleteProgram(p); return 0u; }
+    return p;
+}
+
 Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
     return Color3{
         a.r + (b.r - a.r) * t,
@@ -86,6 +129,21 @@ public:
     // Brief on-screen name toast after a switch.
     std::string toastText;
     double      toastUntil = 0.0;
+
+    // ── Shader transition (fade through black) ──────────────────────────────────
+    unsigned int fadeProgram  = 0;
+    int          fadeAlphaLoc = -1;
+    bool         transitioning = false;
+    int          pendingShader = -1;
+    float        fade      = 1.0f;   // 1 = fully visible, 0 = black
+    bool         fadingOut = false;
+
+    // ── Auto-shader director (music-driven transitions) ─────────────────────────
+    bool         autoShader     = false;
+    double       lastSwitchTime = 0.0;
+    bool         prevBeat       = false;
+    float        energyBaseline = 0.0f;
+    bool         autoShaderKeyWasPressed = false; // 'V'
 
     // ── Pattern cross-fade state ───────────────────────────────────────────────
     // Tracks the signature form the shader is drawing.  When the preset's pattern
@@ -273,6 +331,17 @@ bool OpenGLRenderer::Initialize() {
         }
     }
 
+    // Fade-transition program (black overlay quad) for smooth shader switches.
+    implementation_->fadeProgram = CompileGLProgram(ShaderManager::DefaultVertexSource(), kFadeFragment);
+    implementation_->fadeAlphaLoc = implementation_->fadeProgram != 0
+        ? glGetUniformLocation(implementation_->fadeProgram, "uAlpha") : -1;
+    implementation_->lastSwitchTime = glfwGetTime();
+
+    // Auto-shader director: transition through the library with the music.
+    if (const char* const autoEnv = std::getenv("PAPAGEDON_AUTO_SHADER")) {
+        implementation_->autoShader = autoEnv[0] != '0';
+    }
+
     // Launch straight into the soundcheck level meter when requested.
     if (const char* const meterEnv = std::getenv("PAPAGEDON_METER")) {
         implementation_->showMeter = meterEnv[0] != '0';
@@ -393,6 +462,24 @@ void OpenGLRenderer::SetFullscreen(const bool enable) {
     }
     // Changing the monitor can reset the swap interval — re-apply it.
     glfwSwapInterval(vsyncEnabled_ ? 1 : 0);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// BeginShaderTransition — fade the current shader out to black, swap, fade in
+// ──────────────────────────────────────────────────────────────────────────────
+void OpenGLRenderer::BeginShaderTransition(const int target) {
+    const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
+    if (target < 0 || target >= count || implementation_->transitioning) {
+        return;
+    }
+    if (target == implementation_->activeShader) {
+        return;
+    }
+    implementation_->pendingShader = target;
+    implementation_->transitioning = true;
+    implementation_->fadingOut     = true;
+    implementation_->toastText  = implementation_->shaderNames[static_cast<std::size_t>(target)];
+    implementation_->toastUntil = glfwGetTime() + 2.2;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -528,6 +615,42 @@ void OpenGLRenderer::Render(
     glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // ── Shader transition + auto-director ──────────────────────────────────
+    // A switch fades the frame out to black, swaps shader, and fades back in.
+    constexpr float kFadeDuration = 0.30f;
+    if (implementation_->transitioning) {
+        if (implementation_->fadingOut) {
+            implementation_->fade -= deltaTime / kFadeDuration;
+            if (implementation_->fade <= 0.0f) {
+                implementation_->fade = 0.0f;
+                implementation_->activeShader = implementation_->pendingShader;
+                implementation_->fadingOut = false;
+            }
+        } else {
+            implementation_->fade += deltaTime / kFadeDuration;
+            if (implementation_->fade >= 1.0f) {
+                implementation_->fade = 1.0f;
+                implementation_->transitioning = false;
+            }
+        }
+    }
+
+    // Auto-shader: move through the library with the music — on a big energy
+    // surge (a drop) or, failing that, on a steady phrase timer.
+    if (implementation_->autoShader) {
+        implementation_->prevBeat = signals.beat;
+        const float ba = 1.0f - std::exp(-deltaTime * 0.4f);
+        implementation_->energyBaseline += (signals.energy - implementation_->energyBaseline) * ba;
+        const double since  = currentTime - implementation_->lastSwitchTime;
+        const bool   drop   = (signals.energy - implementation_->energyBaseline) > 0.28f && signals.energy > 0.45f;
+        const bool   timeUp = since > 14.0;
+        if (!implementation_->transitioning && since > 5.0 && (drop || timeUp)) {
+            const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
+            BeginShaderTransition((implementation_->activeShader + 1) % count);
+            implementation_->lastSwitchTime = currentTime;
+        }
+    }
+
     // ── Fullscreen shader pass ────────────────────────────────────────────
     // The active library slot draws; the same ShaderUniforms feed every shader
     // (each uses whichever uniforms it declares), so audio + theme reactivity is
@@ -543,6 +666,20 @@ void OpenGLRenderer::Render(
     glBindVertexArray(fullscreenVAO_);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0u);
+
+    // Fade overlay (black quad) blended on top during a transition.
+    if (implementation_->fade < 1.0f && implementation_->fadeProgram != 0) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glUseProgram(implementation_->fadeProgram);
+        if (implementation_->fadeAlphaLoc >= 0) {
+            glUniform1f(implementation_->fadeAlphaLoc, 1.0f - implementation_->fade);
+        }
+        glBindVertexArray(fullscreenVAO_);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0u);
+        glDisable(GL_BLEND);
+    }
 
     // ── Debug overlay (rendered on top, uses its own program internally) ──
     if (implementation_->showDebugOverlay) {
@@ -646,11 +783,7 @@ bool OpenGLRenderer::EndFrame() {
     // '[' / ']' cycle the active shader through the library (signature + pack).
     const int shaderCount = 1 + static_cast<int>(implementation_->shaderLib.size());
     const auto switchShader = [&](int delta) {
-        implementation_->activeShader =
-            (implementation_->activeShader + delta + shaderCount) % shaderCount;
-        implementation_->toastText =
-            implementation_->shaderNames[static_cast<std::size_t>(implementation_->activeShader)];
-        implementation_->toastUntil = glfwGetTime() + 2.2;
+        BeginShaderTransition((implementation_->activeShader + delta + shaderCount) % shaderCount);
     };
     const bool prevSh = glfwGetKey(implementation_->window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS;
     if (prevSh && !implementation_->prevShaderKeyPressed && shaderCount > 1) switchShader(-1);
@@ -658,6 +791,16 @@ bool OpenGLRenderer::EndFrame() {
     const bool nextSh = glfwGetKey(implementation_->window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS;
     if (nextSh && !implementation_->nextShaderKeyPressed && shaderCount > 1) switchShader(1);
     implementation_->nextShaderKeyPressed = nextSh;
+
+    // 'V' toggles the music-driven auto-shader director.
+    const bool vKey = glfwGetKey(implementation_->window, GLFW_KEY_V) == GLFW_PRESS;
+    if (vKey && !implementation_->autoShaderKeyWasPressed) {
+        implementation_->autoShader = !implementation_->autoShader;
+        implementation_->lastSwitchTime = glfwGetTime();
+        implementation_->toastText  = implementation_->autoShader ? "Auto-shader: ON" : "Auto-shader: OFF";
+        implementation_->toastUntil = glfwGetTime() + 2.0;
+    }
+    implementation_->autoShaderKeyWasPressed = vKey;
 
     // 'M' toggles the soundcheck input-level meter.
     const bool meterKeyIsPressed =
@@ -779,6 +922,10 @@ void OpenGLRenderer::Shutdown() noexcept {
         if (sm) sm->Shutdown();
     }
     implementation_->shaderLib.clear();
+    if (implementation_->fadeProgram != 0) {
+        glDeleteProgram(implementation_->fadeProgram);
+        implementation_->fadeProgram = 0;
+    }
 
     if (fullscreenVAO_ != 0u) {
         glDeleteVertexArrays(1, &fullscreenVAO_);
