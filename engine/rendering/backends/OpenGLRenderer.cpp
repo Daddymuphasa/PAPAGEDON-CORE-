@@ -297,13 +297,15 @@ bool OpenGLRenderer::Initialize() {
     {
         namespace fs = std::filesystem;
         const char* const dirEnv = std::getenv("PAPAGEDON_SHADER_DIR");
+        // Scan the whole shader tree recursively so every pack (Signature,
+        // Badman, and any new packs) loads into one library.
         const std::string dir = dirEnv != nullptr
             ? std::string(dirEnv)
-            : std::string("engine/rendering/shaders/BadmanExperiencePack/shaders");
+            : std::string("engine/rendering/shaders");
         std::error_code ec;
         if (fs::is_directory(dir, ec)) {
             std::vector<std::string> files;
-            for (const auto& entry : fs::directory_iterator(dir, ec)) {
+            for (const auto& entry : fs::recursive_directory_iterator(dir, ec)) {
                 if (!ec && entry.is_regular_file() && entry.path().extension() == ".frag") {
                     files.push_back(entry.path().string());
                 }

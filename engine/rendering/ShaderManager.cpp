@@ -375,12 +375,12 @@ void main() {
     // scaled by the master glow trim.
     color += color * uGlow * uMasterGlow;
 
-    // ── Beat strobe ─────────────────────────────────────────────────────────
-    // The kick fires a hard flash — palette-tinted plus a white pop — sharpened
-    // by squaring the (decaying) beat so it reads as a strike, not a fade.
-    float strobe = uBeat * uBeat;
-    color += mix(uAccentColour, vec3(1.0), 0.5) * strobe * (0.4 + 0.6 * pattern);
-    color += vec3(0.14) * strobe;
+    // ── Beat swell ─────────────────────────────────────────────────────────
+    // The kick makes the existing colours bloom and decay smoothly (a punch you
+    // feel), and the frame already pumped inward above — no white strobe flash.
+    float kick = uBeat * uBeat;
+    color += color * kick * 0.7;
+    color += color * uBass * 0.25;
 
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
     // Strength is theme-driven so each identity blooms to its own degree.

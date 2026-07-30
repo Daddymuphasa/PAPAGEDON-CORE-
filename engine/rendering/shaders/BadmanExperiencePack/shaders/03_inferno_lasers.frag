@@ -71,7 +71,7 @@ void main() {
     col += RED  * lasers * (0.8 + uEnergy);
     col += GOLD * pow(lasers, 3.0) * 0.5;                    // gold beam cores
     col += RED  * fbm(uv * 2.0 - t) * 0.14;                  // volumetric haze
-    col += RED  * uBeat * uBeat * 0.3;                       // beat punch
+    col += col  * uBeat * uBeat * 0.6;                       // beam swell on the kick
 
     col += col * col * 0.7;                                  // heavy bloom
     col = aces(col * 1.2);
