@@ -265,6 +265,14 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     }
 
+    // B: snap straight back to the home theme (Badman red) — the show's brand
+    // colour, which loads past the F1..F7 slots and is otherwise unreachable.
+    if (renderer_.ConsumeHomeThemeRequest()) {
+        if (themeManager_.SetTheme(homeThemeId_)) {
+            logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + " (home).");
+        }
+    }
+
     // R: reload the current theme's JSON from disk, live.
     if (renderer_.ConsumeReloadRequest()) {
         std::string reloadError;

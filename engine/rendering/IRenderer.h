@@ -62,6 +62,9 @@ public:
     /// Theme slot requested via F1..F7 since the previous call (0..6), or -1.
     [[nodiscard]] virtual int ConsumeThemeRequest() noexcept = 0;
 
+    /// True once per B press — jump back to the home theme (Badman red).
+    [[nodiscard]] virtual bool ConsumeHomeThemeRequest() noexcept = 0;
+
     /// True once per Space press — toggles audio play/pause.
     [[nodiscard]] virtual bool ConsumePlayPauseToggle() noexcept = 0;
 

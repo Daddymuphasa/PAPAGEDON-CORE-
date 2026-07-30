@@ -35,6 +35,7 @@ public:
     void Shutdown() noexcept override;
 
     [[nodiscard]] int ConsumeThemeRequest() noexcept override;
+    [[nodiscard]] bool ConsumeHomeThemeRequest() noexcept override;
     [[nodiscard]] bool ConsumePlayPauseToggle() noexcept override;
     [[nodiscard]] bool ConsumeReloadRequest() noexcept override;
     [[nodiscard]] bool ConsumeAutoToggle() noexcept override;

@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 
 namespace papagedon::audio {
 
@@ -92,6 +93,24 @@ bool AudioCapture::Initialize(const int deviceIndex, const bool loopback) {
     config.sampleRate       = impl_->sampleRate; // request 44.1 kHz
     config.dataCallback     = &Impl::Callback;
     config.pUserData        = impl_.get();
+
+    // ── Low-latency buffering ───────────────────────────────────────────────────
+    // This is a live VJ tool: the booth feed must reach the visuals fast.  The
+    // callback only copies into a lock-free ring buffer, so a short buffer is
+    // safe (no heavy work to starve the audio thread).  Request the smallest
+    // practical period; WASAPI shared mode clamps up to the device minimum, so
+    // this lowers latency without risking dropouts.  PAPAGEDON_CAPTURE_PERIOD
+    // overrides the period size (in frames) for tuning at soundcheck.
+    config.performanceProfile = ma_performance_profile_low_latency;
+    ma_uint32 periodFrames = 256; // ~5–6 ms at 44.1/48 kHz
+    if (const char* const p = std::getenv("PAPAGEDON_CAPTURE_PERIOD")) {
+        const int v = std::atoi(p);
+        if (v >= 32 && v <= 4096) {
+            periodFrames = static_cast<ma_uint32>(v);
+        }
+    }
+    config.periodSizeInFrames = periodFrames;
+    config.periods            = 2; // minimal double-buffer
 
     if (ma_device_init(&impl_->context, &config, &impl_->device) != MA_SUCCESS) {
         ma_context_uninit(&impl_->context);

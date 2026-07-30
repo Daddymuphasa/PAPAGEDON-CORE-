@@ -6,7 +6,7 @@
   "theme": "cyberpunk",
   "audioFile": "test.wav",
   "showDebugOverlay": false,
-  "masterBrightness": 1.0,
-  "masterGlow": 1.0,
-  "masterExposure": 1.0
+  "masterBrightness": 1,
+  "masterGlow": 1,
+  "masterExposure": 1
 }

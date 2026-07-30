@@ -163,6 +163,11 @@ public:
     bool themeKeyWasPressed[kThemeKeyCount] = {};
     int  pendingThemeRequest = -1;
 
+    // 'B' snaps straight back to the show's home theme (Badman red), which loads
+    // past the F1..F7 slots and so is otherwise unreachable from the keyboard.
+    bool homeKeyWasPressed = false;
+    bool pendingHomeRequest = false;
+
     bool spaceWasPressed  = false;
     bool pendingPlayPause = false;
 
@@ -734,6 +739,14 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->themeKeyWasPressed[i] = pressed;
     }
 
+    // 'B' returns to the home theme (Badman red) — the show's brand colour.
+    const bool homeIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
+    if (homeIsPressed && !implementation_->homeKeyWasPressed) {
+        implementation_->pendingHomeRequest = true;
+    }
+    implementation_->homeKeyWasPressed = homeIsPressed;
+
     // Space toggles audio play/pause.
     const bool spaceIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_SPACE) == GLFW_PRESS;
@@ -880,6 +893,15 @@ int OpenGLRenderer::ConsumeThemeRequest() noexcept {
     const int request = implementation_->pendingThemeRequest;
     implementation_->pendingThemeRequest = -1;
     return request;
+}
+
+bool OpenGLRenderer::ConsumeHomeThemeRequest() noexcept {
+    if (implementation_ == nullptr) {
+        return false;
+    }
+    const bool requested = implementation_->pendingHomeRequest;
+    implementation_->pendingHomeRequest = false;
+    return requested;
 }
 
 bool OpenGLRenderer::ConsumePlayPauseToggle() noexcept {

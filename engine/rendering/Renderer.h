@@ -43,6 +43,7 @@ public:
 
     /// Theme slot requested via F1..F7 (0..6), or -1. See IRenderer.
     [[nodiscard]] int ConsumeThemeRequest() noexcept;
+    [[nodiscard]] bool ConsumeHomeThemeRequest() noexcept;
 
     /// True once per Space press (play/pause). See IRenderer.
     [[nodiscard]] bool ConsumePlayPauseToggle() noexcept;
