@@ -18,6 +18,19 @@ constexpr double kTempoMinInterval       = 0.30;  // 200 BPM ceiling for the his
 constexpr double kTempoMaxInterval       = 1.50;  // 40  BPM floor   for the histogram
 constexpr size_t kTempoHistorySize       = 8;     // recent intervals kept for the median
 
+// Adaptive normalization: scale a raw band magnitude to its slowly-decaying peak
+// so the output fills 0..1 and swings with the music's dynamics regardless of
+// input gain. A silence gate stops it amplifying noise between tracks.
+float AdaptiveNorm(float raw, float& peak) noexcept {
+    peak = std::max(raw, peak * 0.9992f);       // envelope follower, slow release
+    if (raw < 1.0e-4f) {
+        return 0.0f;                            // near-silence
+    }
+    const float n = raw / std::max(peak, 1.0e-4f);
+    // Gentle upward curve so quieter mid/high detail still reads on screen.
+    return std::clamp(std::pow(n, 0.75f), 0.0f, 1.0f);
+}
+
 AudioAnalyzer::AudioAnalyzer() {
     fft_ = std::make_unique<SimpleFFT>(kFftSize);
     bassHistory_.resize(kBeatHistorySize, 0.0f);
@@ -51,6 +64,11 @@ void AudioAnalyzer::Reset() noexcept {
     beatBpmHistory_.clear();
     beatBpmIndex_ = 0;
     currentBpm_ = 0.0f;
+    bassPeak_ = 0.0f;
+    midPeak_ = 0.0f;
+    treblePeak_ = 0.0f;
+    energyPeak_ = 0.0f;
+    intensityPeak_ = 0.0f;
 }
 
 ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
@@ -121,10 +139,13 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     if (midCount > 0) midEnergy /= static_cast<float>(midCount);
     if (trebleCount > 0) trebleEnergy /= static_cast<float>(trebleCount);
 
-    // Normalize to [0, 1] - these multipliers might need tuning
+    // Keep the raw band magnitudes for adaptive normalization of the output.
+    const float rawBass   = bassEnergy;
+    const float rawMid    = midEnergy;
+    const float rawTreble = trebleEnergy;
+
+    // Fixed-scaled bass drives the beat detector (keeps its threshold behaviour).
     bassEnergy = std::clamp(bassEnergy * 15.0f, 0.0f, 1.0f);
-    midEnergy = std::clamp(midEnergy * 25.0f, 0.0f, 1.0f);
-    trebleEnergy = std::clamp(trebleEnergy * 40.0f, 0.0f, 1.0f);
 
     // 4. Beat detection — a bass spike, detected two complementary ways so kicks
     //    still register when they ride on top of a sustained bassline:
@@ -167,15 +188,23 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
         }
     }
 
+    // Adaptive, full-range output — this is what makes the visuals swing with
+    // the music instead of sitting flat.
+    const float outBass      = AdaptiveNorm(rawBass, bassPeak_);
+    const float outMid       = AdaptiveNorm(rawMid, midPeak_);
+    const float outTreble    = AdaptiveNorm(rawTreble, treblePeak_);
+    const float outEnergy    = AdaptiveNorm(energy, energyPeak_);
+    const float outIntensity = AdaptiveNorm(rawMid + rawTreble, intensityPeak_);
+
     return {
-        .energy = energy,
-        .intensity = energy,
-        .bass = bassEnergy,
-        .mid = midEnergy,
-        .treble = trebleEnergy,
+        .energy = outEnergy,
+        .intensity = outIntensity,
+        .bass = outBass,
+        .mid = outMid,
+        .treble = outTreble,
         .beat = beat,
         .bpm = currentBpm_,
-        .tension = energy * 0.5F,
+        .tension = outEnergy * 0.5F,
         .confidence = 1.0f
     };
 }

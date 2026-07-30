@@ -81,12 +81,14 @@ void main() {
     vec2 uv = (vUV * 2.0 - 1.0);
     uv.x *= uResolution.x / uResolution.y;
 
-    // Physical beat: a sharp kick punches the frame inward, the low end breathes.
+    // Physical, immersive beat: a hard kick punches the frame inward, the low end
+    // breathes, and rising energy pushes the whole scene toward the camera so
+    // drops rush in with depth.
     float kick = uBeat * uBeat;
-    float pump = 1.0 - kick * 0.09 - uBass * 0.05;
+    float pump = 1.0 - kick * 0.14 - uBass * 0.07 - uEnergy * 0.05;
     uv *= pump;
 
-    float t = uTime * 0.25 * uMotion;
+    float t = uTime * (0.25 + uEnergy * 0.15) * uMotion;   // faster with energy
 
     float pattern = clamp(patSpectrumRing(uv, t), 0.0, 1.0);
     pattern = smoothstep(0.03, 0.9, pattern);
@@ -94,18 +96,18 @@ void main() {
     vec3 color = palette(pattern + uBass * 0.15);
 
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
-    float sat  = clamp(uSaturationBase + 0.2 + uIntensity * uSaturationScale, 0.0, 1.25);
+    float sat  = clamp(uSaturationBase + 0.25 + uIntensity * uSaturationScale, 0.0, 1.3);
     color = mix(vec3(luma), color, sat);
 
-    float brightness = (0.2 + uEnergy * 0.9) * uMasterExposure;
-    color *= brightness * (0.55 + 0.7 * pattern);
+    float brightness = (0.16 + uEnergy * 1.1) * uMasterExposure;
+    color *= brightness * (0.5 + 0.75 * pattern);
 
     color += uBackground * (1.0 - pattern) * 1.4;
 
-    // Beat SWELL, not a flash: the existing colours bloom on the kick and decay
-    // smoothly; the bass adds a low, warm lift you feel more than see.
-    color += color * kick * 0.7;
-    color += color * uBass * 0.25;
+    // Beat SWELL, not a flash: the existing colours bloom hard on the kick and
+    // decay smoothly; the bass adds a low, warm lift you feel more than see.
+    color += color * kick * 0.9;
+    color += color * uBass * 0.3;
 
     color += color * uGlow * uMasterGlow;
     color += color * color * uBloom;

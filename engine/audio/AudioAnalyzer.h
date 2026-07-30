@@ -57,6 +57,15 @@ private:
     std::vector<float> beatBpmHistory_;
     size_t beatBpmIndex_ = 0;
     float currentBpm_ = 0.0f;
+
+    // Adaptive-normalization envelope peaks — track the recent loudness of each
+    // band so the output signals fill the full 0..1 range and swing with the
+    // music's dynamics regardless of input gain.
+    float bassPeak_ = 0.0f;
+    float midPeak_ = 0.0f;
+    float treblePeak_ = 0.0f;
+    float energyPeak_ = 0.0f;
+    float intensityPeak_ = 0.0f;
 };
 
 } // namespace papagedon::audio

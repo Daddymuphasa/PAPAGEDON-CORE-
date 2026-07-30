@@ -330,13 +330,14 @@ void main() {
     // Aspect-correct UV, centred at (0,0).
     vec2 uv = (vUV * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
 
-    // Bass/beat pump — the whole frame punches inward on the kick and breathes
-    // with the low end, so the screen physically moves to the music.
-    float pump = 1.0 - uBeat * 0.06 - uBass * 0.05;
+    // Bass/beat pump — the frame punches hard inward on the kick, breathes with
+    // the low end, and rising energy pushes the scene toward the camera so drops
+    // rush in with depth.
+    float pump = 1.0 - uBeat * uBeat * 0.13 - uBass * 0.07 - uEnergy * 0.05;
     uv *= pump;
 
-    // Motion multiplier lets each preset run languid or frantic on the same clock.
-    float t = uTime * 0.25 * uMotion;
+    // Motion runs faster as the track lifts, so the visuals feel driven.
+    float t = uTime * (0.25 + uEnergy * 0.15) * uMotion;
 
     // Active form, cross-fading from the outgoing form during a preset switch.
     float pattern = patternFor(uPattern, uv, t);
@@ -360,9 +361,8 @@ void main() {
     float saturation = clamp(uSaturationBase + 0.2 + uIntensity * uSaturationScale, 0.0, 1.25);
     color = mix(vec3(luma), color, saturation);
 
-    // Brightness: a lifted floor keeps the visual alive between hits, energy
-    // drives the swell, and the pattern shapes it.
-    float brightness = 0.22 + uEnergy * 0.95;
+    // Brightness: a low floor for depth between hits, energy drives a big swell.
+    float brightness = 0.16 + uEnergy * 1.1;
     color *= brightness * (0.5 + 0.75 * pattern);
 
     // Master exposure — operator pre-bloom scene gain (1 = neutral).
