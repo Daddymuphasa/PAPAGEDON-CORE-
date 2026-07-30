@@ -49,6 +49,110 @@ uniform float uAlpha;
 void main() { fragColor = vec4(0.0, 0.0, 0.0, uAlpha); }
 )GLSL";
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Cinematic startup logo — procedural gold "waveform → P" mark on deep green.
+// A luxury brand reveal: the audio waveform draws in from the left, flows into
+// the P (which draws bottom-to-top), a gold gleam sweeps across, and it glows,
+// then fades into the show.  uTime is seconds since the intro began.
+// ──────────────────────────────────────────────────────────────────────────────
+constexpr const char* kIntroFragment = R"GLSL(
+#version 460 core
+in  vec2 vUV;
+out vec4 fragColor;
+uniform float uTime;
+uniform vec2  uResolution;
+
+float sdSeg(vec2 p, vec2 a, vec2 b){
+    vec2 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h);
+}
+float hash(vec2 p){ p = fract(p * vec2(123.34, 345.45)); p += dot(p, p + 34.345); return fract(p.x * p.y); }
+
+void main(){
+    vec2 R = uResolution;
+    vec2 uv = vUV * 2.0 - 1.0;
+    uv.x *= R.x / R.y;
+    float T = uTime;
+
+    // ── deep forest-green backdrop, soft centre light + vignette + grain ──
+    float vig = smoothstep(1.7, 0.15, length(uv));
+    vec3 col  = mix(vec3(0.018, 0.050, 0.032), vec3(0.055, 0.115, 0.082), vig);
+    col += (hash(vUV * R) - 0.5) * 0.015;
+
+    // logo space (slight settle from large → resting)
+    vec2 p = uv * 1.35;
+    p /= mix(1.07, 1.0, smoothstep(0.0, 1.3, T));
+
+    float sx = -0.16;                 // stem x
+    float th = 0.028;                 // stroke half-thickness
+    float aa = 2.4 * 1.35 / R.y;      // ~2px anti-alias in this space
+
+    // ── P mark: vertical stem + right-half bowl ──
+    float dStem = sdSeg(p, vec2(sx, -0.62), vec2(sx, 0.60));
+    vec2  c  = vec2(sx, 0.24);
+    float Rb = 0.36;
+    float dBowl = (p.x < sx) ? 1e3 : abs(length(p - c) - Rb);
+    float dP = min(dStem, dBowl);
+
+    // ── waveform: audio burst entering from the left into the stem ──
+    float xw = p.x;
+    float wob = 0.30 * sin(xw * 10.0) * exp(-pow((xw + 0.55) / 0.28, 2.0))
+              + 0.44 * sin(xw * 16.0) * exp(-pow((xw + 0.30) / 0.20, 2.0))
+              + 0.22 * sin(xw * 22.0) * exp(-pow((xw + 0.05) / 0.16, 2.0));
+    float baseline = -0.03 + wob;
+    float inSpan = step(-1.30, p.x) * step(p.x, sx + 0.01);
+    float dWave = mix(1e3, abs(p.y - baseline), inSpan);
+
+    // ── time-driven draw-on reveals ──
+    float waveProg  = smoothstep(0.35, 1.9, T);
+    float waveFront = mix(-1.34, sx + 0.02, waveProg);
+    float waveMask  = 1.0 - smoothstep(waveFront - 0.05, waveFront, p.x);
+
+    float pProg   = smoothstep(1.5, 3.0, T);
+    float pFrontY = mix(-0.72, 0.66, pProg);
+    float pMask   = 1.0 - smoothstep(pFrontY - 0.06, pFrontY, p.y);
+
+    float waveLine = (1.0 - smoothstep(th - aa, th + aa, dWave)) * waveMask;
+    float pLine    = (1.0 - smoothstep(th - aa, th + aa, dP))    * pMask;
+    float mark     = max(waveLine, pLine);
+    float dMark    = min(dWave, dP);
+
+    // ── gold shading (vertical gradient) ──
+    float grad = clamp(p.y * 0.55 + 0.5, 0.0, 1.0);
+    vec3 gold  = mix(vec3(0.45, 0.30, 0.07), vec3(1.0, 0.87, 0.53), grad);
+
+    // gleam sweep across the mark
+    float sweepEnv = smoothstep(2.2, 3.4, T) - smoothstep(3.4, 4.3, T);
+    float proj     = dot(p, normalize(vec2(0.9, 0.5)));
+    float sweepPos = mix(-0.9, 0.95, smoothstep(2.2, 3.7, T));
+    float gleam    = exp(-pow((proj - sweepPos) / 0.10, 2.0)) * sweepEnv;
+    gold = mix(gold, vec3(1.0, 0.97, 0.86), gleam * 0.9);
+
+    // ── glow halo + bright leading "pen" tips ──
+    float glow = exp(-dMark * 10.0) * max(waveMask, pMask);
+    float waveTip = exp(-pow((p.x - waveFront) / 0.02, 2.0))
+                  * exp(-pow((p.y - baseline) / 0.05, 2.0)) * (1.0 - step(1.85, T));
+    float pTip = exp(-pow((p.y - pFrontY) / 0.02, 2.0))
+               * (1.0 - smoothstep(th * 3.0, th * 6.0, dP))
+               * step(1.5, T) * (1.0 - step(3.0, T));
+
+    // ── compose ──
+    col += vec3(0.9, 0.65, 0.25) * glow * 0.45;
+    col  = mix(col, gold, clamp(mark, 0.0, 1.0));
+    col += vec3(1.0, 0.95, 0.8) * (waveTip + pTip) * 0.85;
+    col += gold * gleam * 0.5;
+
+    // ── global fades ──
+    float inFade  = smoothstep(0.0, 0.5, T);
+    float outFade = 1.0 - smoothstep(4.35, 4.9, T);
+    col *= inFade * outFade;
+    col *= mix(0.62, 1.0, vig);
+
+    fragColor = vec4(col, 1.0);
+}
+)GLSL";
+
 // Compiles a vertex + fragment pair into a linked program (0 on failure).
 [[nodiscard]] unsigned int CompileGLProgram(const char* vs, const char* fs) noexcept {
     const auto stage = [](GLenum type, const char* src) -> unsigned int {
@@ -137,6 +241,18 @@ public:
     int          pendingShader = -1;
     float        fade      = 1.0f;   // 1 = fully visible, 0 = black
     bool         fadingOut = false;
+
+    // ── Cinematic startup intro (procedural gold logo) ──────────────────────────
+    unsigned int introProgram = 0;
+    int          introTimeLoc = -1;
+    int          introResLoc  = -1;
+    bool         introActive  = true;   // plays once at startup
+    double       introStart   = -1.0;
+
+    // ── Live controls menu (H, and auto-shown at startup) ───────────────────────
+    bool   showMenu          = false;
+    bool   menuKeyWasPressed = false;   // 'H'
+    double menuVisibleUntil  = 0.0;     // auto-hide time when shown non-sticky
 
     // ── Auto-shader director (music-driven transitions) ─────────────────────────
     bool         autoShader     = false;
@@ -344,6 +460,21 @@ bool OpenGLRenderer::Initialize() {
         ? glGetUniformLocation(implementation_->fadeProgram, "uAlpha") : -1;
     implementation_->lastSwitchTime = glfwGetTime();
 
+    // Cinematic startup logo program. PAPAGEDON_NO_INTRO=1 skips it (fast relaunch).
+    implementation_->introProgram = CompileGLProgram(ShaderManager::DefaultVertexSource(), kIntroFragment);
+    implementation_->introTimeLoc = implementation_->introProgram != 0
+        ? glGetUniformLocation(implementation_->introProgram, "uTime") : -1;
+    implementation_->introResLoc = implementation_->introProgram != 0
+        ? glGetUniformLocation(implementation_->introProgram, "uResolution") : -1;
+    if (const char* const noIntro = std::getenv("PAPAGEDON_NO_INTRO")) {
+        if (noIntro[0] != '0') {
+            implementation_->introActive = false;
+        }
+    }
+    if (implementation_->introProgram == 0) {
+        implementation_->introActive = false; // no program → straight to the show
+    }
+
     // Auto-shader director: transition through the library with the music.
     if (const char* const autoEnv = std::getenv("PAPAGEDON_AUTO_SHADER")) {
         implementation_->autoShader = autoEnv[0] != '0';
@@ -431,7 +562,7 @@ void OpenGLRenderer::PresentSplash(const std::string& status, const float progre
     int height = 0;
     glfwGetFramebufferSize(implementation_->window, &width, &height);
     glViewport(0, 0, width, height);
-    glClearColor(0.02F, 0.01F, 0.05F, 1.0F);
+    glClearColor(0.018F, 0.050F, 0.032F, 1.0F); // deep forest green (brand)
     glClear(GL_COLOR_BUFFER_BIT);
 
     implementation_->debugOverlay.RenderSplash(
@@ -507,6 +638,54 @@ void OpenGLRenderer::Render(
     const visual::Theme&  theme) {
 
     if (!initialized_) {
+        return;
+    }
+
+    // ── Cinematic startup intro ─────────────────────────────────────────────────
+    // Plays once before the show: the animated gold logo + wordmark on deep green.
+    // Draws to the back buffer; EndFrame swaps and still polls input (so ESC quits
+    // and ENTER can skip).  Returns early so the show doesn't render underneath.
+    if (implementation_->introActive) {
+        const double now = glfwGetTime();
+        if (implementation_->introStart < 0.0) {
+            implementation_->introStart = now;
+        }
+        const float introT = static_cast<float>(now - implementation_->introStart);
+        constexpr float kIntroDuration = 4.9f;
+
+        int iw = 0;
+        int ih = 0;
+        glfwGetFramebufferSize(implementation_->window, &iw, &ih);
+        glViewport(0, 0, iw, ih);
+        glClearColor(0.018F, 0.050F, 0.032F, 1.0F); // deep forest green
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        if (implementation_->introProgram != 0) {
+            glUseProgram(implementation_->introProgram);
+            if (implementation_->introTimeLoc >= 0) {
+                glUniform1f(implementation_->introTimeLoc, introT);
+            }
+            if (implementation_->introResLoc >= 0) {
+                glUniform2f(implementation_->introResLoc, static_cast<float>(iw), static_cast<float>(ih));
+            }
+            glBindVertexArray(fullscreenVAO_);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glBindVertexArray(0u);
+        }
+
+        // Wordmark fades in under the mark, then out with the whole intro.
+        const float wordIn  = std::clamp((introT - 2.7f) / 1.0f, 0.0f, 1.0f);
+        const float wordOut = 1.0f - std::clamp((introT - 4.35f) / 0.55f, 0.0f, 1.0f);
+        implementation_->debugOverlay.RenderBrandWordmark(iw, ih, wordIn * wordOut);
+
+        // ENTER skips the intro.
+        const bool skip = glfwGetKey(implementation_->window, GLFW_KEY_ENTER) == GLFW_PRESS;
+        if (introT >= kIntroDuration || skip) {
+            implementation_->introActive = false;
+            implementation_->lastFrameTime = now;       // avoid a huge first dt
+            implementation_->lastSwitchTime = now;      // don't auto-switch instantly
+            implementation_->menuVisibleUntil = now + 9.0; // auto-show controls once
+        }
         return;
     }
 
@@ -710,6 +889,19 @@ void OpenGLRenderer::Render(
     if (implementation_->showMeter) {
         implementation_->debugOverlay.RenderMeter(debugState, width, height);
     }
+
+    // Live-controls menu: sticky while toggled on (H), or auto-shown at startup
+    // for a few seconds (fading out over the last second).
+    float menuAlpha = 0.0f;
+    if (implementation_->showMenu) {
+        menuAlpha = 1.0f;
+    } else if (currentTime < implementation_->menuVisibleUntil) {
+        menuAlpha = std::clamp(
+            static_cast<float>(implementation_->menuVisibleUntil - currentTime), 0.0f, 1.0f);
+    }
+    if (menuAlpha > 0.0f) {
+        implementation_->debugOverlay.RenderMenu(width, height, menuAlpha);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -824,6 +1016,15 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->showMeter = !implementation_->showMeter;
     }
     implementation_->meterKeyWasPressed = meterKeyIsPressed;
+
+    // 'H' toggles the live-controls menu (all keys + features).
+    const bool menuKeyIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_H) == GLFW_PRESS;
+    if (menuKeyIsPressed && !implementation_->menuKeyWasPressed) {
+        implementation_->showMenu = !implementation_->showMenu;
+        implementation_->menuVisibleUntil = 0.0; // cancel any startup auto-show
+    }
+    implementation_->menuKeyWasPressed = menuKeyIsPressed;
 
     // F12 toggles the debug overlay.
     const bool debugKeyIsPressed =
@@ -949,6 +1150,10 @@ void OpenGLRenderer::Shutdown() noexcept {
     if (implementation_->fadeProgram != 0) {
         glDeleteProgram(implementation_->fadeProgram);
         implementation_->fadeProgram = 0;
+    }
+    if (implementation_->introProgram != 0) {
+        glDeleteProgram(implementation_->introProgram);
+        implementation_->introProgram = 0;
     }
 
     if (fullscreenVAO_ != 0u) {

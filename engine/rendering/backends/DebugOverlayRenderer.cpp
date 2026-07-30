@@ -2,6 +2,7 @@
 #include "font8x8_basic.h"
 
 #include <glad/glad.h>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -27,10 +28,12 @@ namespace {
         out vec4 FragColor;
         in vec2 TexCoord;
         uniform sampler2D textTexture;
+        uniform vec3  uColor;
+        uniform float uAlpha;
         void main() {
             float r = texture(textTexture, TexCoord).r;
             if (r < 0.5) discard;
-            FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            FragColor = vec4(uColor, uAlpha);
         }
     )";
 
@@ -69,6 +72,9 @@ bool DebugOverlayRenderer::Initialize() {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    colorLoc_ = glGetUniformLocation(shaderProgram_, "uColor");
+    alphaLoc_ = glGetUniformLocation(shaderProgram_, "uAlpha");
 
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
@@ -141,42 +147,96 @@ void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int 
     RenderText(ss.str().c_str(), 10.0F, windowHeight - 20.0F, 2.0F, windowWidth, windowHeight);
 }
 
-void DebugOverlayRenderer::RenderSplash(const char* version, const char* status,
+void DebugOverlayRenderer::RenderSplash(const char* /*version*/, const char* status,
                                         float progress, int windowWidth, int windowHeight) {
     if (!initialized_) {
         return;
     }
     progress = progress < 0.0F ? 0.0F : (progress > 1.0F ? 1.0F : progress);
 
-    const auto centeredX = [&](int chars, float scale) {
-        return (static_cast<float>(windowWidth) - static_cast<float>(chars) * 8.0F * scale) * 0.5F;
+    // Minimal, elegant loading frame: a dim gold wordmark that brightens with
+    // progress, plus a small status line.  The animated logo intro follows.
+    RenderBrandWordmark(windowWidth, windowHeight, 0.25F + 0.35F * progress);
+
+    const float statusScale = 2.0F;
+    const int statusLen = static_cast<int>(std::string(status).size());
+    const float sx = (static_cast<float>(windowWidth) - static_cast<float>(statusLen) * 8.0F * statusScale) * 0.5F;
+    RenderTextShadowed(status, sx, static_cast<float>(windowHeight) * 0.22F, statusScale,
+                       windowWidth, windowHeight, 0.62F, 0.68F, 0.60F, 0.7F);
+}
+
+void DebugOverlayRenderer::RenderTextShadowed(const char* text, float x, float y, float scale,
+                                              int windowWidth, int windowHeight,
+                                              float r, float g, float b, float a) {
+    const float off = scale;                      // ~1 texel of shadow offset
+    RenderText(text, x + off, y - off, scale, windowWidth, windowHeight,
+               0.02F, 0.03F, 0.02F, a * 0.85F);   // dark drop shadow
+    RenderText(text, x, y, scale, windowWidth, windowHeight, r, g, b, a);
+}
+
+void DebugOverlayRenderer::RenderBrandWordmark(int windowWidth, int windowHeight, float alpha) {
+    if (!initialized_ || alpha <= 0.0F) {
+        return;
+    }
+    // Letter-spaced caps evoke the logo's wordmark.
+    const char* kWord = "P A P A G E D O N";
+    const int len = static_cast<int>(std::string(kWord).size());
+    const float scale = std::max(3.0F, static_cast<float>(windowWidth) / 320.0F);
+    const float x = (static_cast<float>(windowWidth) - static_cast<float>(len) * 8.0F * scale) * 0.5F;
+    const float y = static_cast<float>(windowHeight) * 0.30F;
+    RenderTextShadowed(kWord, x, y, scale, windowWidth, windowHeight,
+                       0.85F, 0.66F, 0.32F, alpha); // brand gold
+}
+
+void DebugOverlayRenderer::RenderMenu(int windowWidth, int windowHeight, float alpha) {
+    if (!initialized_ || alpha <= 0.0F) {
+        return;
+    }
+    struct Line { const char* text; bool header; };
+    static const Line kLines[] = {
+        {"PAPAGEDON   -   LIVE CONTROLS", true},
+        {"", false},
+        {" VISUALS", true},
+        {"   [   ]     prev / next shader", false},
+        {"   V         auto-shader  (music-driven)", false},
+        {"   SPACE     play / pause audio", false},
+        {"   F8        reload shaders & theme", false},
+        {"", false},
+        {" COLOUR", true},
+        {"   B         RED  -  Badman  (home)", false},
+        {"   F1 - F7   cyber / techno / industrial /", false},
+        {"             rave / aurora / nebula / matrix", false},
+        {"   F10       FX on/off  (glow / bloom)", false},
+        {"", false},
+        {" SHOW", true},
+        {"   A         auto-VJ presets", false},
+        {"   F9        demo / presentation mode", false},
+        {"   F11       fullscreen", false},
+        {"   F12       debug overlay", false},
+        {"", false},
+        {" SOUNDCHECK", true},
+        {"   M         input level meter", false},
+        {"   H         show / hide this menu", false},
+        {"   ESC       quit", false},
     };
 
-    // Logo (placeholder wordmark).
-    const char* kLogo = "PAPAGEDON";
-    const float logoScale = 6.0F;
-    RenderText(kLogo, centeredX(9, logoScale),
-               static_cast<float>(windowHeight) * 0.60F, logoScale, windowWidth, windowHeight);
+    const float scale = std::max(1.5F, static_cast<float>(windowHeight) / 460.0F);
+    const float lineH = 8.0F * scale * 1.5F;
+    const float x = std::max(40.0F, static_cast<float>(windowWidth) * 0.06F);
+    float y = static_cast<float>(windowHeight) * 0.90F;
 
-    // Version.
-    const float verScale = 2.0F;
-    RenderText(version, centeredX(static_cast<int>(std::string(version).size()), verScale),
-               static_cast<float>(windowHeight) * 0.50F, verScale, windowWidth, windowHeight);
-
-    // Text progress bar: [########      ]
-    constexpr int kCells = 24;
-    const int filled = static_cast<int>(progress * kCells + 0.5F);
-    std::string bar = "[";
-    for (int i = 0; i < kCells; ++i) bar += (i < filled) ? '#' : ' ';
-    bar += "]";
-    const float barScale = 2.0F;
-    RenderText(bar.c_str(), centeredX(static_cast<int>(bar.size()), barScale),
-               static_cast<float>(windowHeight) * 0.40F, barScale, windowWidth, windowHeight);
-
-    // Status line.
-    const float statusScale = 2.0F;
-    RenderText(status, centeredX(static_cast<int>(std::string(status).size()), statusScale),
-               static_cast<float>(windowHeight) * 0.34F, statusScale, windowWidth, windowHeight);
+    for (const Line& ln : kLines) {
+        if (ln.text[0] != '\0') {
+            if (ln.header) {
+                RenderTextShadowed(ln.text, x, y, scale, windowWidth, windowHeight,
+                                   0.95F, 0.75F, 0.34F, alpha);          // gold heading
+            } else {
+                RenderTextShadowed(ln.text, x, y, scale, windowWidth, windowHeight,
+                                   0.90F, 0.90F, 0.84F, alpha * 0.95F);  // warm-white entry
+            }
+        }
+        y -= lineH;
+    }
 }
 
 void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int windowHeight) {
@@ -221,8 +281,12 @@ void DebugOverlayRenderer::RenderMeter(const DebugState& state, int windowWidth,
                2.5F, windowWidth, windowHeight);
 }
 
-void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float scale, int windowWidth, int windowHeight) {
+void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float scale,
+                                      int windowWidth, int windowHeight,
+                                      float r, float g, float b, float a) {
     glUseProgram(shaderProgram_);
+    if (colorLoc_ >= 0) glUniform3f(colorLoc_, r, g, b);
+    if (alphaLoc_ >= 0) glUniform1f(alphaLoc_, a);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_);
     glBindVertexArray(vao_);
