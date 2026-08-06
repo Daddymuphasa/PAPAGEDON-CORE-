@@ -43,6 +43,14 @@ public:
 private:
     void Update(FrameDuration deltaTime) noexcept;
 
+    struct AudioSelection {
+        std::string source;      // "input", "loopback", or "file"
+        int         deviceIndex = -1;
+        bool        isLoopback  = false;
+    };
+    AudioSelection SelectAudioSource(const std::string& currentSource,
+                                     int currentDevice);
+
     utilities::Logger& logger_;
     audio::AudioInput audioInput_;
     audio::AudioPlayer audioPlayer_;

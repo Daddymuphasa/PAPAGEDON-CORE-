@@ -186,6 +186,44 @@ void main(){
     return p;
 }
 
+// Extracts a JSON integer value for a given key from a flat JSON string.
+// Returns `fallback` if the key is not found.
+int JsonInt(const std::string& json, const char* key, int fallback) noexcept {
+    const std::string needle = std::string("\"") + key + "\"";
+    const auto pos = json.find(needle);
+    if (pos == std::string::npos) return fallback;
+    auto colon = json.find(':', pos + needle.size());
+    if (colon == std::string::npos) return fallback;
+    ++colon;
+    while (colon < json.size() && (json[colon] == ' ' || json[colon] == '\t')) ++colon;
+    return std::atoi(json.c_str() + colon);
+}
+
+// Extracts a JSON string value for a given key.
+std::string JsonString(const std::string& json, const char* key) noexcept {
+    const std::string needle = std::string("\"") + key + "\"";
+    const auto pos = json.find(needle);
+    if (pos == std::string::npos) return {};
+    auto q1 = json.find('"', json.find(':', pos + needle.size()) + 1);
+    if (q1 == std::string::npos) return {};
+    auto q2 = json.find('"', q1 + 1);
+    if (q2 == std::string::npos) return {};
+    return json.substr(q1 + 1, q2 - q1 - 1);
+}
+
+// Checks whether a JSON array-of-strings contains a given value.
+bool JsonArrayContains(const std::string& json, const char* arrayKey,
+                       const char* value) noexcept {
+    const std::string needle = std::string("\"") + arrayKey + "\"";
+    const auto pos = json.find(needle);
+    if (pos == std::string::npos) return false;
+    auto bracket = json.find('[', pos + needle.size());
+    if (bracket == std::string::npos) return false;
+    auto end = json.find(']', bracket);
+    if (end == std::string::npos) return false;
+    return json.substr(bracket, end - bracket).find(value) != std::string::npos;
+}
+
 Color3 LerpColor(const Color3& a, const Color3& b, const float t) noexcept {
     return Color3{
         a.r + (b.r - a.r) * t,
@@ -317,6 +355,27 @@ public:
     // Soundcheck input-level meter (M).
     bool showMeter        = false;
     bool meterKeyWasPressed = false;
+
+    // ── Drag-and-drop file (runtime audio swap) ────────────────────────────────
+    std::string droppedFilePath;
+    bool        pendingDroppedFile = false;
+
+    // ── Shader metadata (for smart auto-shader matching) ────────────────────────
+    struct ShaderMeta {
+        int   bpmLow      = 0;
+        int   bpmHigh     = 300;
+        int   energyTier  = 1;   // 0=low, 1=medium, 2=high, 3=peak
+        float bassBias    = 0.0f; // >0 favours bass-heavy music
+        float trebleBias  = 0.0f; // >0 favours treble-heavy music
+    };
+    std::vector<ShaderMeta> shaderMeta;  // parallel to shaderLib (slot 1..N)
+
+    // Smart auto-shader state.
+    int   recentShaders[4]   = {-1, -1, -1, -1};
+    int   recentHead         = 0;
+    float smoothBass         = 0.0f;
+    float smoothTreble       = 0.0f;
+    float smoothBpm          = 0.0f;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -445,8 +504,48 @@ bool OpenGLRenderer::Initialize() {
                     }
                     for (char& ch : name) if (ch == '_') ch = ' ';
                     if (!name.empty()) name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
+
+                    // Load metadata JSON if it exists beside the shader.
+                    Implementation::ShaderMeta meta;
+                    const auto stem = fs::path(file).stem().string();
+                    const auto packDir = fs::path(file).parent_path().parent_path();
+                    const auto metaPath = packDir / "metadata" / (stem + ".json");
+                    if (std::ifstream mf(metaPath, std::ios::binary); mf) {
+                        std::ostringstream ms; ms << mf.rdbuf();
+                        const std::string mj = ms.str();
+                        // BPM range from "recommendedBpmRange": [low, high]
+                        if (const auto bp = mj.find("recommendedBpmRange"); bp != std::string::npos) {
+                            auto br = mj.find('[', bp);
+                            if (br != std::string::npos) {
+                                meta.bpmLow = std::atoi(mj.c_str() + br + 1);
+                                auto comma = mj.find(',', br);
+                                if (comma != std::string::npos)
+                                    meta.bpmHigh = std::atoi(mj.c_str() + comma + 1);
+                            }
+                        }
+                        // Energy level
+                        const std::string elv = JsonString(mj, "energyLevel");
+                        if (elv == "low")         meta.energyTier = 0;
+                        else if (elv == "medium")  meta.energyTier = 1;
+                        else if (elv == "high")    meta.energyTier = 2;
+                        else if (elv == "peak")    meta.energyTier = 3;
+                        // Frequency bias from mood tags
+                        if (JsonArrayContains(mj, "mood", "atmospheric") ||
+                            JsonArrayContains(mj, "mood", "cinematic"))
+                            meta.bassBias += 0.3f;
+                        if (JsonArrayContains(mj, "mood", "hypnotic") ||
+                            JsonArrayContains(mj, "mood", "luxury"))
+                            meta.bassBias += 0.2f;
+                        if (JsonArrayContains(mj, "mood", "aggressive") ||
+                            JsonArrayContains(mj, "mood", "minimal"))
+                            meta.trebleBias += 0.3f;
+                        if (JsonArrayContains(mj, "mood", "dark"))
+                            meta.bassBias += 0.1f;
+                    }
+
                     implementation_->shaderLib.push_back(std::move(sm));
                     implementation_->shaderNames.push_back(name);
+                    implementation_->shaderMeta.push_back(meta);
                 } else {
                     std::fprintf(stderr, "[ShaderLib] skipped (compile failed): %s\n", file.c_str());
                 }
@@ -493,6 +592,25 @@ bool OpenGLRenderer::Initialize() {
             implementation_->activeShader = idx;
         }
     }
+
+    // ── Drag-and-drop audio files ───────────────────────────────────────────
+    glfwSetWindowUserPointer(implementation_->window, implementation_.get());
+    glfwSetDropCallback(implementation_->window,
+        [](GLFWwindow* w, int count, const char** paths) {
+            if (count < 1 || paths == nullptr || paths[0] == nullptr) return;
+            auto* impl = static_cast<Implementation*>(glfwGetWindowUserPointer(w));
+            if (impl == nullptr) return;
+            const std::string path = paths[0];
+            const auto ext = std::filesystem::path(path).extension().string();
+            std::string lower;
+            lower.reserve(ext.size());
+            for (char c : ext)
+                lower += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if (lower == ".wav" || lower == ".mp3" || lower == ".flac" || lower == ".ogg") {
+                impl->droppedFilePath    = path;
+                impl->pendingDroppedFile = true;
+            }
+        });
 
     // ── Debug overlay ────────────────────────────────────────────────────────
     implementation_->lastFpsUpdateTime  = glfwGetTime();
@@ -821,18 +939,82 @@ void OpenGLRenderer::Render(
         }
     }
 
-    // Auto-shader: move through the library with the music — on a big energy
-    // surge (a drop) or, failing that, on a steady phrase timer.
+    // Auto-shader: move through the library with the music, matching shaders
+    // to the current audio character (BPM, energy, frequency profile).
     if (implementation_->autoShader) {
         implementation_->prevBeat = signals.beat;
         const float ba = 1.0f - std::exp(-deltaTime * 0.4f);
         implementation_->energyBaseline += (signals.energy - implementation_->energyBaseline) * ba;
+        // Smooth the frequency bands and BPM over several seconds so matching
+        // decisions are stable, not twitchy on every transient.
+        const float sa = 1.0f - std::exp(-deltaTime * 0.8f);
+        implementation_->smoothBass   += (signals.bass   - implementation_->smoothBass)   * sa;
+        implementation_->smoothTreble += (signals.treble  - implementation_->smoothTreble) * sa;
+        if (signals.bpm > 30.0f) {
+            const float bpmAlpha = 1.0f - std::exp(-deltaTime * 0.3f);
+            implementation_->smoothBpm += (signals.bpm - implementation_->smoothBpm) * bpmAlpha;
+        }
         const double since  = currentTime - implementation_->lastSwitchTime;
         const bool   drop   = (signals.energy - implementation_->energyBaseline) > 0.28f && signals.energy > 0.45f;
         const bool   timeUp = since > 14.0;
         if (!implementation_->transitioning && since > 5.0 && (drop || timeUp)) {
             const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
-            BeginShaderTransition((implementation_->activeShader + 1) % count);
+            if (count > 1 && !implementation_->shaderMeta.empty()) {
+                // Score every shader in the library and pick the best match.
+                const float bpm    = implementation_->smoothBpm;
+                const float energy = implementation_->energyBaseline;
+                const float bass   = implementation_->smoothBass;
+                const float treble = implementation_->smoothTreble;
+                // Map energy to a tier: [0] <0.25 [1] <0.50 [2] <0.75 [3]
+                const int eTier = energy < 0.25f ? 0 : energy < 0.50f ? 1
+                                : energy < 0.75f ? 2 : 3;
+                float bestScore  = -1e9f;
+                int   bestShader = (implementation_->activeShader + 1) % count;
+                for (int i = 1; i < count; ++i) {
+                    const std::size_t mi = static_cast<std::size_t>(i - 1);
+                    if (mi >= implementation_->shaderMeta.size()) continue;
+                    const auto& m = implementation_->shaderMeta[mi];
+                    float score = 0.0f;
+                    // BPM match: +3 if inside the recommended range, scaled penalty outside.
+                    if (bpm > 30.0f && m.bpmLow > 0) {
+                        if (bpm >= static_cast<float>(m.bpmLow) &&
+                            bpm <= static_cast<float>(m.bpmHigh)) {
+                            score += 3.0f;
+                        } else {
+                            const float dist = bpm < static_cast<float>(m.bpmLow)
+                                ? static_cast<float>(m.bpmLow) - bpm
+                                : bpm - static_cast<float>(m.bpmHigh);
+                            score -= dist * 0.15f;
+                        }
+                    }
+                    // Energy tier match: +2 for exact, -1 per tier distance.
+                    const int tierDist = std::abs(eTier - m.energyTier);
+                    score += 2.0f - static_cast<float>(tierDist) * 1.0f;
+                    // Frequency profile match: bass-heavy music favours bass-biased
+                    // shaders, treble-heavy music favours treble-biased shaders.
+                    const float freqBalance = bass - treble; // >0 = bass-heavy
+                    score += freqBalance * m.bassBias * 3.0f;
+                    score -= freqBalance * m.trebleBias * 2.0f;
+                    score += (treble - bass) * m.trebleBias * 3.0f;
+                    // Penalise recently played shaders to ensure variety.
+                    for (int r : implementation_->recentShaders) {
+                        if (r == i) { score -= 5.0f; break; }
+                    }
+                    // Small random jitter so ties don't always resolve the same way.
+                    const float jitter = static_cast<float>((i * 7 + static_cast<int>(currentTime * 3.0)) % 100) * 0.005f;
+                    score += jitter;
+                    if (score > bestScore) {
+                        bestScore  = score;
+                        bestShader = i;
+                    }
+                }
+                // Record in recent history.
+                implementation_->recentShaders[implementation_->recentHead % 4] = bestShader;
+                implementation_->recentHead++;
+                BeginShaderTransition(bestShader);
+            } else {
+                BeginShaderTransition((implementation_->activeShader + 1) % count);
+            }
             implementation_->lastSwitchTime = currentTime;
         }
     }
@@ -1130,6 +1312,16 @@ bool OpenGLRenderer::ConsumeAutoToggle() noexcept {
     const bool toggled = implementation_->pendingAutoToggle;
     implementation_->pendingAutoToggle = false;
     return toggled;
+}
+
+std::string OpenGLRenderer::ConsumeDroppedFile() noexcept {
+    if (implementation_ == nullptr || !implementation_->pendingDroppedFile) {
+        return {};
+    }
+    std::string path = std::move(implementation_->droppedFilePath);
+    implementation_->droppedFilePath.clear();
+    implementation_->pendingDroppedFile = false;
+    return path;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

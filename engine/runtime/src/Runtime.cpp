@@ -3,10 +3,13 @@
 #include <papagedon/utilities/Logger.h>
 #include "../../rendering/DebugState.h"
 
+#include <AudioCapture.h>
+
 #include <span>
 #include <algorithm>
 #include <cstddef>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
 namespace papagedon::runtime {
@@ -85,16 +88,14 @@ bool Runtime::Initialize(const std::string& audioPath) {
         splash("Theme: " + themeManager_.CurrentTheme().name, 0.50F);
     }
 
-    // ── Audio source ─────────────────────────────────────────────────────────────
-    // "input"/"loopback" react to a LIVE device (the DJ booth); "file" plays a clip.
-    // Env overrides: PAPAGEDON_AUDIO=input|loopback|file, PAPAGEDON_CAPTURE_DEVICE=<n>.
+    // ── Audio source selection ─────────────────────────────────────────────────
+    // Interactive console selector (or auto-select when PAPAGEDON_AUDIO is set).
     std::string audioSource = config_.audioSource;
-    if (const char* const src = std::getenv("PAPAGEDON_AUDIO")) {
-        audioSource = src;
-    }
     int captureDevice = config_.captureDevice;
-    if (const char* const dev = std::getenv("PAPAGEDON_CAPTURE_DEVICE")) {
-        captureDevice = std::atoi(dev);
+    {
+        const AudioSelection selection = SelectAudioSource(audioSource, captureDevice);
+        audioSource   = selection.source;
+        captureDevice = selection.deviceIndex;
     }
 
     if (audioSource == "input" || audioSource == "loopback") {
@@ -289,6 +290,30 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         logger_.INFO(autoMode_ ? "Auto-VJ enabled." : "Auto-VJ disabled.");
     }
 
+    // Drag-and-drop: swap the audio source to a new file at runtime.
+    if (std::string droppedFile = renderer_.ConsumeDroppedFile(); !droppedFile.empty()) {
+        logger_.INFO("File dropped: " + droppedFile);
+        if (liveAudio_) {
+            audioCapture_.Stop();
+            audioCapture_.Shutdown();
+            liveAudio_ = false;
+            logger_.INFO("Stopped live capture — switching to file.");
+        }
+        audioPlayer_.Stop();
+        audioInput_.Close();
+        if (audioInput_.Load(droppedFile)) {
+            audioPlayer_.Load(&audioInput_);
+            audioPlayer_.Play();
+            audioFileName_ = droppedFile;
+            audioReady_ = true;
+            logger_.INFO("Now playing: " + droppedFile);
+        } else {
+            audioReady_ = false;
+            audioFileName_.clear();
+            logger_.ERROR("Could not decode dropped file: " + droppedFile);
+        }
+    }
+
     // Optional demo auto-cycle: step presets on a fixed interval (off in Auto-VJ).
     if (!autoMode_ && demoCycleSeconds_ > 0.0) {
         demoCycleElapsed_ += deltaTime.count();
@@ -382,6 +407,108 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     if (!renderer_.EndFrame()) {
         RequestStop();
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// SelectAudioSource — console device selector shown at startup
+// ──────────────────────────────────────────────────────────────────────────────
+Runtime::AudioSelection Runtime::SelectAudioSource(
+    const std::string& currentSource, const int currentDevice) {
+
+    AudioSelection result;
+    result.source      = "file";
+    result.deviceIndex = -1;
+
+    // PAPAGEDON_AUDIO env overrides → auto-select without prompting (backward compat).
+    if (const char* const src = std::getenv("PAPAGEDON_AUDIO")) {
+        result.source     = src;
+        result.deviceIndex = currentDevice;
+        if (const char* const dev = std::getenv("PAPAGEDON_CAPTURE_DEVICE")) {
+            result.deviceIndex = std::atoi(dev);
+        }
+        result.isLoopback = (result.source == "loopback");
+        return result;
+    }
+
+    // Enumerate all audio devices.
+    const auto devices = audio::AudioCapture::EnumerateDevices();
+
+    struct MenuEntry {
+        std::string label;
+        std::string source;
+        int         deviceIndex;
+        bool        isLoopback;
+    };
+    std::vector<MenuEntry> menu;
+    int number = 1;
+
+    std::printf("\n");
+    std::printf("  +==============================================+\n");
+    std::printf("  |      PAPAGEDON - Audio Source Setup           |\n");
+    std::printf("  +==============================================+\n\n");
+
+    // Category 1: LIVE SPEAKER (system loopback).
+    std::printf("  LIVE SPEAKER (system audio loopback)\n");
+    std::printf("  ------------------------------------\n");
+    bool anyLoopback = false;
+    for (const auto& dev : devices) {
+        if (dev.isCapture) continue;
+        std::printf("    [%d] %s%s\n", number, dev.name.c_str(),
+                    dev.isDefault ? "  (default)" : "");
+        menu.push_back({dev.name, "loopback", dev.index, true});
+        ++number;
+        anyLoopback = true;
+    }
+    if (!anyLoopback) {
+        std::printf("    (none detected)\n");
+    }
+
+    // Category 2: AUX INPUT (capture / input devices).
+    std::printf("\n  AUX INPUT (audio interfaces, microphones)\n");
+    std::printf("  ------------------------------------------\n");
+    bool anyCapture = false;
+    for (const auto& dev : devices) {
+        if (!dev.isCapture) continue;
+        std::printf("    [%d] %s%s\n", number, dev.name.c_str(),
+                    dev.isDefault ? "  (default)" : "");
+        menu.push_back({dev.name, "input", dev.index, false});
+        ++number;
+        anyCapture = true;
+    }
+    if (!anyCapture) {
+        std::printf("    (none detected)\n");
+    }
+
+    // Category 3: AUDIO FILE.
+    std::printf("\n  AUDIO FILE\n");
+    std::printf("  ----------\n");
+    std::printf("    [%d] Drag and drop a file onto the window, or pass via CLI\n", number);
+    menu.push_back({"Audio file (drag-and-drop / CLI)", "file", -1, false});
+    ++number;
+
+    std::printf("\n  Select audio source [1-%d]: ", number - 1);
+    std::fflush(stdout);
+
+    std::string line;
+    if (!std::getline(std::cin, line) || line.empty()) {
+        logger_.INFO("No selection — defaulting to audio file mode.");
+        return result;
+    }
+
+    int choice = 0;
+    try { choice = std::stoi(line); } catch (...) { choice = 0; }
+
+    if (choice < 1 || choice > static_cast<int>(menu.size())) {
+        logger_.INFO("Invalid selection — defaulting to audio file mode.");
+        return result;
+    }
+
+    const auto& selected = menu[static_cast<std::size_t>(choice - 1)];
+    result.source      = selected.source;
+    result.deviceIndex = selected.deviceIndex;
+    result.isLoopback  = selected.isLoopback;
+    logger_.INFO("Audio source: " + selected.label + ".");
+    return result;
 }
 
 } // namespace papagedon::runtime

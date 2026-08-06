@@ -91,6 +91,10 @@ bool Renderer::ConsumeAutoToggle() noexcept {
     return backend_ != nullptr && backend_->ConsumeAutoToggle();
 }
 
+std::string Renderer::ConsumeDroppedFile() noexcept {
+    return backend_ != nullptr ? backend_->ConsumeDroppedFile() : std::string{};
+}
+
 void Renderer::Shutdown() noexcept {
     if (backend_ != nullptr) {
         backend_->Shutdown();

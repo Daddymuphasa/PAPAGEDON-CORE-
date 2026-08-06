@@ -54,6 +54,9 @@ public:
     /// True once per A press (Auto-VJ toggle). See IRenderer.
     [[nodiscard]] bool ConsumeAutoToggle() noexcept;
 
+    /// Returns the path of a file dropped onto the window, or empty. See IRenderer.
+    [[nodiscard]] std::string ConsumeDroppedFile() noexcept;
+
 private:
     std::unique_ptr<IRenderer> backend_;
 };

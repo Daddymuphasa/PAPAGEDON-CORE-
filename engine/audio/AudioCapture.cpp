@@ -213,4 +213,33 @@ void AudioCapture::ListDevices() {
     ma_context_uninit(&context);
 }
 
+std::vector<AudioCapture::DeviceInfo> AudioCapture::EnumerateDevices() {
+    std::vector<DeviceInfo> result;
+    ma_context context;
+    if (ma_context_init(nullptr, 0, nullptr, &context) != MA_SUCCESS) {
+        return result;
+    }
+    ma_device_info* playbackInfos = nullptr;
+    ma_device_info* captureInfos  = nullptr;
+    ma_uint32 playbackCount = 0;
+    ma_uint32 captureCount  = 0;
+    if (ma_context_get_devices(&context, &playbackInfos, &playbackCount,
+                               &captureInfos, &captureCount) == MA_SUCCESS) {
+        for (ma_uint32 i = 0; i < playbackCount; ++i) {
+            result.push_back({playbackInfos[i].name,
+                              static_cast<int>(i),
+                              playbackInfos[i].isDefault != 0,
+                              false});
+        }
+        for (ma_uint32 i = 0; i < captureCount; ++i) {
+            result.push_back({captureInfos[i].name,
+                              static_cast<int>(i),
+                              captureInfos[i].isDefault != 0,
+                              true});
+        }
+    }
+    ma_context_uninit(&context);
+    return result;
+}
+
 } // namespace papagedon::audio

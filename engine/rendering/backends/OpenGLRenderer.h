@@ -39,6 +39,7 @@ public:
     [[nodiscard]] bool ConsumePlayPauseToggle() noexcept override;
     [[nodiscard]] bool ConsumeReloadRequest() noexcept override;
     [[nodiscard]] bool ConsumeAutoToggle() noexcept override;
+    [[nodiscard]] std::string ConsumeDroppedFile() noexcept override;
 
 private:
     class Implementation;

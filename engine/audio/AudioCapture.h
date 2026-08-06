@@ -51,6 +51,17 @@ public:
     /// Prints the available capture and playback (loopback) devices to stdout.
     static void ListDevices();
 
+    /// Structured device info returned by EnumerateDevices().
+    struct DeviceInfo {
+        std::string name;
+        int         index     = -1;
+        bool        isDefault = false;
+        bool        isCapture = true;  ///< true = input/capture, false = output/loopback.
+    };
+
+    /// Returns all available audio devices (capture + playback) without printing.
+    [[nodiscard]] static std::vector<DeviceInfo> EnumerateDevices();
+
 private:
     class Impl;
     std::unique_ptr<Impl> impl_;

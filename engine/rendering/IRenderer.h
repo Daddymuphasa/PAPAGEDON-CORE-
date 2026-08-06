@@ -73,6 +73,10 @@ public:
 
     /// True once per A press — toggles Auto-VJ (automatic preset/form selection).
     [[nodiscard]] virtual bool ConsumeAutoToggle() noexcept = 0;
+
+    /// Returns the path of a file dropped onto the window since the previous
+    /// call, or an empty string.  The path is consumed (cleared) on read.
+    [[nodiscard]] virtual std::string ConsumeDroppedFile() noexcept = 0;
 };
 
 } // namespace papagedon
