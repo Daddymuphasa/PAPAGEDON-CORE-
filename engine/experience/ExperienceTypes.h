@@ -38,6 +38,11 @@ struct ExperienceGraphOutput final {
 
     /// Normalised energy level [0, 1].
     float energy    = 0.0F;
+
+    /// Frequency bands forwarded from ExperienceSignals for downstream matching.
+    float bass   = 0.0F;
+    float mid    = 0.0F;
+    float treble = 0.0F;
 };
 
 } // namespace papagedon

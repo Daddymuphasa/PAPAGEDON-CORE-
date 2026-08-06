@@ -36,6 +36,9 @@ ExperienceGraphOutput ExperienceGraph::Update(
         .intensity = std::clamp(signals.intensity, 0.0F, 1.0F),
         .mood      = mood,
         .energy    = std::clamp(signals.energy, 0.0F, 1.0F),
+        .bass      = std::clamp(signals.bass,   0.0F, 1.0F),
+        .mid       = std::clamp(signals.mid,    0.0F, 1.0F),
+        .treble    = std::clamp(signals.treble,  0.0F, 1.0F),
     };
 
     previousEnergy_ = signals.energy;

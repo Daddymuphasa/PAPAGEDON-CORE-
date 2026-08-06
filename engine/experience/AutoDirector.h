@@ -53,6 +53,11 @@ private:
     ExperienceEvent lastEvent_   = ExperienceEvent::Silence;
     std::uint32_t   rng_         = 0x9E3779B9u;
     bool            initialized_ = false;
+
+    // Smoothed frequency bands for stable matching decisions.
+    float smoothBass_   = 0.0F;
+    float smoothTreble_ = 0.0F;
+    float smoothMood_   = 0.0F;
 };
 
 } // namespace papagedon

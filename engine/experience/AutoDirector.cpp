@@ -8,44 +8,48 @@ namespace papagedon {
 
 namespace {
 
-// ── Preset tiers ────────────────────────────────────────────────────────────
-// A VJ escalates the visual with the music.  Presets are grouped by intensity:
-//   0 = calm / breakdown / ambient
-//   1 = groove / building
-//   2 = peak / drop
-constexpr std::array<PresetId, 3> kCalmTier{{
-    PresetId::Aurora, PresetId::Nebula, PresetId::Liquid,
-}};
-constexpr std::array<PresetId, 5> kGrooveTier{{
-    PresetId::Matrix, PresetId::Mandala, PresetId::Lattice,
-    PresetId::Spectrum, PresetId::Vortex,
-}};
-constexpr std::array<PresetId, 4> kPeakTier{{
-    PresetId::Shockwave, PresetId::Lasers, PresetId::Pulse, PresetId::Tunnel,
+// ── Preset character profiles ──────────────────────────────────────────────
+// Each preset has an intrinsic affinity for certain frequency bands and moods.
+// These are hand-tuned to the visual character of each form:
+//   bassBias  >0 means the preset looks best with bass-heavy music
+//   trebleBias >0 means the preset looks best with treble-heavy music
+//   warmth    [0,1] how warm/euphoric vs dark/cold the preset reads
+struct PresetProfile {
+    PresetId id;
+    int      tier;        // 0=calm, 1=groove, 2=peak
+    float    bassBias;
+    float    trebleBias;
+    float    warmth;      // preferred mood match
+};
+
+constexpr std::array<PresetProfile, 12> kProfiles{{
+    // Calm tier — ambient, flowing, introspective
+    {PresetId::Aurora,    0,  0.1f, 0.0f, 0.30f},  // curtains — warm, slow
+    {PresetId::Nebula,    0,  0.3f, 0.0f, 0.25f},  // clouds — deep, spacey
+    {PresetId::Liquid,    0,  0.4f, 0.0f, 0.20f},  // fluid — sub bass, dark
+
+    // Groove tier — structured, rhythmic, building
+    {PresetId::Matrix,    1,  0.0f, 0.4f, 0.40f},  // digital rain — crisp, mid-heavy
+    {PresetId::Mandala,   1,  0.2f, 0.2f, 0.50f},  // kaleidoscope — balanced
+    {PresetId::Lattice,   1,  0.1f, 0.3f, 0.45f},  // neon grid — treble-reactive
+    {PresetId::Spectrum,  1,  0.3f, 0.1f, 0.55f},  // circular bars — bass-forward
+    {PresetId::Vortex,    1,  0.3f, 0.2f, 0.60f},  // spiral — hypnotic, bass-driven
+
+    // Peak tier — intense, explosive, maximal
+    {PresetId::Shockwave, 2,  0.5f, 0.1f, 0.80f},  // bass shockwaves — pure sub
+    {PresetId::Lasers,    2,  0.1f, 0.5f, 0.70f},  // sweeping lasers — treble-reactive
+    {PresetId::Pulse,     2,  0.3f, 0.3f, 0.75f},  // radial pulse — balanced energy
+    {PresetId::Tunnel,    2,  0.4f, 0.2f, 0.85f},  // warp tunnel — bass-driven rush
 }};
 
-// ── Timing (seconds) ────────────────────────────────────────────────────────
-// Tuned for a live set: hold a look long enough to read, but keep it moving.
-constexpr float kMinDwell   = 6.0F;   // min time before a section-change switch
-constexpr float kMaxDwell   = 14.0F;  // force a variety switch by here
-constexpr float kDropCutMin = 3.0F;   // min gap before a drop may re-cut
-
-[[nodiscard]] std::size_t TierSize(const int tier) noexcept {
-    if (tier == 0) return kCalmTier.size();
-    if (tier == 1) return kGrooveTier.size();
-    return kPeakTier.size();
-}
-
-[[nodiscard]] PresetId TierAt(const int tier, const std::size_t i) noexcept {
-    if (tier == 0) return kCalmTier[i];
-    if (tier == 1) return kGrooveTier[i];
-    return kPeakTier[i];
-}
+// ── Timing (seconds) ────────────────────────────────────────────────────
+constexpr float kMinDwell   = 6.0F;
+constexpr float kMaxDwell   = 14.0F;
+constexpr float kDropCutMin = 3.0F;
 
 } // namespace
 
 std::uint32_t AutoDirector::NextRandom() noexcept {
-    // xorshift32 — deterministic and allocation-free.
     rng_ ^= rng_ << 13;
     rng_ ^= rng_ >> 17;
     rng_ ^= rng_ << 5;
@@ -59,19 +63,46 @@ int AutoDirector::TierFor(const float env, const ExperienceState state) const no
 }
 
 PresetId AutoDirector::PickFromTier(const int tier, const PresetId avoid) noexcept {
-    const std::size_t n = TierSize(tier);
-    if (n <= 1) return TierAt(tier, 0);
+    // Score every preset and pick the best match for the current audio character.
+    float bestScore  = -1e9F;
+    PresetId bestPick = avoid;
 
-    // Pick a random slot, retrying a few times to avoid repeating the current
-    // preset so a switch is always visible.
-    PresetId choice = avoid;
-    for (int attempt = 0; attempt < 8 && choice == avoid; ++attempt) {
-        choice = TierAt(tier, NextRandom() % n);
+    for (const auto& p : kProfiles) {
+        if (p.tier != tier) continue;
+
+        float score = 0.0F;
+
+        // Frequency profile match: bass-heavy music favours bass-biased presets.
+        const float freqBalance = smoothBass_ - smoothTreble_;
+        score += freqBalance * p.bassBias * 4.0F;
+        score += (smoothTreble_ - smoothBass_) * p.trebleBias * 4.0F;
+
+        // Mood match: how close is the preset's warmth to the current mood.
+        const float moodDist = std::abs(smoothMood_ - p.warmth);
+        score -= moodDist * 2.0F;
+
+        // Variety: penalise the currently playing preset.
+        if (p.id == avoid) score -= 6.0F;
+
+        // Small random jitter so ties don't always resolve identically.
+        score += static_cast<float>(NextRandom() % 100) * 0.005F;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestPick  = p.id;
+        }
     }
-    return choice;
+    return bestPick;
 }
 
 PresetId AutoDirector::Update(const ExperienceGraphOutput& e, const float dt) noexcept {
+    // Smooth the frequency bands and mood over several seconds so selections
+    // track the section character, not individual transients.
+    const float sa = 1.0F - std::exp(-dt * 0.6F);
+    smoothBass_   += (e.bass   - smoothBass_)   * sa;
+    smoothTreble_ += (e.treble - smoothTreble_) * sa;
+    smoothMood_   += (e.mood   - smoothMood_)   * sa;
+
     if (!initialized_) {
         currentTier_ = TierFor(e.energy, e.state);
         current_     = PickFromTier(currentTier_, PresetId::Aurora);
@@ -80,8 +111,6 @@ PresetId AutoDirector::Update(const ExperienceGraphOutput& e, const float dt) no
         return current_;
     }
 
-    // A slow energy envelope (~0.7 s) keeps tier decisions from chattering on
-    // momentary dips — important on a raw live signal.
     const float alpha = 1.0F - std::exp(-dt * 1.5F);
     energyEnv_ += (e.energy - energyEnv_) * alpha;
     dwell_     += dt;
@@ -94,11 +123,11 @@ PresetId AutoDirector::Update(const ExperienceGraphOutput& e, const float dt) no
 
     bool switchNow = false;
     if (dropEdge && dwell_ >= kDropCutMin) {
-        switchNow = true;                 // hit the drop
+        switchNow = true;
     } else if (dwell_ >= kMinDwell && tier != currentTier_) {
-        switchNow = true;                 // the section changed
+        switchNow = true;
     } else if (dwell_ >= kMaxDwell) {
-        switchNow = true;                 // keep it fresh over a long set
+        switchNow = true;
     }
 
     if (switchNow) {
@@ -110,12 +139,15 @@ PresetId AutoDirector::Update(const ExperienceGraphOutput& e, const float dt) no
 }
 
 void AutoDirector::Reset() noexcept {
-    current_     = PresetId::Aurora;
-    currentTier_ = 0;
-    energyEnv_   = 0.0F;
-    dwell_       = 0.0F;
-    lastEvent_   = ExperienceEvent::Silence;
-    initialized_ = false;
+    current_      = PresetId::Aurora;
+    currentTier_  = 0;
+    energyEnv_    = 0.0F;
+    dwell_        = 0.0F;
+    lastEvent_    = ExperienceEvent::Silence;
+    initialized_  = false;
+    smoothBass_   = 0.0F;
+    smoothTreble_ = 0.0F;
+    smoothMood_   = 0.0F;
 }
 
 } // namespace papagedon
