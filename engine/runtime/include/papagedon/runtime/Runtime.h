@@ -26,7 +26,7 @@ class Runtime final {
 public:
     using FrameDuration = std::chrono::duration<double>;
 
-    explicit Runtime(utilities::Logger& logger) noexcept;
+    explicit Runtime(utilities::Logger& logger);
 
     Runtime(const Runtime&) = delete;
     Runtime& operator=(const Runtime&) = delete;

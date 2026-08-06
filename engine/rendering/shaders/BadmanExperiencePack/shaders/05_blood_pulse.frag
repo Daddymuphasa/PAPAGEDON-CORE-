@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  05 · BLOOD PULSE  —  Badman Experience Pack Vol.1
 //  The whole world breathes. A heartbeat compresses the environment, bloom

@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  03 · INFERNO LASERS  —  Badman Experience Pack Vol.1
 //  Massive moving WALLS of light — laser sheets, not thin lines. Treble rotates

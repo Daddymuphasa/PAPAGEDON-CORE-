@@ -3,9 +3,9 @@
   "index": 12,
   "name": "Final Ascension",
   "shader": "shaders/12_final_ascension.frag",
-  "description": "The climax combination: tunnel, smoke, laser sheets, expanding energy rings, rising particles and a cream ascension core, all blended and bloomed. Built for the peak of the set.",
-  "mood": ["aggressive", "cinematic", "premium"],
-  "recommendedBpmRange": [126, 132],
+  "description": "Pulse-tunnel warp: kaleidoscopic shockwave rings rush through a 1/r perspective tunnel while a starburst core detonates on every kick. Spiral arms spin through the depth. The ultimate peak visual.",
+  "mood": ["aggressive", "immersive", "hypnotic"],
+  "recommendedBpmRange": [124, 140],
   "recommendedTheme": "badman",
   "energyLevel": "peak"
 }

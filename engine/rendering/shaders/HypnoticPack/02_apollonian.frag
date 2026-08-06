@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // Apollonian - PAPAGEDON Hypnotic Pack
 // Deep, infinite-detail visuals for the Badman Experience: fractals, kaleidoscope
 // tunnels and liquid metal in red/gold. Physical beat, adaptive-audio reactive.

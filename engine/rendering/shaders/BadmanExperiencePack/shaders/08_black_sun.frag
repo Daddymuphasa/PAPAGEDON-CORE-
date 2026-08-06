@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  08 · BLACK SUN  —  Badman Experience Pack Vol.1
 //  A dark eclipse ringed by a burning corona. Energy waves ripple outward, bass

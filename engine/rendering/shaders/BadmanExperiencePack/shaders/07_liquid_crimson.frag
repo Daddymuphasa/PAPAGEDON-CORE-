@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  07 · LIQUID CRIMSON  —  Badman Experience Pack Vol.1
 //  Molten plasma and smoke folded together — organic, slow, hypnotic. Mid

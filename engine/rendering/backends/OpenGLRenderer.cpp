@@ -42,7 +42,7 @@ Color3 ToColor3(const visual::ThemeColor& c) noexcept {
 // Fullscreen black quad used to fade the frame in / out during a shader
 // transition — works over any shader, needs no render targets.
 constexpr const char* kFadeFragment = R"GLSL(
-#version 460 core
+#version 330 core
 in  vec2 vUV;
 out vec4 fragColor;
 uniform float uAlpha;
@@ -56,7 +56,7 @@ void main() { fragColor = vec4(0.0, 0.0, 0.0, uAlpha); }
 // then fades into the show.  uTime is seconds since the intro began.
 // ──────────────────────────────────────────────────────────────────────────────
 constexpr const char* kIntroFragment = R"GLSL(
-#version 460 core
+#version 330 core
 in  vec2 vUV;
 out vec4 fragColor;
 uniform float uTime;
@@ -402,13 +402,11 @@ bool OpenGLRenderer::Initialize() {
         return false;
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    // Try progressively lower GL versions so we run on the widest range of GPUs.
+    // The shaders only need GLSL 330 features, so 3.3 core is the true minimum.
+    struct GlVersion { int major; int minor; };
+    constexpr GlVersion kVersions[] = {{4, 6}, {4, 3}, {3, 3}};
 
-    // Fullscreen when requested (falls back to a window on any failure), so a
-    // bad display setup never stops the app from starting.
     GLFWmonitor* windowMonitor = nullptr;
     int createW = 1280;
     int createH = 720;
@@ -422,15 +420,26 @@ bool OpenGLRenderer::Initialize() {
         }
     }
 
-    implementation_->window = glfwCreateWindow(
-        createW, createH, "PAPAGEDON Core v0.0.1", windowMonitor, nullptr);
+    for (const auto& ver : kVersions) {
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ver.major);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ver.minor);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    if (implementation_->window == nullptr && windowMonitor != nullptr) {
-        // Fullscreen creation failed — retry windowed.
-        implementation_->window =
-            glfwCreateWindow(1280, 720, "PAPAGEDON Core v0.0.1", nullptr, nullptr);
-        windowMonitor = nullptr;
+        implementation_->window = glfwCreateWindow(
+            createW, createH, "PAPAGEDON Core v0.0.1", windowMonitor, nullptr);
+
+        if (implementation_->window == nullptr && windowMonitor != nullptr) {
+            implementation_->window =
+                glfwCreateWindow(1280, 720, "PAPAGEDON Core v0.0.1", nullptr, nullptr);
+            windowMonitor = nullptr;
+        }
+        if (implementation_->window != nullptr) {
+            break;
+        }
     }
+
     if (implementation_->window == nullptr) {
         glfwTerminate();
         return false;
@@ -474,11 +483,9 @@ bool OpenGLRenderer::Initialize() {
     // Slots 1..N: premium pack shaders compiled from .frag files (Badman
     // Experience by default). A file that fails to compile is skipped so a bad
     // shader never stops the show. Override the folder with PAPAGEDON_SHADER_DIR.
-    {
+    try {
         namespace fs = std::filesystem;
         const char* const dirEnv = std::getenv("PAPAGEDON_SHADER_DIR");
-        // Scan the whole shader tree recursively so every pack (Signature,
-        // Badman, and any new packs) loads into one library.
         const std::string dir = dirEnv != nullptr
             ? std::string(dirEnv)
             : std::string("engine/rendering/shaders");
@@ -500,12 +507,11 @@ bool OpenGLRenderer::Initialize() {
                     std::string name = fs::path(file).stem().string();
                     if (name.size() > 3 && name[2] == '_' &&
                         std::isdigit(static_cast<unsigned char>(name[0]))) {
-                        name = name.substr(3);                 // strip "NN_"
+                        name = name.substr(3);
                     }
                     for (char& ch : name) if (ch == '_') ch = ' ';
                     if (!name.empty()) name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
 
-                    // Load metadata JSON if it exists beside the shader.
                     Implementation::ShaderMeta meta;
                     const auto stem = fs::path(file).stem().string();
                     const auto packDir = fs::path(file).parent_path().parent_path();
@@ -513,7 +519,6 @@ bool OpenGLRenderer::Initialize() {
                     if (std::ifstream mf(metaPath, std::ios::binary); mf) {
                         std::ostringstream ms; ms << mf.rdbuf();
                         const std::string mj = ms.str();
-                        // BPM range from "recommendedBpmRange": [low, high]
                         if (const auto bp = mj.find("recommendedBpmRange"); bp != std::string::npos) {
                             auto br = mj.find('[', bp);
                             if (br != std::string::npos) {
@@ -523,13 +528,11 @@ bool OpenGLRenderer::Initialize() {
                                     meta.bpmHigh = std::atoi(mj.c_str() + comma + 1);
                             }
                         }
-                        // Energy level
                         const std::string elv = JsonString(mj, "energyLevel");
                         if (elv == "low")         meta.energyTier = 0;
                         else if (elv == "medium")  meta.energyTier = 1;
                         else if (elv == "high")    meta.energyTier = 2;
                         else if (elv == "peak")    meta.energyTier = 3;
-                        // Frequency bias from mood tags
                         if (JsonArrayContains(mj, "mood", "atmospheric") ||
                             JsonArrayContains(mj, "mood", "cinematic"))
                             meta.bassBias += 0.3f;
@@ -551,6 +554,8 @@ bool OpenGLRenderer::Initialize() {
                 }
             }
         }
+    } catch (...) {
+        std::fprintf(stderr, "[ShaderLib] shader directory scan failed — continuing with built-in shader only.\n");
     }
 
     // Fade-transition program (black overlay quad) for smooth shader switches.

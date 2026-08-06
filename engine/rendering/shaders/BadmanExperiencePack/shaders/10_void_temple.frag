@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  10 · VOID TEMPLE  —  Badman Experience Pack Vol.1
 //  Ancient-futuristic architecture: colossal pillars floating in volumetric fog,

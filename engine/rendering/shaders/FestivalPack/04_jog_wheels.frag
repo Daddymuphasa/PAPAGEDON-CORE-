@@ -1,7 +1,8 @@
-#version 460 core
+#version 330 core
 // Jog Wheels - PAPAGEDON Festival Pack
-// Inspired by the Badman Experience 4.0 "Festival of Sounds" flyer: red stage
-// lights, crimson fog, gold accents. Physical beat, adaptive-audio reactive.
+// Two mirrored pulse discs — each a radial kaleidoscope with concentric
+// shockwave rings, domain-warped fbm texture, and a beat-burst core.
+// Counter-rotating so the pair feels like two turntables locked to the music.
 in  vec2 vUV;
 out vec4 fragColor;
 
@@ -38,52 +39,112 @@ vec3 palette(float t) {
     return t < 0.5 ? mix(uSecondaryColour, uPrimaryColour, t * 2.0)
                    : mix(uPrimaryColour,   uAccentColour,  (t - 0.5) * 2.0);
 }
-float hash21(vec2 p) { p = fract(p * vec2(123.34, 345.45)); p += dot(p, p + 34.345); return fract(p.x * p.y); }
+
+float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+}
+
 float vnoise(vec2 p) {
     vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
-    float a = hash21(i), b = hash21(i + vec2(1,0)), c = hash21(i + vec2(0,1)), d = hash21(i + vec2(1,1));
+    float a = hash21(i), b = hash21(i + vec2(1,0));
+    float c = hash21(i + vec2(0,1)), d = hash21(i + vec2(1,1));
     return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
+
 float fbm(vec2 p) {
     float s = 0.0, a = 0.5, f = 1.0;
     float g = clamp(0.5 + 0.12 * (uDetail - 1.0), 0.38, 0.66);
-    for (int i = 0; i < 4; ++i) { s += a * vnoise(p * f); f *= 2.0; a *= g; }
+    for (int i = 0; i < 3; ++i) { s += a * vnoise(p * f); f *= 2.0; a *= g; }
     return s;
 }
+
 float warpedFbm(vec2 p, float t) {
-    vec2 q = vec2(fbm(p + vec2(0.0, t * 0.10)), fbm(p + vec2(5.2, 1.3) - vec2(t * 0.08, 0.0)));
+    vec2 q = vec2(fbm(p + vec2(0.0, t * 0.10)),
+                  fbm(p + vec2(5.2, 1.3) - vec2(t * 0.08, 0.0)));
     return fbm(p + uDistortion * q);
 }
-vec3 aces(vec3 x) { return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
-vec3 finish(vec3 col, vec2 uv, float kick) {
-    col += col * kick * 0.7;
-    col += col * uGlow * uMasterGlow;
-    col += col * col * uBloom;
-    col *= mix(vec3(0.9,1.0,1.1), vec3(1.1,1.0,0.9), clamp(uMood, 0.0, 1.0));
-    col *= uMasterExposure;
-    col *= 1.0 - 0.3 * smoothstep(0.9, 1.7, length(uv));
-    col *= uMasterBrightness;
-    return aces(col * 1.2);
+
+vec3 aces(vec3 x) {
+    return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
 
+float disc(vec2 uv, float t, float dir) {
+    float r   = length(uv);
+    float ang = atan(uv.y, uv.x) + dir * t * 0.4;
+
+    float wedges = 8.0 + floor(uMid * 4.0);
+    float wedge  = abs(fract(ang / kTau * wedges) - 0.5);
+
+    float wave1 = 0.5 + 0.5 * sin(r * (14.0 + uBass * 20.0) - t * 6.0 - uBeat * 8.0);
+    float wave2 = 0.5 + 0.5 * sin(r * (8.0 + uBass * 10.0) - t * 3.5 - uBeat * 5.0);
+    float waves = max(wave1, wave2 * 0.65);
+
+    float tex = warpedFbm(vec2(wedge * 6.0, r * 4.0 - t), t);
+    float g   = waves * (0.4 + 0.6 * tex);
+
+    float burst = uBeat * exp(-r * 3.0) * 1.5;
+    g += burst;
+
+    float rim = smoothstep(0.02, 0.0, abs(r - 0.62)) * (0.5 + uBeat * 0.8);
+    g += rim;
+
+    g *= smoothstep(0.68, 0.08, r);
+    return clamp(g, 0.0, 1.0);
+}
 
 void main() {
-    vec2 uv = (vUV * 2.0 - 1.0); uv.x *= uResolution.x / uResolution.y;
+    vec2 uv = (vUV * 2.0 - 1.0);
+    uv.x *= uResolution.x / uResolution.y;
+
     float kick = uBeat * uBeat;
-    float spin = uTime * (1.0 + uEnergy * 2.0) * uMotion;
-    vec3 col = uBackground * 0.3;
-    for (int i = 0; i < 2; ++i) {
-        float side = (i == 0) ? -0.5 : 0.5;
-        vec2  c = uv - vec2(side, -0.1);
-        float r = length(c);
-        float a = atan(c.y, c.x) + spin * ((i == 0) ? 1.0 : -1.0);
-        float platter = smoothstep(0.42, 0.40, r);
-        float ring = smoothstep(0.03, 0.0, abs(r - 0.42)) * (0.6 + kick);
-        float marks = (0.5 + 0.5 * sin(a * 24.0)) * smoothstep(0.42, 0.20, r) * smoothstep(0.15, 0.42, r);
-        float center = smoothstep(0.06, 0.0, r);
-        float g = platter * 0.15 + marks * 0.5 * (0.4 + uMid) + ring + center * (0.5 + kick);
-        col += mix(uPrimaryColour, uAccentColour, ring + center) * g;
+    float pump = 1.0 - kick * 0.14 - uBass * 0.07 - uEnergy * 0.05;
+    uv *= pump;
+
+    float t = uTime * (0.25 + uEnergy * 0.15) * uMotion;
+
+    float separation = 0.52 + uBass * 0.06;
+    vec2 uvL = uv - vec2(-separation, 0.0);
+    vec2 uvR = uv - vec2( separation, 0.0);
+
+    float discL = disc(uvL, t,  1.0);
+    float discR = disc(uvR, t, -1.0);
+
+    float bridge = exp(-abs(uv.x) * 3.0) * (0.15 + uBass * 0.25);
+    bridge *= smoothstep(0.7, 0.0, abs(uv.y));
+
+    float pattern = max(discL, discR) + bridge;
+    pattern = clamp(pattern, 0.0, 1.0);
+    pattern = smoothstep(0.03, 0.9, pattern);
+
+    vec3 color = palette(pattern + uBass * 0.15);
+
+    float luma = dot(color, vec3(0.299, 0.587, 0.114));
+    float sat  = clamp(uSaturationBase + 0.25 + uIntensity * uSaturationScale, 0.0, 1.3);
+    color = mix(vec3(luma), color, sat);
+
+    float brightness = (0.16 + uEnergy * 1.1) * uMasterExposure;
+    color *= brightness * (0.5 + 0.75 * pattern);
+
+    color += uBackground * (1.0 - pattern) * 1.4;
+
+    color += color * kick * 0.9;
+    color += color * uBass * 0.3;
+
+    color += color * uGlow * uMasterGlow;
+    color += color * color * uBloom;
+    color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));
+
+    if (uNoise > 0.001) {
+        float gr = hash21(gl_FragCoord.xy + fract(uTime) * 137.0) - 0.5;
+        color += gr * uNoise * 0.2;
     }
-    col += uPrimaryColour * exp(-abs(uv.y + 0.6) * 2.0) * (0.3 + uBass * 0.5);
-    fragColor = vec4(finish(col, uv, kick), 1.0);
+
+    float d = length(uv);
+    color *= 1.0 - 0.3 * smoothstep(0.85, 1.7, d);
+
+    color *= uMasterBrightness;
+    color = aces(color * 1.15);
+    fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }

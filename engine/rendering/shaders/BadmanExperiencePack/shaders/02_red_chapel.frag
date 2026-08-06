@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  02 · RED CHAPEL  —  Badman Experience Pack Vol.1
 //  Cathedral volumetric light shafts sweeping through fog. Soft god rays, beats

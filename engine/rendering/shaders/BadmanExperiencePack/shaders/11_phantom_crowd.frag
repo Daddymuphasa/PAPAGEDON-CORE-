@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  11 · PHANTOM CROWD  —  Badman Experience Pack Vol.1
 //  Abstract crowd silhouettes against a red backlit stage, bobbing to the beat

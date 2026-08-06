@@ -19,7 +19,7 @@ namespace papagedon {
 // One oversized triangle covers the full viewport without any VBO data.
 // gl_VertexID selects the clip-space corner from a hardcoded table.
 static constexpr const char* kDefaultVertexSource = R"GLSL(
-#version 460 core
+#version 330 core
 
 out vec2 vUV;
 
@@ -60,7 +60,7 @@ void main() {
 //   uTime / uResolution → animation clock and aspect correction
 // ──────────────────────────────────────────────────────────────────────────────
 static constexpr const char* kDefaultFragmentSource = R"GLSL(
-#version 460 core
+#version 330 core
 
 in  vec2 vUV;
 out vec4 fragColor;

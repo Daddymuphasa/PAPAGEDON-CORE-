@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // Bass Heave - PAPAGEDON Pulse Pack
 // Reacts to the kick physically - the scene pumps, heaves and swells with the
 // beat and bass. No white strobe flashes.

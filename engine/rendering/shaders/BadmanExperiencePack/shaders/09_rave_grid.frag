@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  09 · RAVE GRID  —  Badman Experience Pack Vol.1
 //  Minimal industrial geometry: a neon-red wireframe floor racing to a hazy

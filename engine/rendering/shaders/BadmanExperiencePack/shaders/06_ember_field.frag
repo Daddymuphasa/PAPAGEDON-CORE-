@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  06 · EMBER FIELD  —  Badman Experience Pack Vol.1
 //  Floating embers and ash drifting upward through heat. Treble strikes sparks,

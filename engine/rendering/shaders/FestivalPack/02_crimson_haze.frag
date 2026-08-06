@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // Crimson Haze - PAPAGEDON Festival Pack
 // Inspired by the Badman Experience 4.0 "Festival of Sounds" flyer: red stage
 // lights, crimson fog, gold accents. Physical beat, adaptive-audio reactive.

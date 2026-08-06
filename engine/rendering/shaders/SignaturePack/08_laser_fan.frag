@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // Laser Fan - PAPAGEDON Signature Pack
 // The original signature form, as a standalone shader. Physical beat response:
 // the frame pumps on the kick and the colours swell - no white strobe.

@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  01 · HELLSMOKE  —  Badman Experience Pack Vol.1
 //  Large volumetric smoke lit from within. Bass expands the plume, beats fire

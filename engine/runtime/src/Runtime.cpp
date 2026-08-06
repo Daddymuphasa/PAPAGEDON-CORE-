@@ -14,7 +14,7 @@
 
 namespace papagedon::runtime {
 
-Runtime::Runtime(utilities::Logger& logger) noexcept
+Runtime::Runtime(utilities::Logger& logger)
     : logger_{logger} {}
 
 bool Runtime::Initialize(const std::string& audioPath) {
@@ -89,27 +89,44 @@ bool Runtime::Initialize(const std::string& audioPath) {
     }
 
     // ── Audio source selection ─────────────────────────────────────────────────
-    // Interactive console selector (or auto-select when PAPAGEDON_AUDIO is set).
+    // In fullscreen / demo mode the console is hidden behind the GL window, so
+    // the interactive menu would hang the app.  Auto-select from config, but
+    // honour PAPAGEDON_AUDIO / PAPAGEDON_CAPTURE_DEVICE env vars so the source
+    // can be switched at the venue without editing JSON.
     std::string audioSource = config_.audioSource;
     int captureDevice = config_.captureDevice;
-    {
+    if (const char* const envSrc = std::getenv("PAPAGEDON_AUDIO")) {
+        audioSource = envSrc;
+        if (const char* const envDev = std::getenv("PAPAGEDON_CAPTURE_DEVICE")) {
+            captureDevice = std::atoi(envDev);
+        }
+        logger_.INFO("Env override — audio source: " + audioSource +
+                     ", device: " + std::to_string(captureDevice) + ".");
+    } else if (!config_.fullscreen && !config_.demoMode) {
         const AudioSelection selection = SelectAudioSource(audioSource, captureDevice);
         audioSource   = selection.source;
         captureDevice = selection.deviceIndex;
+    } else {
+        logger_.INFO("Fullscreen — auto-selecting audio from config (" + audioSource + ").");
     }
 
     if (audioSource == "input" || audioSource == "loopback") {
         const bool loopback = (audioSource == "loopback");
-        if (audioCapture_.Initialize(captureDevice, loopback) && audioCapture_.Start()) {
-            liveAudio_     = true;
-            audioReady_    = true;
-            audioFileName_ = "LIVE - " + audioCapture_.DeviceName();
-            logger_.INFO("Live audio input: " + audioCapture_.DeviceName() + " @ " +
-                         std::to_string(audioCapture_.SampleRate()) + " Hz, " +
-                         std::to_string(audioCapture_.Channels()) + " ch.");
-            splash("Live audio: " + audioCapture_.DeviceName(), 0.90F);
-        } else {
-            logger_.ERROR("Could not open live audio (" + audioSource +
+        try {
+            if (audioCapture_.Initialize(captureDevice, loopback) && audioCapture_.Start()) {
+                liveAudio_     = true;
+                audioReady_    = true;
+                audioFileName_ = "LIVE - " + audioCapture_.DeviceName();
+                logger_.INFO("Live audio input: " + audioCapture_.DeviceName() + " @ " +
+                             std::to_string(audioCapture_.SampleRate()) + " Hz, " +
+                             std::to_string(audioCapture_.Channels()) + " ch.");
+                splash("Live audio: " + audioCapture_.DeviceName(), 0.90F);
+            } else {
+                logger_.ERROR("Could not open live audio (" + audioSource +
+                              ") — falling back to file.");
+            }
+        } catch (...) {
+            logger_.ERROR("Audio driver error (" + audioSource +
                           ") — falling back to file.");
         }
     }
@@ -430,8 +447,14 @@ Runtime::AudioSelection Runtime::SelectAudioSource(
         return result;
     }
 
-    // Enumerate all audio devices.
-    const auto devices = audio::AudioCapture::EnumerateDevices();
+    // Enumerate all audio devices (protected against driver crashes).
+    std::vector<audio::AudioCapture::DeviceInfo> devices;
+    try {
+        devices = audio::AudioCapture::EnumerateDevices();
+    } catch (...) {
+        logger_.INFO("Audio device enumeration failed — defaulting to file mode.");
+        return result;
+    }
 
     struct MenuEntry {
         std::string label;

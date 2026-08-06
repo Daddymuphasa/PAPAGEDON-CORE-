@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 // ─────────────────────────────────────────────────────────────────────────────
 //  04 · OBSIDIAN TUNNEL  —  Badman Experience Pack Vol.1
 //  An infinite black tunnel with red-illuminated ring edges. The camera travels
