@@ -39,14 +39,205 @@ Color3 ToColor3(const visual::ThemeColor& c) noexcept {
     return Color3{c.r, c.g, c.b};
 }
 
-// Fullscreen black quad used to fade the frame in / out during a shader
-// transition — works over any shader, needs no render targets.
-constexpr const char* kFadeFragment = R"GLSL(
+// ──────────────────────────────────────────────────────────────────────────────
+// Dramatic shader transition — 10 randomised effects driven by render-to-texture
+// crossfade.  FBO-A holds a snapshot of the outgoing shader; FBO-B holds the
+// live incoming shader.  The transition shader blends between the two textures
+// with the selected effect.  Every switch picks a random effect so no two
+// transitions at the booth look the same.
+// ──────────────────────────────────────────────────────────────────────────────
+constexpr int kNumTransitionEffects = 10;
+
+constexpr float kTransitionDurations[kNumTransitionEffects] = {
+    0.55f,  // 0  FLASH_BANG
+    0.80f,  // 1  GLITCH_TEAR
+    0.85f,  // 2  RADIAL_WIPE
+    0.70f,  // 3  ZOOM_BLAST
+    0.75f,  // 4  STROBE_CUT
+    0.65f,  // 5  DIAGONAL_SLASH
+    0.95f,  // 6  SPIRAL_DISSOLVE
+    0.85f,  // 7  SHATTER
+    0.80f,  // 8  RGB_SPLIT
+    0.90f,  // 9  MELT
+};
+
+constexpr const char* kTransitionFragment = R"GLSL(
 #version 330 core
 in  vec2 vUV;
 out vec4 fragColor;
-uniform float uAlpha;
-void main() { fragColor = vec4(0.0, 0.0, 0.0, uAlpha); }
+
+uniform sampler2D uTexA;       // outgoing shader (snapshot)
+uniform sampler2D uTexB;       // incoming shader (live)
+uniform float     uProgress;   // 0 → 1
+uniform int       uEffect;     // which dramatic effect
+uniform float     uTime;       // global clock for animation
+uniform vec2      uResolution; // framebuffer size
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+}
+float hash1(float n) { return fract(sin(n) * 43758.5453); }
+
+void main() {
+    vec2 uv = vUV;
+    float p = uProgress;
+    vec4 a  = texture(uTexA, uv);
+    vec4 b  = texture(uTexB, uv);
+    vec4 result;
+
+    // 0 ── FLASH BANG ─────────────────────────────────────────────────────────
+    // Violent white-out flash then slam to the new shader.
+    if (uEffect == 0) {
+        float flash = exp(-p * 9.0) * 2.5;
+        float blend = smoothstep(0.12, 0.45, p);
+        result = mix(a, b, blend);
+        result.rgb += vec3(flash);
+        result.rgb *= 1.0 + (1.0 - p) * 0.4;
+    }
+
+    // 1 ── GLITCH TEAR ────────────────────────────────────────────────────────
+    // Horizontal block displacement, RGB split, white scanline bursts.
+    else if (uEffect == 1) {
+        float glitchAmt = sin(p * 3.14159) * 0.9;
+        float blockY    = floor(uv.y * 24.0);
+        float blockHash = hash(vec2(blockY, floor(uTime * 25.0)));
+        float shift     = (blockHash - 0.5) * glitchAmt * 0.25;
+        vec2  uvG       = uv + vec2(shift, 0.0);
+        float blend     = smoothstep(0.25, 0.75,
+                              p + (hash(vec2(blockY, 1.0)) - 0.5) * 0.35);
+        float rgbOff    = glitchAmt * 0.025;
+        result.r = mix(texture(uTexA, uvG + vec2( rgbOff, 0.0)).r,
+                       texture(uTexB, uvG + vec2( rgbOff, 0.0)).r, blend);
+        result.g = mix(texture(uTexA, uvG).g,
+                       texture(uTexB, uvG).g, blend);
+        result.b = mix(texture(uTexA, uvG + vec2(-rgbOff, 0.0)).b,
+                       texture(uTexB, uvG + vec2(-rgbOff, 0.0)).b, blend);
+        result.a = 1.0;
+        float scanline = step(0.96, hash(vec2(blockY * 3.0,
+                              floor(uTime * 50.0)))) * glitchAmt;
+        result.rgb += vec3(scanline);
+    }
+
+    // 2 ── RADIAL WIPE ────────────────────────────────────────────────────────
+    // Energy ring expanding from the centre reveals the new shader.
+    else if (uEffect == 2) {
+        vec2  c    = (uv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0);
+        float dist = length(c);
+        float rad  = p * 1.6;
+        float edge = smoothstep(rad - 0.06, rad + 0.06, dist);
+        result = mix(b, a, edge);
+        float ring = exp(-pow((dist - rad) / 0.025, 2.0));
+        result.rgb += vec3(ring) * 1.2;
+    }
+
+    // 3 ── ZOOM BLAST ─────────────────────────────────────────────────────────
+    // Old shader zooms to infinity; new one blasts outward from a point.
+    else if (uEffect == 3) {
+        vec2 zoomA = (uv - 0.5) / (1.0 + p * 5.0) + 0.5;
+        vec2 zoomB = (uv - 0.5) / max(0.05, 1.0 - (1.0 - p) * 3.0) + 0.5;
+        zoomB = clamp(zoomB, 0.0, 1.0);
+        float blend = smoothstep(0.25, 0.50, p);
+        vec4 zA = texture(uTexA, clamp(zoomA, 0.0, 1.0));
+        vec4 zB = texture(uTexB, zoomB);
+        result = mix(zA, zB, blend);
+        float flash = exp(-pow((p - 0.35) / 0.07, 2.0)) * 2.0;
+        result.rgb += vec3(flash);
+    }
+
+    // 4 ── STROBE CUT ─────────────────────────────────────────────────────────
+    // Alternates old/new at increasing speed, then hard-cuts.
+    else if (uEffect == 4) {
+        float freq   = 4.0 + p * 28.0;
+        float strobe = step(0.5, fract(p * freq));
+        float cut    = step(0.72, p);
+        result = mix(strobe > 0.5 ? b : a, b, cut);
+        float edgeF = fract(p * freq);
+        float fl    = exp(-pow(min(edgeF, 1.0 - edgeF) / 0.04, 2.0)) * 0.35;
+        result.rgb += vec3(fl);
+    }
+
+    // 5 ── DIAGONAL SLASH ─────────────────────────────────────────────────────
+    // Bright diagonal line slashes across the screen.
+    else if (uEffect == 5) {
+        float ang  = 0.72;
+        float line = uv.x * cos(ang) + uv.y * sin(ang);
+        float wipe = smoothstep(p * 1.8 - 0.42, p * 1.8 - 0.38, line);
+        result = mix(b, a, wipe);
+        float edgeDist = abs(line - (p * 1.8 - 0.40));
+        result.rgb += vec3(exp(-edgeDist * 90.0) * 1.8);
+    }
+
+    // 6 ── SPIRAL DISSOLVE ────────────────────────────────────────────────────
+    // Spiral pattern that eats away the old image.
+    else if (uEffect == 6) {
+        vec2  c      = (uv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0);
+        float angle  = atan(c.y, c.x);
+        float dist   = length(c);
+        float spiral = fract(angle / 6.28318 + dist * 3.5 - p * 2.5);
+        float diss   = smoothstep(p - 0.12, p + 0.12,
+                            spiral * (1.0 - dist * 0.25));
+        result = mix(a, b, diss);
+        float sparkle = exp(-pow((spiral - p) / 0.02, 2.0)) * 0.6;
+        result.rgb += vec3(sparkle);
+    }
+
+    // 7 ── SHATTER ────────────────────────────────────────────────────────────
+    // Screen breaks into cells that flip to reveal the new shader.
+    else if (uEffect == 7) {
+        float scale   = 10.0;
+        vec2  cell    = floor(uv * scale);
+        vec2  local   = fract(uv * scale);
+        float cHash   = hash(cell);
+        float flipT   = clamp((p - cHash * 0.45) * 2.8, 0.0, 1.0);
+        float flip    = smoothstep(0.0, 1.0, flipT);
+        vec2  disp    = (vec2(hash(cell + 1.0), hash(cell + 2.0)) - 0.5)
+                        * 0.04 * sin(flipT * 3.14159);
+        vec2  uvD     = uv + disp;
+        result = mix(texture(uTexA, uvD), texture(uTexB, uvD), flip);
+        float eX   = min(local.x, 1.0 - local.x);
+        float eY   = min(local.y, 1.0 - local.y);
+        float cEdge = 1.0 - smoothstep(0.0, 0.06, min(eX, eY));
+        result.rgb += vec3(cEdge * sin(flipT * 3.14159) * 0.6);
+    }
+
+    // 8 ── RGB SPLIT ──────────────────────────────────────────────────────────
+    // Chromatic aberration tears the image apart, reassembles as new.
+    else if (uEffect == 8) {
+        float splitAmt = sin(p * 3.14159) * 0.09;
+        float blend    = smoothstep(0.30, 0.70, p);
+        vec2 d1 = vec2(cos(uTime * 2.0),          sin(uTime * 2.0))          * splitAmt;
+        vec2 d2 = vec2(cos(uTime * 2.0 + 2.094),  sin(uTime * 2.0 + 2.094)) * splitAmt;
+        vec2 d3 = vec2(cos(uTime * 2.0 + 4.189),  sin(uTime * 2.0 + 4.189)) * splitAmt;
+        result.r = mix(texture(uTexA, uv + d1).r, texture(uTexB, uv + d1).r, blend);
+        result.g = mix(texture(uTexA, uv + d2).g, texture(uTexB, uv + d2).g, blend);
+        result.b = mix(texture(uTexA, uv + d3).b, texture(uTexB, uv + d3).b, blend);
+        result.a = 1.0;
+    }
+
+    // 9 ── MELT ───────────────────────────────────────────────────────────────
+    // Old shader melts downward like hot wax.
+    else if (uEffect == 9) {
+        float wave     = sin(uv.x * 16.0) * 0.08 + sin(uv.x * 8.0 + 1.5) * 0.12;
+        float meltLine = p * 1.5 - 0.25 + wave;
+        float drip     = smoothstep(meltLine - 0.08, meltLine, uv.y);
+        float meltZone = 1.0 - smoothstep(meltLine - 0.12, meltLine, uv.y);
+        vec2  meltUV   = uv;
+        meltUV.y += meltZone * 0.06 * sin(uv.x * 22.0 + uTime * 6.0);
+        result = mix(texture(uTexB, meltUV), texture(uTexA, meltUV), drip);
+        float dripEdge = exp(-pow((uv.y - meltLine) / 0.012, 2.0));
+        result.rgb += vec3(dripEdge * 0.7);
+    }
+
+    // fallback
+    else {
+        result = mix(a, b, p);
+    }
+
+    fragColor = result;
+}
 )GLSL";
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -272,13 +463,28 @@ public:
     std::string toastText;
     double      toastUntil = 0.0;
 
-    // ── Shader transition (fade through black) ──────────────────────────────────
-    unsigned int fadeProgram  = 0;
-    int          fadeAlphaLoc = -1;
-    bool         transitioning = false;
-    int          pendingShader = -1;
-    float        fade      = 1.0f;   // 1 = fully visible, 0 = black
-    bool         fadingOut = false;
+    // ── Dramatic shader transition (FBO crossfade) ────────────────────────────────
+    // Two framebuffers capture outgoing (snapshot) and incoming (live) shader
+    // frames; a transition shader blends between them with one of 10 dramatic
+    // randomised effects.  No more plain fade-to-black.
+    unsigned int transitionFBO[2]  = {0, 0};
+    unsigned int transitionTex[2]  = {0, 0};
+    int          transitionTexW    = 0;
+    int          transitionTexH    = 0;
+    unsigned int transitionProgram = 0;
+    int          txLocTexA       = -1;
+    int          txLocTexB       = -1;
+    int          txLocProgress   = -1;
+    int          txLocEffect     = -1;
+    int          txLocTime       = -1;
+    int          txLocResolution = -1;
+    bool         transitioning      = false;
+    int          pendingShader      = -1;
+    int          outgoingShader     = 0;
+    int          transitionEffect   = 0;
+    int          lastTransitionEffect = -1;
+    float        transitionProgress = 0.0f;
+    bool         needsOutgoingCapture = false;
 
     // ── Cinematic startup intro (procedural gold logo) ──────────────────────────
     unsigned int introProgram = 0;
@@ -558,10 +764,34 @@ bool OpenGLRenderer::Initialize() {
         std::fprintf(stderr, "[ShaderLib] shader directory scan failed — continuing with built-in shader only.\n");
     }
 
-    // Fade-transition program (black overlay quad) for smooth shader switches.
-    implementation_->fadeProgram = CompileGLProgram(ShaderManager::DefaultVertexSource(), kFadeFragment);
-    implementation_->fadeAlphaLoc = implementation_->fadeProgram != 0
-        ? glGetUniformLocation(implementation_->fadeProgram, "uAlpha") : -1;
+    // Dramatic transition FBOs + shader (render-to-texture crossfade).
+    // The two FBOs start at 0×0 — they are (re)allocated to match the framebuffer
+    // on first use and whenever the window resizes.
+    glGenFramebuffers(2, implementation_->transitionFBO);
+    glGenTextures(2, implementation_->transitionTex);
+    for (int i = 0; i < 2; ++i) {
+        glBindTexture(GL_TEXTURE_2D, implementation_->transitionTex[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->transitionFBO[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, implementation_->transitionTex[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    implementation_->transitionProgram =
+        CompileGLProgram(ShaderManager::DefaultVertexSource(), kTransitionFragment);
+    if (implementation_->transitionProgram != 0) {
+        implementation_->txLocTexA       = glGetUniformLocation(implementation_->transitionProgram, "uTexA");
+        implementation_->txLocTexB       = glGetUniformLocation(implementation_->transitionProgram, "uTexB");
+        implementation_->txLocProgress   = glGetUniformLocation(implementation_->transitionProgram, "uProgress");
+        implementation_->txLocEffect     = glGetUniformLocation(implementation_->transitionProgram, "uEffect");
+        implementation_->txLocTime       = glGetUniformLocation(implementation_->transitionProgram, "uTime");
+        implementation_->txLocResolution = glGetUniformLocation(implementation_->transitionProgram, "uResolution");
+    }
     implementation_->lastSwitchTime = glfwGetTime();
 
     // Cinematic startup logo program. PAPAGEDON_NO_INTRO=1 skips it (fast relaunch).
@@ -726,7 +956,7 @@ void OpenGLRenderer::SetFullscreen(const bool enable) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// BeginShaderTransition — fade the current shader out to black, swap, fade in
+// BeginShaderTransition — dramatic randomised crossfade between two shaders
 // ──────────────────────────────────────────────────────────────────────────────
 void OpenGLRenderer::BeginShaderTransition(const int target) {
     const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
@@ -736,9 +966,22 @@ void OpenGLRenderer::BeginShaderTransition(const int target) {
     if (target == implementation_->activeShader) {
         return;
     }
-    implementation_->pendingShader = target;
-    implementation_->transitioning = true;
-    implementation_->fadingOut     = true;
+
+    // Pick a random dramatic effect, avoiding the same one twice in a row.
+    const int ticks = static_cast<int>(glfwGetTime() * 100000.0);
+    int effect = ((ticks ^ (ticks >> 5)) * 2654435761u) % kNumTransitionEffects;
+    if (effect == implementation_->lastTransitionEffect && kNumTransitionEffects > 1) {
+        effect = (effect + 1 + (ticks % (kNumTransitionEffects - 1))) % kNumTransitionEffects;
+    }
+    implementation_->lastTransitionEffect = effect;
+    implementation_->transitionEffect     = effect;
+
+    implementation_->outgoingShader       = implementation_->activeShader;
+    implementation_->pendingShader        = target;
+    implementation_->transitioning        = true;
+    implementation_->transitionProgress   = 0.0f;
+    implementation_->needsOutgoingCapture = true;
+
     implementation_->toastText  = implementation_->shaderNames[static_cast<std::size_t>(target)];
     implementation_->toastUntil = glfwGetTime() + 2.2;
 }
@@ -924,34 +1167,12 @@ void OpenGLRenderer::Render(
     glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // ── Shader transition + auto-director ──────────────────────────────────
-    // A switch fades the frame out to black, swaps shader, and fades back in.
-    constexpr float kFadeDuration = 0.30f;
-    if (implementation_->transitioning) {
-        if (implementation_->fadingOut) {
-            implementation_->fade -= deltaTime / kFadeDuration;
-            if (implementation_->fade <= 0.0f) {
-                implementation_->fade = 0.0f;
-                implementation_->activeShader = implementation_->pendingShader;
-                implementation_->fadingOut = false;
-            }
-        } else {
-            implementation_->fade += deltaTime / kFadeDuration;
-            if (implementation_->fade >= 1.0f) {
-                implementation_->fade = 1.0f;
-                implementation_->transitioning = false;
-            }
-        }
-    }
-
     // Auto-shader: move through the library with the music, matching shaders
     // to the current audio character (BPM, energy, frequency profile).
     if (implementation_->autoShader) {
         implementation_->prevBeat = signals.beat;
         const float ba = 1.0f - std::exp(-deltaTime * 0.4f);
         implementation_->energyBaseline += (signals.energy - implementation_->energyBaseline) * ba;
-        // Smooth the frequency bands and BPM over several seconds so matching
-        // decisions are stable, not twitchy on every transient.
         const float sa = 1.0f - std::exp(-deltaTime * 0.8f);
         implementation_->smoothBass   += (signals.bass   - implementation_->smoothBass)   * sa;
         implementation_->smoothTreble += (signals.treble  - implementation_->smoothTreble) * sa;
@@ -965,12 +1186,10 @@ void OpenGLRenderer::Render(
         if (!implementation_->transitioning && since > 5.0 && (drop || timeUp)) {
             const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
             if (count > 1 && !implementation_->shaderMeta.empty()) {
-                // Score every shader in the library and pick the best match.
                 const float bpm    = implementation_->smoothBpm;
                 const float energy = implementation_->energyBaseline;
                 const float bass   = implementation_->smoothBass;
                 const float treble = implementation_->smoothTreble;
-                // Map energy to a tier: [0] <0.25 [1] <0.50 [2] <0.75 [3]
                 const int eTier = energy < 0.25f ? 0 : energy < 0.50f ? 1
                                 : energy < 0.75f ? 2 : 3;
                 float bestScore  = -1e9f;
@@ -980,7 +1199,6 @@ void OpenGLRenderer::Render(
                     if (mi >= implementation_->shaderMeta.size()) continue;
                     const auto& m = implementation_->shaderMeta[mi];
                     float score = 0.0f;
-                    // BPM match: +3 if inside the recommended range, scaled penalty outside.
                     if (bpm > 30.0f && m.bpmLow > 0) {
                         if (bpm >= static_cast<float>(m.bpmLow) &&
                             bpm <= static_cast<float>(m.bpmHigh)) {
@@ -992,20 +1210,15 @@ void OpenGLRenderer::Render(
                             score -= dist * 0.15f;
                         }
                     }
-                    // Energy tier match: +2 for exact, -1 per tier distance.
                     const int tierDist = std::abs(eTier - m.energyTier);
                     score += 2.0f - static_cast<float>(tierDist) * 1.0f;
-                    // Frequency profile match: bass-heavy music favours bass-biased
-                    // shaders, treble-heavy music favours treble-biased shaders.
-                    const float freqBalance = bass - treble; // >0 = bass-heavy
+                    const float freqBalance = bass - treble;
                     score += freqBalance * m.bassBias * 3.0f;
                     score -= freqBalance * m.trebleBias * 2.0f;
                     score += (treble - bass) * m.trebleBias * 3.0f;
-                    // Penalise recently played shaders to ensure variety.
                     for (int r : implementation_->recentShaders) {
                         if (r == i) { score -= 5.0f; break; }
                     }
-                    // Small random jitter so ties don't always resolve the same way.
                     const float jitter = static_cast<float>((i * 7 + static_cast<int>(currentTime * 3.0)) % 100) * 0.005f;
                     score += jitter;
                     if (score > bestScore) {
@@ -1013,7 +1226,6 @@ void OpenGLRenderer::Render(
                         bestShader = i;
                     }
                 }
-                // Record in recent history.
                 implementation_->recentShaders[implementation_->recentHead % 4] = bestShader;
                 implementation_->recentHead++;
                 BeginShaderTransition(bestShader);
@@ -1024,34 +1236,109 @@ void OpenGLRenderer::Render(
         }
     }
 
-    // ── Fullscreen shader pass ────────────────────────────────────────────
-    // The active library slot draws; the same ShaderUniforms feed every shader
-    // (each uses whichever uniforms it declares), so audio + theme reactivity is
-    // identical across the whole pack.
+    // ── Fullscreen shader pass (with dramatic FBO crossfade transitions) ──
     const float time = static_cast<float>(currentTime);
 
-    ShaderManager& active = (implementation_->activeShader == 0)
-        ? shaderManager_
-        : *implementation_->shaderLib[implementation_->activeShader - 1];
-    active.Bind();
-    active.SetUniforms(smoothed, time, width, height);
-
-    glBindVertexArray(fullscreenVAO_);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0u);
-
-    // Fade overlay (black quad) blended on top during a transition.
-    if (implementation_->fade < 1.0f && implementation_->fadeProgram != 0) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glUseProgram(implementation_->fadeProgram);
-        if (implementation_->fadeAlphaLoc >= 0) {
-            glUniform1f(implementation_->fadeAlphaLoc, 1.0f - implementation_->fade);
+    // Ensure transition FBO textures match the current framebuffer dimensions.
+    if (width != implementation_->transitionTexW ||
+        height != implementation_->transitionTexH) {
+        implementation_->transitionTexW = width;
+        implementation_->transitionTexH = height;
+        for (int i = 0; i < 2; ++i) {
+            glBindTexture(GL_TEXTURE_2D, implementation_->transitionTex[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         }
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    if (implementation_->transitioning && implementation_->transitionProgram != 0) {
+        // ── Capture outgoing shader to FBO-A (once, on the first frame) ──
+        if (implementation_->needsOutgoingCapture) {
+            glBindFramebuffer(GL_FRAMEBUFFER, implementation_->transitionFBO[0]);
+            glViewport(0, 0, width, height);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            const int outIdx = implementation_->outgoingShader;
+            ShaderManager& outgoing = (outIdx == 0)
+                ? shaderManager_
+                : *implementation_->shaderLib[outIdx - 1];
+            outgoing.Bind();
+            outgoing.SetUniforms(smoothed, time, width, height);
+            glBindVertexArray(fullscreenVAO_);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glBindVertexArray(0u);
+
+            implementation_->activeShader = implementation_->pendingShader;
+            implementation_->needsOutgoingCapture = false;
+        }
+
+        // ── Render incoming shader to FBO-B (every frame — live with music) ──
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->transitionFBO[1]);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ShaderManager& incoming = (implementation_->activeShader == 0)
+            ? shaderManager_
+            : *implementation_->shaderLib[implementation_->activeShader - 1];
+        incoming.Bind();
+        incoming.SetUniforms(smoothed, time, width, height);
         glBindVertexArray(fullscreenVAO_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0u);
-        glDisable(GL_BLEND);
+
+        // ── Blend with the dramatic transition shader on screen ──
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, width, height);
+
+        glUseProgram(implementation_->transitionProgram);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, implementation_->transitionTex[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, implementation_->transitionTex[1]);
+        if (implementation_->txLocTexA >= 0)
+            glUniform1i(implementation_->txLocTexA, 0);
+        if (implementation_->txLocTexB >= 0)
+            glUniform1i(implementation_->txLocTexB, 1);
+        if (implementation_->txLocProgress >= 0)
+            glUniform1f(implementation_->txLocProgress, implementation_->transitionProgress);
+        if (implementation_->txLocEffect >= 0)
+            glUniform1i(implementation_->txLocEffect, implementation_->transitionEffect);
+        if (implementation_->txLocTime >= 0)
+            glUniform1f(implementation_->txLocTime, time);
+        if (implementation_->txLocResolution >= 0)
+            glUniform2f(implementation_->txLocResolution,
+                        static_cast<float>(width), static_cast<float>(height));
+
+        glBindVertexArray(fullscreenVAO_);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0u);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // Advance progress — each effect has its own duration.
+        const int eff = implementation_->transitionEffect;
+        const float dur = (eff >= 0 && eff < kNumTransitionEffects)
+            ? kTransitionDurations[eff] : 0.8f;
+        implementation_->transitionProgress += deltaTime / dur;
+        if (implementation_->transitionProgress >= 1.0f) {
+            implementation_->transitionProgress = 1.0f;
+            implementation_->transitioning = false;
+        }
+    } else {
+        // ── Normal rendering (no transition active) ──
+        ShaderManager& active = (implementation_->activeShader == 0)
+            ? shaderManager_
+            : *implementation_->shaderLib[implementation_->activeShader - 1];
+        active.Bind();
+        active.SetUniforms(smoothed, time, width, height);
+
+        glBindVertexArray(fullscreenVAO_);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0u);
     }
 
     // ── Debug overlay (rendered on top, uses its own program internally) ──
@@ -1344,10 +1631,14 @@ void OpenGLRenderer::Shutdown() noexcept {
         if (sm) sm->Shutdown();
     }
     implementation_->shaderLib.clear();
-    if (implementation_->fadeProgram != 0) {
-        glDeleteProgram(implementation_->fadeProgram);
-        implementation_->fadeProgram = 0;
+    if (implementation_->transitionProgram != 0) {
+        glDeleteProgram(implementation_->transitionProgram);
+        implementation_->transitionProgram = 0;
     }
+    glDeleteFramebuffers(2, implementation_->transitionFBO);
+    implementation_->transitionFBO[0] = implementation_->transitionFBO[1] = 0;
+    glDeleteTextures(2, implementation_->transitionTex);
+    implementation_->transitionTex[0] = implementation_->transitionTex[1] = 0;
     if (implementation_->introProgram != 0) {
         glDeleteProgram(implementation_->introProgram);
         implementation_->introProgram = 0;
