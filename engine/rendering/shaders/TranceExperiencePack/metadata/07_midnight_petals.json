@@ -1,0 +1,22 @@
+{
+  "id": "midnight-petals",
+  "index": 7,
+  "name": "Midnight Petals",
+  "shader": "shaders/07_midnight_petals.frag",
+  "description": "Nocturnal petals opening and folding in warm violet shadows.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

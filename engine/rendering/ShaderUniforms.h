@@ -59,6 +59,20 @@ struct ShaderUniforms final {
     float masterBrightness = 1.0F;  ///< Final linear gain.
     float masterGlow       = 1.0F;  ///< Scales the glow contribution.
     float masterExposure   = 1.0F;  ///< Pre-bloom scene gain.
+
+    // ── PGX runtime controls ──────────────────────────────────────────────────
+    float feedbackDecay    = 0.0F;  ///< Desired previous-frame persistence.
+    float feedbackZoom     = 1.0F;  ///< Desired previous-frame zoom drift.
+    float feedbackRotation = 0.0F;  ///< Desired previous-frame rotation drift.
+    float feedbackWarp     = 0.0F;  ///< Desired previous-frame warp strength.
+    float feedbackBeatWarp = 0.0F;  ///< Beat-driven feedback displacement.
+
+    int   waveformMode     = 0;     ///< pgx::WaveformMode as an int.
+    float waveformOpacity  = 0.0F;
+    float waveformThickness = 1.0F;
+    float waveformRadius   = 0.45F;
+    float waveformBassResponse = 0.0F;
+    float waveformTrebleResponse = 0.0F;
 };
 
 } // namespace papagedon

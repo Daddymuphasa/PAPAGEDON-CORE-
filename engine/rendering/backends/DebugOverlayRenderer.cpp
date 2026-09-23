@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <algorithm>
+#include <cmath>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -30,10 +31,28 @@ namespace {
         uniform sampler2D textTexture;
         uniform vec3  uColor;
         uniform float uAlpha;
+        uniform int   uSolid;
         void main() {
-            float r = texture(textTexture, TexCoord).r;
-            if (r < 0.5) discard;
+            if (uSolid == 0) {
+                float r = texture(textTexture, TexCoord).r;
+                if (r < 0.5) discard;
+            }
             FragColor = vec4(uColor, uAlpha);
+        }
+    )";
+
+    const char* bannerFragmentSource = R"(
+        #version 410 core
+        out vec4 FragColor;
+        in vec2 TexCoord;
+        uniform sampler2D textTexture;
+        uniform vec3  uColor;
+        uniform float uAlpha;
+        void main() {
+            float d = texture(textTexture, TexCoord).r;
+            float a = smoothstep(0.30, 0.60, d) * uAlpha;
+            if (a < 0.01) discard;
+            FragColor = vec4(uColor, a);
         }
     )";
 
@@ -75,6 +94,7 @@ bool DebugOverlayRenderer::Initialize() {
 
     colorLoc_ = glGetUniformLocation(shaderProgram_, "uColor");
     alphaLoc_ = glGetUniformLocation(shaderProgram_, "uAlpha");
+    solidLoc_ = glGetUniformLocation(shaderProgram_, "uSolid");
 
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
@@ -112,6 +132,66 @@ bool DebugOverlayRenderer::Initialize() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // ── Banner SDF font atlas (smooth, anti-aliased text for the brand banner) ──
+    {
+        constexpr int kG = 48;
+        constexpr int kCols = 16;
+        constexpr int kRows = 8;
+        constexpr int kAW = kG * kCols;
+        constexpr int kAH = kG * kRows;
+        std::vector<unsigned char> sdf(kAW * kAH);
+
+        for (int ch = 0; ch < 128; ++ch) {
+            const int bx = (ch % kCols) * kG;
+            const int by = (ch / kCols) * kG;
+            for (int py = 0; py < kG; ++py) {
+                for (int px = 0; px < kG; ++px) {
+                    const int sx = px * 8 / kG;
+                    const int sy = py * 8 / kG;
+                    const bool inside = (font8x8_basic[ch][sy] & (1 << sx)) != 0;
+                    float minD = 99.0F;
+                    for (int ey = 0; ey < 8; ++ey) {
+                        for (int ex = 0; ex < 8; ++ex) {
+                            if (((font8x8_basic[ch][ey] & (1 << ex)) != 0) != inside) {
+                                const float dx = (px + 0.5F) * 8.0F / kG - (ex + 0.5F);
+                                const float dy = (py + 0.5F) * 8.0F / kG - (ey + 0.5F);
+                                const float d = std::sqrt(dx * dx + dy * dy);
+                                if (d < minD) minD = d;
+                            }
+                        }
+                    }
+                    float norm = minD / 3.0F;
+                    if (norm > 1.0F) norm = 1.0F;
+                    float val = inside ? 0.5F + norm * 0.5F : 0.5F - norm * 0.5F;
+                    sdf[static_cast<std::size_t>((by + py) * kAW + (bx + px))] =
+                        static_cast<unsigned char>(val * 255.0F);
+                }
+            }
+        }
+
+        glGenTextures(1, &bannerTexture_);
+        glBindTexture(GL_TEXTURE_2D, bannerTexture_);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, kAW, kAH, 0,
+                     GL_RED, GL_UNSIGNED_BYTE, sdf.data());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+
+    {
+        unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
+        unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, bannerFragmentSource);
+        bannerProgram_ = glCreateProgram();
+        glAttachShader(bannerProgram_, vs);
+        glAttachShader(bannerProgram_, fs);
+        glLinkProgram(bannerProgram_);
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+        bannerColorLoc_ = glGetUniformLocation(bannerProgram_, "uColor");
+        bannerAlphaLoc_ = glGetUniformLocation(bannerProgram_, "uAlpha");
+    }
 
     initialized_ = true;
     return true;
@@ -239,6 +319,107 @@ void DebugOverlayRenderer::RenderMenu(int windowWidth, int windowHeight, float a
     }
 }
 
+void DebugOverlayRenderer::RenderRect(float x, float y, float w, float h,
+                                      int windowWidth, int windowHeight,
+                                      float r, float g, float b, float a) {
+    glUseProgram(shaderProgram_);
+    if (colorLoc_ >= 0) glUniform3f(colorLoc_, r, g, b);
+    if (alphaLoc_ >= 0) glUniform1f(alphaLoc_, a);
+    if (solidLoc_ >= 0) glUniform1i(solidLoc_, 1);
+    glBindVertexArray(vao_);
+
+    const float ww = static_cast<float>(windowWidth);
+    const float wh = static_cast<float>(windowHeight);
+    const float x1 = (x / ww) * 2.0F - 1.0F;
+    const float x2 = ((x + w) / ww) * 2.0F - 1.0F;
+    const float y1 = (y / wh) * 2.0F - 1.0F;
+    const float y2 = ((y + h) / wh) * 2.0F - 1.0F;
+
+    float verts[] = {
+        x1, y2, 0, 0,   x1, y1, 0, 1,   x2, y1, 1, 1,
+        x1, y2, 0, 0,   x2, y1, 1, 1,   x2, y2, 1, 0,
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    if (solidLoc_ >= 0) glUniform1i(solidLoc_, 0);
+}
+
+void DebugOverlayRenderer::RenderBannerText(const char* text, float x, float y, float scale,
+                                            int windowWidth, int windowHeight,
+                                            float r, float g, float b, float a) {
+    glUseProgram(bannerProgram_);
+    if (bannerColorLoc_ >= 0) glUniform3f(bannerColorLoc_, r, g, b);
+    if (bannerAlphaLoc_ >= 0) glUniform1f(bannerAlphaLoc_, a);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, bannerTexture_);
+    glBindVertexArray(vao_);
+
+    std::vector<float> vertices;
+    const float charW = 8.0F * scale;
+    const float charH = 8.0F * scale;
+    float startX = x;
+
+    while (*text) {
+        char c = *text;
+        if (c == '\n') { y -= charH * 1.5F; x = startX; }
+        else if (c >= 0 && c < 128) {
+            float x1 = (x / windowWidth) * 2.0F - 1.0F;
+            float x2 = ((x + charW) / windowWidth) * 2.0F - 1.0F;
+            float y1 = (y / windowHeight) * 2.0F - 1.0F;
+            float y2 = ((y + charH) / windowHeight) * 2.0F - 1.0F;
+            float u1 = static_cast<float>(c % 16) / 16.0F;
+            float u2 = u1 + 1.0F / 16.0F;
+            float v1 = static_cast<float>(c / 16) / 8.0F;
+            float v2 = v1 + 1.0F / 8.0F;
+            float vd[] = {x1,y2,u1,v1, x1,y1,u1,v2, x2,y1,u2,v2,
+                          x1,y2,u1,v1, x2,y1,u2,v2, x2,y2,u2,v1};
+            for (float f : vd) vertices.push_back(f);
+            x += charW;
+        }
+        ++text;
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+    glBufferSubData(GL_ARRAY_BUFFER, 0,
+                    static_cast<GLsizeiptr>(vertices.size() * sizeof(float)), vertices.data());
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size() / 4));
+}
+
+void DebugOverlayRenderer::RenderBadmanBanner(int windowWidth, int windowHeight, float alpha) {
+    if (!initialized_ || alpha <= 0.0F) {
+        return;
+    }
+    const float w = static_cast<float>(windowWidth);
+    const float h = static_cast<float>(windowHeight);
+
+    const float titleScale = std::max(4.0F, w / 220.0F);
+    const float subScale   = std::max(2.5F, w / 340.0F);
+    const float lineH = 8.0F * titleScale * 1.3F;
+    const float totalH = lineH * 2.0F + 8.0F * subScale;
+    const float yMid = (h + totalH) * 0.5F - totalH * 0.5F;
+
+    const char* line1 = "BADMAN";
+    const char* line2 = "EXPERIENCE 4.0";
+    const char* line3 = "+FESTIVAL OF SOUNDS+";
+    const float x1 = (w - 6.0F * 8.0F * titleScale) * 0.5F;
+    const float x2 = (w - 14.0F * 8.0F * titleScale) * 0.5F;
+    const float x3 = (w - 20.0F * 8.0F * subScale) * 0.5F;
+
+    RenderBannerText(line1, x1, yMid + lineH * 2.0F, titleScale,
+                     windowWidth, windowHeight,
+                     0.93F, 0.70F, 0.64F, alpha);
+    RenderBannerText(line2, x2, yMid + lineH, titleScale,
+                     windowWidth, windowHeight,
+                     0.93F, 0.70F, 0.64F, alpha);
+    RenderBannerText(line3, x3, yMid, subScale,
+                     windowWidth, windowHeight,
+                     1.0F, 1.0F, 1.0F, alpha * 0.95F);
+}
+
 void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int windowHeight) {
     if (!initialized_ || text == nullptr || *text == '\0') {
         return;
@@ -287,6 +468,7 @@ void DebugOverlayRenderer::RenderText(const char* text, float x, float y, float 
     glUseProgram(shaderProgram_);
     if (colorLoc_ >= 0) glUniform3f(colorLoc_, r, g, b);
     if (alphaLoc_ >= 0) glUniform1f(alphaLoc_, a);
+    if (solidLoc_ >= 0) glUniform1i(solidLoc_, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture_);
     glBindVertexArray(vao_);
@@ -350,6 +532,8 @@ void DebugOverlayRenderer::Shutdown() noexcept {
     glDeleteBuffers(1, &vbo_);
     glDeleteProgram(shaderProgram_);
     glDeleteTextures(1, &texture_);
+    if (bannerProgram_) glDeleteProgram(bannerProgram_);
+    if (bannerTexture_) glDeleteTextures(1, &bannerTexture_);
     initialized_ = false;
 }
 

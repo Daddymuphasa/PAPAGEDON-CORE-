@@ -1,0 +1,22 @@
+{
+  "id": "slow-dance-rings",
+  "index": 5,
+  "name": "Slow Dance Rings",
+  "shader": "shaders/05_slow_dance_rings.frag",
+  "description": "Gentle circular dance-floor ripples swelling on the kick.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

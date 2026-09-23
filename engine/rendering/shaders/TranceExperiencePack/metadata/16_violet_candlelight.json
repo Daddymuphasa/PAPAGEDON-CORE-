@@ -1,0 +1,22 @@
+{
+  "id": "violet-candlelight",
+  "index": 16,
+  "name": "Violet Candlelight",
+  "shader": "shaders/16_violet_candlelight.frag",
+  "description": "Soft candle-like pulses diffused through violet night air.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

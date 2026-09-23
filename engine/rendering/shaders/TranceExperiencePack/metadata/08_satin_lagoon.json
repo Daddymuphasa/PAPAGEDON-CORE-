@@ -1,0 +1,22 @@
+{
+  "id": "satin-lagoon",
+  "index": 8,
+  "name": "Satin Lagoon",
+  "shader": "shaders/08_satin_lagoon.frag",
+  "description": "Blue-black water satin with luminous slow-motion caustics.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

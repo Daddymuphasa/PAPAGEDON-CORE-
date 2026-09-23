@@ -1,0 +1,22 @@
+{
+  "id": "plum-horizon",
+  "index": 17,
+  "name": "Plum Horizon",
+  "shader": "shaders/17_plum_horizon.frag",
+  "description": "A layered outdoor horizon glowing plum, gold, and blue.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

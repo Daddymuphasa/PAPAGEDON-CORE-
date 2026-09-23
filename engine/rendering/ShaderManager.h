@@ -84,6 +84,17 @@ private:
     int locMasterBrightness_ = -1;
     int locMasterGlow_       = -1;
     int locMasterExposure_   = -1;
+    int locFeedbackDecay_    = -1;
+    int locFeedbackZoom_     = -1;
+    int locFeedbackRotation_ = -1;
+    int locFeedbackWarp_     = -1;
+    int locFeedbackBeatWarp_ = -1;
+    int locWaveformMode_     = -1;
+    int locWaveformOpacity_  = -1;
+    int locWaveformThickness_ = -1;
+    int locWaveformRadius_   = -1;
+    int locWaveformBassResponse_ = -1;
+    int locWaveformTrebleResponse_ = -1;
 };
 
 } // namespace papagedon

@@ -34,6 +34,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.65F,
         .motionIntensity  = 0.70F,
         .transitionSpeed  = 3.5F,
+        .pgx = {
+            .feedback = {.decay = 0.86F, .zoom = 1.002F, .rotation = 0.010F, .warp = 0.12F, .beatWarp = 0.04F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.22F, .thickness = 1.8F, .radius = 0.42F, .bassResponse = 0.20F, .trebleResponse = 0.30F},
+        },
     },
     // ── Nebula ──────────────────────────────────────────────────────────────
     // Deep cosmic indigo through magenta to a blue-white core.  Slow drift.
@@ -53,6 +57,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.60F,
         .motionIntensity  = 0.50F,
         .transitionSpeed  = 3.0F,
+        .pgx = {
+            .feedback = {.decay = 0.91F, .zoom = 1.001F, .rotation = -0.006F, .warp = 0.18F, .beatWarp = 0.03F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.18F, .thickness = 1.4F, .radius = 0.50F, .bassResponse = 0.15F, .trebleResponse = 0.45F},
+        },
     },
     // ── Matrix ──────────────────────────────────────────────────────────────
     // High-contrast digital green on near-black.  Sharp beats, quick motion.
@@ -72,6 +80,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.50F,
         .motionIntensity  = 1.30F,
         .transitionSpeed  = 6.0F,
+        .pgx = {
+            .feedback = {.decay = 0.58F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.03F, .beatWarp = 0.02F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.26F, .thickness = 1.0F, .radius = 0.36F, .bassResponse = 0.10F, .trebleResponse = 0.70F},
+        },
     },
     // ── Liquid ──────────────────────────────────────────────────────────────
     // Smooth blues and cyans lifting to white.  Soft beats, languid motion.
@@ -91,6 +103,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.55F,
         .motionIntensity  = 0.50F,
         .transitionSpeed  = 2.5F,
+        .pgx = {
+            .feedback = {.decay = 0.93F, .zoom = 0.999F, .rotation = 0.004F, .warp = 0.20F, .beatWarp = 0.02F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.20F, .thickness = 2.2F, .radius = 0.44F, .bassResponse = 0.35F, .trebleResponse = 0.20F},
+        },
     },
     // ── Tunnel ──────────────────────────────────────────────────────────────
     // Hot orange-to-yellow rush.  High energy, very fast forward motion.
@@ -110,6 +126,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.65F,
         .motionIntensity  = 1.80F,
         .transitionSpeed  = 7.0F,
+        .pgx = {
+            .feedback = {.decay = 0.82F, .zoom = 1.010F, .rotation = 0.015F, .warp = 0.10F, .beatWarp = 0.10F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.30F, .thickness = 1.6F, .radius = 0.46F, .bassResponse = 0.60F, .trebleResponse = 0.20F},
+        },
     },
     // ── Pulse ───────────────────────────────────────────────────────────────
     // Punchy reds and pinks flaring to white.  The most beat-reactive preset.
@@ -129,6 +149,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.70F,
         .motionIntensity  = 1.40F,
         .transitionSpeed  = 8.0F,
+        .pgx = {
+            .feedback = {.decay = 0.76F, .zoom = 1.006F, .rotation = 0.000F, .warp = 0.08F, .beatWarp = 0.16F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.36F, .thickness = 2.0F, .radius = 0.40F, .bassResponse = 0.80F, .trebleResponse = 0.20F},
+        },
     },
     // ── Vortex ────────────────────────────────────────────────────────────────
     // Hypnotic neon spiral wormhole, magenta through cyan, rushing inward.
@@ -148,6 +172,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.50F,
         .motionIntensity  = 1.40F,
         .transitionSpeed  = 6.0F,
+        .pgx = {
+            .feedback = {.decay = 0.88F, .zoom = 1.004F, .rotation = 0.030F, .warp = 0.14F, .beatWarp = 0.08F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.28F, .thickness = 1.5F, .radius = 0.43F, .bassResponse = 0.45F, .trebleResponse = 0.35F},
+        },
     },
     // ── Lasers ────────────────────────────────────────────────────────────────
     // Sweeping laser-show fan on black, strobing green to white on the beat.
@@ -167,6 +195,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.55F,
         .motionIntensity  = 1.60F,
         .transitionSpeed  = 7.0F,
+        .pgx = {
+            .feedback = {.decay = 0.50F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.02F, .beatWarp = 0.05F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.32F, .thickness = 1.2F, .radius = 0.38F, .bassResponse = 0.15F, .trebleResponse = 0.85F},
+        },
     },
     // ── Mandala ───────────────────────────────────────────────────────────────
     // Psychedelic mirrored kaleidoscope, jewel tones folding and rotating.
@@ -186,6 +218,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.45F,
         .motionIntensity  = 1.00F,
         .transitionSpeed  = 5.0F,
+        .pgx = {
+            .feedback = {.decay = 0.90F, .zoom = 1.001F, .rotation = 0.020F, .warp = 0.16F, .beatWarp = 0.06F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.24F, .thickness = 1.4F, .radius = 0.48F, .bassResponse = 0.35F, .trebleResponse = 0.45F},
+        },
     },
     // ── Lattice ───────────────────────────────────────────────────────────────
     // Pulsing neon lattice grid, cyan and magenta, scaling with the bass.
@@ -205,6 +241,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.50F,
         .motionIntensity  = 1.20F,
         .transitionSpeed  = 6.5F,
+        .pgx = {
+            .feedback = {.decay = 0.68F, .zoom = 1.003F, .rotation = 0.000F, .warp = 0.04F, .beatWarp = 0.07F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.30F, .thickness = 1.0F, .radius = 0.41F, .bassResponse = 0.50F, .trebleResponse = 0.40F},
+        },
     },
     // ── Shockwave ─────────────────────────────────────────────────────────────
     // Concentric bass shockwaves and radial rays exploding on the kick.
@@ -224,6 +264,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.55F,
         .motionIntensity  = 1.30F,
         .transitionSpeed  = 7.5F,
+        .pgx = {
+            .feedback = {.decay = 0.72F, .zoom = 1.008F, .rotation = 0.000F, .warp = 0.07F, .beatWarp = 0.18F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.34F, .thickness = 1.8F, .radius = 0.42F, .bassResponse = 0.90F, .trebleResponse = 0.15F},
+        },
     },
     // ── Spectrum ──────────────────────────────────────────────────────────────
     // Circular audio-reactive bars: bass, mid and treble arcs radiating outward.
@@ -243,6 +287,10 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .saturationScale  = 0.50F,
         .motionIntensity  = 1.00F,
         .transitionSpeed  = 6.0F,
+        .pgx = {
+            .feedback = {.decay = 0.62F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.03F, .beatWarp = 0.04F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.42F, .thickness = 1.3F, .radius = 0.52F, .bassResponse = 0.45F, .trebleResponse = 0.45F},
+        },
     },
 }};
 

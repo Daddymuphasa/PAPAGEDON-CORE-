@@ -1,0 +1,22 @@
+{
+  "id": "trance-ascension",
+  "index": 20,
+  "name": "TRANCE Ascension",
+  "shader": "shaders/20_trance_ascension.frag",
+  "description": "The closing look: classy moon arcs, champagne specks, and velvet bloom.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "peak"
+}

@@ -1,0 +1,2 @@
+FFT (STFT) is the right core for a general, low-latency audio analysis engine. It outperforms narrow, genre-specific heuristics because it produces continuous, interpretable spectral features that generalize to any music and enable robust event detection and ML.
+

@@ -1,0 +1,22 @@
+{
+  "id": "slow-bloom",
+  "index": 19,
+  "name": "Slow Bloom",
+  "shader": "shaders/19_slow_bloom.frag",
+  "description": "Dreamy radial blooms opening slowly without strobe aggression.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

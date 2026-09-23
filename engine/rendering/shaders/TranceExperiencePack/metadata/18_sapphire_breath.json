@@ -1,0 +1,22 @@
+{
+  "id": "sapphire-breath",
+  "index": 18,
+  "name": "Sapphire Breath",
+  "shader": "shaders/18_sapphire_breath.frag",
+  "description": "Large sapphire breathing fields that inhale with bass.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

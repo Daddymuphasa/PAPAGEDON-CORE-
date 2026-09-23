@@ -1,0 +1,22 @@
+{
+  "id": "glass-rain",
+  "index": 13,
+  "name": "Glass Rain",
+  "shader": "shaders/13_glass_rain.frag",
+  "description": "Slow vertical glass streaks catching tiny treble sparkles.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

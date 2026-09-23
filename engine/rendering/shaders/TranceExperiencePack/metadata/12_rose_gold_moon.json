@@ -1,0 +1,22 @@
+{
+  "id": "rose-gold-moon",
+  "index": 12,
+  "name": "Rose Gold Moon",
+  "shader": "shaders/12_rose_gold_moon.frag",
+  "description": "Rose-gold lunar arcs and cocktail warmth over navy skies.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

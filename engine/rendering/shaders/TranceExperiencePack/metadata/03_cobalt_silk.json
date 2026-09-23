@@ -1,0 +1,22 @@
+{
+  "id": "cobalt-silk",
+  "index": 3,
+  "name": "Cobalt Silk",
+  "shader": "shaders/03_cobalt_silk.frag",
+  "description": "Long silk ribbons moving like slow R&B vocal runs.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

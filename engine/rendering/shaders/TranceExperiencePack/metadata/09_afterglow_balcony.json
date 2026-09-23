@@ -1,0 +1,22 @@
+{
+  "id": "afterglow-balcony",
+  "index": 9,
+  "name": "Afterglow Balcony",
+  "shader": "shaders/09_afterglow_balcony.frag",
+  "description": "Balcony light bokeh floating over a deep city-night horizon.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

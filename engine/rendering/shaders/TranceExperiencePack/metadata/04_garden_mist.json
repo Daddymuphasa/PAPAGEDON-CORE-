@@ -1,0 +1,22 @@
+{
+  "id": "garden-mist",
+  "index": 4,
+  "name": "Garden Mist",
+  "shader": "shaders/04_garden_mist.frag",
+  "description": "Outdoor garden haze with moonlit fog and soft treble fireflies.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

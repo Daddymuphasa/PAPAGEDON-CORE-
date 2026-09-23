@@ -1,10 +1,10 @@
 {
   "demoMode": true,
-  "fullscreen": true,
+  "fullscreen": false,
   "vsync": true,
   "targetFPS": 120,
-  "theme": "dark-techno",
-  "audioFile": "C:\\Users\\DADDY MUPHASA\\Music\\[FREE] Gunna Type Beat - Elite - MIG (192k).mp3",
+  "theme": "nebula",
+  "audioFile": "test.mp3",
   "audioSource": "input",
   "captureDevice": 0,
   "showDebugOverlay": false,

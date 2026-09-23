@@ -1,0 +1,22 @@
+{
+  "id": "champagne-stars",
+  "index": 2,
+  "name": "Champagne Stars",
+  "shader": "shaders/02_champagne_stars.frag",
+  "description": "Champagne bubbles and star glints drifting through indigo air.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

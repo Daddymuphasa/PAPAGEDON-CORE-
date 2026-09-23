@@ -1,0 +1,22 @@
+{
+  "id": "dream-current",
+  "index": 14,
+  "name": "Dream Current",
+  "shader": "shaders/14_dream_current.frag",
+  "description": "A hypnotic slow current flowing diagonally through moon haze.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

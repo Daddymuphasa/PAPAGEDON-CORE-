@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../pgx/PgxTypes.h"
+
 #include <cstddef>
 
 namespace papagedon {
@@ -107,6 +109,11 @@ struct ExperiencePreset final {
     /// Rate at which the Renderer eases toward this preset when switching.
     /// Higher is snappier.  Used only for CPU-side smoothing — no allocation.
     float transitionSpeed = 6.0F;
+
+    /// Native PGX runtime controls for feedback, waveform layers and future
+    /// render-pass graph decisions.  This is PAPAGEDON's own runtime contract,
+    /// not a MilkDrop compatibility layer.
+    pgx::RuntimeSettings pgx{};
 };
 
 /// Returns the immutable preset for the given id.  Out-of-range ids clamp to the

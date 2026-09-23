@@ -1,0 +1,22 @@
+{
+  "id": "blue-hour-smoke",
+  "index": 11,
+  "name": "Blue Hour Smoke",
+  "shader": "shaders/11_blue_hour_smoke.frag",
+  "description": "Cool moon smoke with pearly depth and no hard rave edges.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}

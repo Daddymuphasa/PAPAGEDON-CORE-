@@ -36,6 +36,10 @@ public:
     /// warm-white entries, with a drop shadow for legibility.  alpha fades it.
     void RenderMenu(int windowWidth, int windowHeight, float alpha);
 
+    /// Draws the "BADMAN EXPERIENCE 4.0 / FESTIVAL OF SOUNDS" brand banner
+    /// centred on screen, on top of all shaders.
+    void RenderBadmanBanner(int windowWidth, int windowHeight, float alpha);
+
     void Shutdown() noexcept;
 
 private:
@@ -48,12 +52,26 @@ private:
                             int windowWidth, int windowHeight,
                             float r, float g, float b, float a);
 
+    void RenderRect(float x, float y, float w, float h,
+                    int windowWidth, int windowHeight,
+                    float r, float g, float b, float a);
+    void RenderBannerText(const char* text, float x, float y, float scale,
+                          int windowWidth, int windowHeight,
+                          float r, float g, float b, float a);
+
     unsigned int shaderProgram_ = 0;
     unsigned int vao_ = 0;
     unsigned int vbo_ = 0;
     unsigned int texture_ = 0;
     int          colorLoc_ = -1;
     int          alphaLoc_ = -1;
+    int          solidLoc_ = -1;
+
+    unsigned int bannerProgram_ = 0;
+    unsigned int bannerTexture_ = 0;
+    int          bannerColorLoc_ = -1;
+    int          bannerAlphaLoc_ = -1;
+
     bool initialized_ = false;
 };
 

@@ -49,16 +49,16 @@ Color3 ToColor3(const visual::ThemeColor& c) noexcept {
 constexpr int kNumTransitionEffects = 10;
 
 constexpr float kTransitionDurations[kNumTransitionEffects] = {
-    0.55f,  // 0  FLASH_BANG
-    0.80f,  // 1  GLITCH_TEAR
-    0.85f,  // 2  RADIAL_WIPE
-    0.70f,  // 3  ZOOM_BLAST
-    0.75f,  // 4  STROBE_CUT
-    0.65f,  // 5  DIAGONAL_SLASH
-    0.95f,  // 6  SPIRAL_DISSOLVE
-    0.85f,  // 7  SHATTER
-    0.80f,  // 8  RGB_SPLIT
-    0.90f,  // 9  MELT
+    0.35f,  // 0  FLASH_BANG
+    0.40f,  // 1  GLITCH_TEAR
+    0.40f,  // 2  RADIAL_WIPE
+    0.35f,  // 3  ZOOM_BLAST
+    0.35f,  // 4  STROBE_CUT
+    0.35f,  // 5  DIAGONAL_SLASH
+    0.45f,  // 6  SPIRAL_DISSOLVE
+    0.40f,  // 7  SHATTER
+    0.40f,  // 8  RGB_SPLIT
+    0.40f,  // 9  MELT
 };
 
 constexpr const char* kTransitionFragment = R"GLSL(
@@ -237,6 +237,71 @@ void main() {
     }
 
     fragColor = result;
+}
+)GLSL";
+
+// ──────────────────────────────────────────────────────────────────────────────
+// PGX feedback composite pass
+//
+// The current visual is rendered into uScene.  The previous composited frame is
+// sampled from uPrevious, warped/decayed according to native PGX controls, then
+// blended with the live scene.  This gives PAPAGEDON the MilkDrop/projectM-style
+// visual memory loop without adopting the .milk runtime model.
+// ──────────────────────────────────────────────────────────────────────────────
+constexpr const char* kPgxFeedbackFragment = R"GLSL(
+#version 330 core
+in  vec2 vUV;
+out vec4 fragColor;
+
+uniform sampler2D uScene;
+uniform sampler2D uPrevious;
+uniform float uTime;
+uniform vec2  uResolution;
+uniform float uDecay;
+uniform float uZoom;
+uniform float uRotation;
+uniform float uWarp;
+uniform float uBeatWarp;
+uniform float uBeat;
+uniform float uEnergy;
+
+void main() {
+    vec2 uv = vUV;
+    vec2 p = uv - 0.5;
+    p.x *= uResolution.x / max(uResolution.y, 1.0);
+
+    float decay = clamp(uDecay, 0.0, 0.985);
+    float warp = uWarp + uBeatWarp * uBeat;
+
+    float ca = cos(uRotation * (0.45 + uEnergy));
+    float sa = sin(uRotation * (0.45 + uEnergy));
+    p = mat2(ca, -sa, sa, ca) * p;
+
+    float zoom = mix(1.0, max(uZoom, 0.001), decay);
+    p /= zoom;
+
+    vec2 n = vec2(
+        sin((p.y * 8.0) + uTime * 0.70 + uEnergy * 2.0),
+        cos((p.x * 7.0) - uTime * 0.65 + uBeat * 4.0)
+    );
+    p += n * warp * 0.045 * decay;
+
+    p.x /= uResolution.x / max(uResolution.y, 1.0);
+    vec2 prevUV = p + 0.5;
+
+    vec4 scene = texture(uScene, uv);
+    vec4 prev = vec4(0.0);
+    if (all(greaterThanEqual(prevUV, vec2(0.0))) &&
+        all(lessThanEqual(prevUV, vec2(1.0)))) {
+        prev = texture(uPrevious, prevUV) * decay;
+    }
+
+    float liveMix = clamp(0.34 + uEnergy * 0.22 + uBeat * 0.16, 0.20, 0.72);
+    vec3 color = max(scene.rgb, prev.rgb * (0.82 + decay * 0.18));
+    color = mix(prev.rgb, color, liveMix);
+    color += scene.rgb * scene.rgb * (0.05 + uBeat * 0.10);
+
+    fragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }
 )GLSL";
 
@@ -486,6 +551,28 @@ public:
     float        transitionProgress = 0.0f;
     bool         needsOutgoingCapture = false;
 
+    // ── PGX visual-memory pipeline ─────────────────────────────────────────────
+    unsigned int pgxSceneFBO = 0;
+    unsigned int pgxSceneTex = 0;
+    unsigned int pgxFeedbackFBO[2] = {0, 0};
+    unsigned int pgxFeedbackTex[2] = {0, 0};
+    int          pgxTexW = 0;
+    int          pgxTexH = 0;
+    int          pgxReadIndex = 0;
+    bool         pgxFeedbackPrimed = false;
+    unsigned int pgxFeedbackProgram = 0;
+    int          pgxLocScene = -1;
+    int          pgxLocPrevious = -1;
+    int          pgxLocTime = -1;
+    int          pgxLocResolution = -1;
+    int          pgxLocDecay = -1;
+    int          pgxLocZoom = -1;
+    int          pgxLocRotation = -1;
+    int          pgxLocWarp = -1;
+    int          pgxLocBeatWarp = -1;
+    int          pgxLocBeat = -1;
+    int          pgxLocEnergy = -1;
+
     // ── Cinematic startup intro (procedural gold logo) ──────────────────────────
     unsigned int introProgram = 0;
     int          introTimeLoc = -1;
@@ -525,8 +612,10 @@ public:
 
     // 'B' snaps straight back to the show's home theme (Badman red), which loads
     // past the F1..F7 slots and so is otherwise unreachable from the keyboard.
+    // Also toggles the "BADMAN EXPERIENCE 4.0" brand banner overlay.
     bool homeKeyWasPressed = false;
     bool pendingHomeRequest = false;
+    bool showBadmanBanner   = false;
 
     bool spaceWasPressed  = false;
     bool pendingPlayPause = false;
@@ -794,6 +883,61 @@ bool OpenGLRenderer::Initialize() {
     }
     implementation_->lastSwitchTime = glfwGetTime();
 
+    // PGX visual-memory FBOs.  Textures are allocated lazily to the framebuffer
+    // size in Render(), just like transition textures.
+    glGenFramebuffers(1, &implementation_->pgxSceneFBO);
+    glGenTextures(1, &implementation_->pgxSceneTex);
+    glBindTexture(GL_TEXTURE_2D, implementation_->pgxSceneTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxSceneFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, implementation_->pgxSceneTex, 0);
+
+    glGenFramebuffers(2, implementation_->pgxFeedbackFBO);
+    glGenTextures(2, implementation_->pgxFeedbackTex);
+    for (int i = 0; i < 2; ++i) {
+        glBindTexture(GL_TEXTURE_2D, implementation_->pgxFeedbackTex[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxFeedbackFBO[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, implementation_->pgxFeedbackTex[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    implementation_->pgxFeedbackProgram =
+        CompileGLProgram(ShaderManager::DefaultVertexSource(), kPgxFeedbackFragment);
+    if (implementation_->pgxFeedbackProgram != 0) {
+        implementation_->pgxLocScene =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uScene");
+        implementation_->pgxLocPrevious =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uPrevious");
+        implementation_->pgxLocTime =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uTime");
+        implementation_->pgxLocResolution =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uResolution");
+        implementation_->pgxLocDecay =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uDecay");
+        implementation_->pgxLocZoom =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uZoom");
+        implementation_->pgxLocRotation =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uRotation");
+        implementation_->pgxLocWarp =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uWarp");
+        implementation_->pgxLocBeatWarp =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uBeatWarp");
+        implementation_->pgxLocBeat =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uBeat");
+        implementation_->pgxLocEnergy =
+            glGetUniformLocation(implementation_->pgxFeedbackProgram, "uEnergy");
+    }
+
     // Cinematic startup logo program. PAPAGEDON_NO_INTRO=1 skips it (fast relaunch).
     implementation_->introProgram = CompileGLProgram(ShaderManager::DefaultVertexSource(), kIntroFragment);
     implementation_->introTimeLoc = implementation_->introProgram != 0
@@ -882,12 +1026,7 @@ void OpenGLRenderer::SetDemoMode(const bool enabled) {
     if (implementation_->window == nullptr) {
         return;
     }
-    // Demo mode goes fullscreen and suppresses the overlay; leaving it restores
-    // the cursor and a window.
     if (enabled) {
-        if (!implementation_->isFullscreen) {
-            SetFullscreen(true);
-        }
         implementation_->showDebugOverlay = false;
     } else {
         glfwSetInputMode(implementation_->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -937,12 +1076,34 @@ void OpenGLRenderer::SetFullscreen(const bool enable) {
                          &implementation_->windowedX, &implementation_->windowedY);
         glfwGetWindowSize(implementation_->window,
                           &implementation_->windowedW, &implementation_->windowedH);
-        GLFWmonitor* const monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* const mode = monitor != nullptr ? glfwGetVideoMode(monitor) : nullptr;
-        if (mode == nullptr) {
-            return; // no display info — stay windowed rather than fail
+        // Find the monitor the window is currently on (centre-point test) so that
+        // F11 goes fullscreen on the correct display — including secondary screens.
+        GLFWmonitor* bestMonitor = nullptr;
+        {
+            int wx, wy, ww, wh;
+            glfwGetWindowPos(implementation_->window, &wx, &wy);
+            glfwGetWindowSize(implementation_->window, &ww, &wh);
+            const int cx = wx + ww / 2;
+            const int cy = wy + wh / 2;
+            int monitorCount = 0;
+            GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+            for (int i = 0; i < monitorCount; ++i) {
+                int mx, my;
+                glfwGetMonitorPos(monitors[i], &mx, &my);
+                const GLFWvidmode* vm = glfwGetVideoMode(monitors[i]);
+                if (vm && cx >= mx && cx < mx + vm->width &&
+                    cy >= my && cy < my + vm->height) {
+                    bestMonitor = monitors[i];
+                    break;
+                }
+            }
+            if (!bestMonitor) bestMonitor = glfwGetPrimaryMonitor();
         }
-        glfwSetWindowMonitor(implementation_->window, monitor, 0, 0,
+        const GLFWvidmode* const mode = bestMonitor ? glfwGetVideoMode(bestMonitor) : nullptr;
+        if (mode == nullptr) {
+            return;
+        }
+        glfwSetWindowMonitor(implementation_->window, bestMonitor, 0, 0,
                              mode->width, mode->height, mode->refreshRate);
         implementation_->isFullscreen = true;
     } else {
@@ -951,7 +1112,6 @@ void OpenGLRenderer::SetFullscreen(const bool enable) {
                              implementation_->windowedW, implementation_->windowedH, 0);
         implementation_->isFullscreen = false;
     }
-    // Changing the monitor can reset the swap interval — re-apply it.
     glfwSwapInterval(vsyncEnabled_ ? 1 : 0);
 }
 
@@ -1131,6 +1291,24 @@ void OpenGLRenderer::Render(
     smoothed.saturationScale += (preset.saturationScale - smoothed.saturationScale) * presetAlpha;
     smoothed.detail          += (preset.detail          - smoothed.detail)          * presetAlpha;
 
+    // ── PGX runtime controls ──────────────────────────────────────────────────
+    // PGX is PAPAGEDON's native visual-runtime contract.  These values are data
+    // supplied by the preset and eased here so future feedback/waveform passes
+    // can consume stable, pop-free controls.
+    smoothed.feedbackDecay    += (preset.pgx.feedback.decay    - smoothed.feedbackDecay)    * presetAlpha;
+    smoothed.feedbackZoom     += (preset.pgx.feedback.zoom     - smoothed.feedbackZoom)     * presetAlpha;
+    smoothed.feedbackRotation += (preset.pgx.feedback.rotation - smoothed.feedbackRotation) * presetAlpha;
+    smoothed.feedbackWarp     += (preset.pgx.feedback.warp     - smoothed.feedbackWarp)     * presetAlpha;
+    smoothed.feedbackBeatWarp += (preset.pgx.feedback.beatWarp - smoothed.feedbackBeatWarp) * presetAlpha;
+    smoothed.waveformMode      = static_cast<int>(preset.pgx.waveform.mode);
+    smoothed.waveformOpacity  += (preset.pgx.waveform.opacity  - smoothed.waveformOpacity)  * presetAlpha;
+    smoothed.waveformThickness += (preset.pgx.waveform.thickness - smoothed.waveformThickness) * presetAlpha;
+    smoothed.waveformRadius   += (preset.pgx.waveform.radius   - smoothed.waveformRadius)   * presetAlpha;
+    smoothed.waveformBassResponse +=
+        (preset.pgx.waveform.bassResponse - smoothed.waveformBassResponse) * presetAlpha;
+    smoothed.waveformTrebleResponse +=
+        (preset.pgx.waveform.trebleResponse - smoothed.waveformTrebleResponse) * presetAlpha;
+
     // ── Signature form cross-fade ──────────────────────────────────────────────
     // The pattern is a discrete choice, so it can't be lerped like a colour.
     // Instead we snapshot the outgoing form and ease patternBlend 0 → 1; the
@@ -1182,8 +1360,8 @@ void OpenGLRenderer::Render(
         }
         const double since  = currentTime - implementation_->lastSwitchTime;
         const bool   drop   = (signals.energy - implementation_->energyBaseline) > 0.28f && signals.energy > 0.45f;
-        const bool   timeUp = since > 14.0;
-        if (!implementation_->transitioning && since > 5.0 && (drop || timeUp)) {
+        const bool   timeUp = since > 8.0;
+        if (!implementation_->transitioning && since > 3.0 && (drop || timeUp)) {
             const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
             if (count > 1 && !implementation_->shaderMeta.empty()) {
                 const float bpm    = implementation_->smoothBpm;
@@ -1251,6 +1429,29 @@ void OpenGLRenderer::Render(
         }
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    if (width != implementation_->pgxTexW ||
+        height != implementation_->pgxTexH) {
+        implementation_->pgxTexW = width;
+        implementation_->pgxTexH = height;
+
+        glBindTexture(GL_TEXTURE_2D, implementation_->pgxSceneTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                     GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+        for (int i = 0; i < 2; ++i) {
+            glBindTexture(GL_TEXTURE_2D, implementation_->pgxFeedbackTex[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxFeedbackFBO[i]);
+            glViewport(0, 0, width, height);
+            glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        implementation_->pgxReadIndex = 0;
+        implementation_->pgxFeedbackPrimed = false;
+    }
 
     if (implementation_->transitioning && implementation_->transitionProgram != 0) {
         // ── Capture outgoing shader to FBO-A (once, on the first frame) ──
@@ -1287,9 +1488,10 @@ void OpenGLRenderer::Render(
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0u);
 
-        // ── Blend with the dramatic transition shader on screen ──
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // ── Blend with the dramatic transition shader into the PGX scene ──
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxSceneFBO);
         glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(implementation_->transitionProgram);
         glActiveTexture(GL_TEXTURE0);
@@ -1329,7 +1531,11 @@ void OpenGLRenderer::Render(
             implementation_->transitioning = false;
         }
     } else {
-        // ── Normal rendering (no transition active) ──
+        // ── Normal rendering into the PGX scene (no transition active) ──
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxSceneFBO);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         ShaderManager& active = (implementation_->activeShader == 0)
             ? shaderManager_
             : *implementation_->shaderLib[implementation_->activeShader - 1];
@@ -1339,6 +1545,70 @@ void OpenGLRenderer::Render(
         glBindVertexArray(fullscreenVAO_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0u);
+    }
+
+    // ── PGX visual-memory composite ───────────────────────────────────────────
+    if (implementation_->pgxFeedbackProgram != 0) {
+        const int readIndex = implementation_->pgxReadIndex;
+        const int writeIndex = 1 - readIndex;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, implementation_->pgxFeedbackFBO[writeIndex]);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(implementation_->pgxFeedbackProgram);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, implementation_->pgxSceneTex);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, implementation_->pgxFeedbackTex[readIndex]);
+        if (implementation_->pgxLocScene >= 0)
+            glUniform1i(implementation_->pgxLocScene, 0);
+        if (implementation_->pgxLocPrevious >= 0)
+            glUniform1i(implementation_->pgxLocPrevious, 1);
+        if (implementation_->pgxLocTime >= 0)
+            glUniform1f(implementation_->pgxLocTime, time);
+        if (implementation_->pgxLocResolution >= 0)
+            glUniform2f(implementation_->pgxLocResolution,
+                        static_cast<float>(width), static_cast<float>(height));
+        if (implementation_->pgxLocDecay >= 0)
+            glUniform1f(implementation_->pgxLocDecay,
+                        implementation_->pgxFeedbackPrimed ? smoothed.feedbackDecay : 0.0f);
+        if (implementation_->pgxLocZoom >= 0)
+            glUniform1f(implementation_->pgxLocZoom, smoothed.feedbackZoom);
+        if (implementation_->pgxLocRotation >= 0)
+            glUniform1f(implementation_->pgxLocRotation, smoothed.feedbackRotation);
+        if (implementation_->pgxLocWarp >= 0)
+            glUniform1f(implementation_->pgxLocWarp, smoothed.feedbackWarp);
+        if (implementation_->pgxLocBeatWarp >= 0)
+            glUniform1f(implementation_->pgxLocBeatWarp, smoothed.feedbackBeatWarp);
+        if (implementation_->pgxLocBeat >= 0)
+            glUniform1f(implementation_->pgxLocBeat, smoothed.beat);
+        if (implementation_->pgxLocEnergy >= 0)
+            glUniform1f(implementation_->pgxLocEnergy, smoothed.energy);
+
+        glBindVertexArray(fullscreenVAO_);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0u);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, implementation_->pgxFeedbackFBO[writeIndex]);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        implementation_->pgxReadIndex = writeIndex;
+        implementation_->pgxFeedbackPrimed = true;
+    } else {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, implementation_->pgxSceneFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     // ── Debug overlay (rendered on top, uses its own program internally) ──
@@ -1376,6 +1646,11 @@ void OpenGLRenderer::Render(
     if (menuAlpha > 0.0f) {
         implementation_->debugOverlay.RenderMenu(width, height, menuAlpha);
     }
+
+    // "BADMAN EXPERIENCE 4.0" brand banner (toggled by B key).
+    if (implementation_->showBadmanBanner) {
+        implementation_->debugOverlay.RenderBadmanBanner(width, height, 1.0f);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1405,11 +1680,12 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->themeKeyWasPressed[i] = pressed;
     }
 
-    // 'B' returns to the home theme (Badman red) — the show's brand colour.
+    // 'B' returns to the home theme (Badman red) and toggles the brand banner.
     const bool homeIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
     if (homeIsPressed && !implementation_->homeKeyWasPressed) {
         implementation_->pendingHomeRequest = true;
+        implementation_->showBadmanBanner = !implementation_->showBadmanBanner;
     }
     implementation_->homeKeyWasPressed = homeIsPressed;
 
@@ -1639,6 +1915,18 @@ void OpenGLRenderer::Shutdown() noexcept {
     implementation_->transitionFBO[0] = implementation_->transitionFBO[1] = 0;
     glDeleteTextures(2, implementation_->transitionTex);
     implementation_->transitionTex[0] = implementation_->transitionTex[1] = 0;
+    if (implementation_->pgxFeedbackProgram != 0) {
+        glDeleteProgram(implementation_->pgxFeedbackProgram);
+        implementation_->pgxFeedbackProgram = 0;
+    }
+    glDeleteFramebuffers(1, &implementation_->pgxSceneFBO);
+    implementation_->pgxSceneFBO = 0;
+    glDeleteTextures(1, &implementation_->pgxSceneTex);
+    implementation_->pgxSceneTex = 0;
+    glDeleteFramebuffers(2, implementation_->pgxFeedbackFBO);
+    implementation_->pgxFeedbackFBO[0] = implementation_->pgxFeedbackFBO[1] = 0;
+    glDeleteTextures(2, implementation_->pgxFeedbackTex);
+    implementation_->pgxFeedbackTex[0] = implementation_->pgxFeedbackTex[1] = 0;
     if (implementation_->introProgram != 0) {
         glDeleteProgram(implementation_->introProgram);
         implementation_->introProgram = 0;

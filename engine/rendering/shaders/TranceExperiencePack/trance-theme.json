@@ -1,0 +1,28 @@
+{
+  "id": "trance",
+  "name": "TRANCE",
+  "description": "Night R&B cocktail mood: moonlit violet, sapphire air, rose velvet and champagne highlights.",
+  "palette": {
+    "primary": "#6F3AA8",
+    "secondary": "#0A2450",
+    "accent": "#FFD38A",
+    "background": "#030614"
+  },
+  "rendering": {
+    "glow": 0.72,
+    "bloom": 0.52,
+    "motion": 0.62,
+    "noise": 0.045,
+    "distortion": 0.78,
+    "saturationBase": 0.68,
+    "saturationScale": 0.34,
+    "detail": 1.18
+  },
+  "music": {
+    "recommendedBpmRange": [68, 96],
+    "bassResponse": 0.42,
+    "midResponse": 0.52,
+    "trebleResponse": 0.34,
+    "beatResponse": 0.28
+  }
+}

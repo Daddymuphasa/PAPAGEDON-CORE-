@@ -1,0 +1,206 @@
+{
+  "pack": "TRANCE Experience Pack",
+  "volume": 1,
+  "version": "1.0.0",
+  "author": "PAPAGEDON",
+  "description": "Twenty original night-themed, dreamy, classy R&B cocktail visuals for the outdoor TRANCE event. Built as slow immersive GLSL fragments with moonlight, velvet, glass, champagne, mist, petals, and lounge constellations.",
+  "theme": "trance-theme.json",
+  "recommendedTheme": "trance",
+  "artDirection": {
+    "primary": "#6F3AA8",
+    "secondary": "#0A2450",
+    "accent": "#FFD38A",
+    "highlight": "#F2D9FF",
+    "shadow": "#030614",
+    "mood": [
+      "night",
+      "dreamy",
+      "classy",
+      "rnb",
+      "cocktail",
+      "outdoor",
+      "slow",
+      "immersive"
+    ]
+  },
+  "shaderStage": "fragment",
+  "glslVersion": "330 core",
+  "vertexStage": "engine fullscreen-triangle",
+  "uniforms": [
+    "uTime",
+    "uResolution",
+    "uBass",
+    "uMid",
+    "uTreble",
+    "uBeat",
+    "uEnergy",
+    "uIntensity",
+    "uPrimaryColour",
+    "uSecondaryColour",
+    "uAccentColour",
+    "uBackground"
+  ],
+  "notes": "All shaders are standalone GLSL 330 fragments and compile through the existing ShaderLib scanner. They avoid old pack shader sources and favor slow, elegant motion for R&B tempo ranges.",
+  "shaders": [
+    {
+      "index": 1,
+      "id": "moonlit-velvet",
+      "name": "Moonlit Velvet",
+      "shader": "shaders/01_moonlit_velvet.frag",
+      "metadata": "metadata/01_moonlit_velvet.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 2,
+      "id": "champagne-stars",
+      "name": "Champagne Stars",
+      "shader": "shaders/02_champagne_stars.frag",
+      "metadata": "metadata/02_champagne_stars.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 3,
+      "id": "cobalt-silk",
+      "name": "Cobalt Silk",
+      "shader": "shaders/03_cobalt_silk.frag",
+      "metadata": "metadata/03_cobalt_silk.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 4,
+      "id": "garden-mist",
+      "name": "Garden Mist",
+      "shader": "shaders/04_garden_mist.frag",
+      "metadata": "metadata/04_garden_mist.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 5,
+      "id": "slow-dance-rings",
+      "name": "Slow Dance Rings",
+      "shader": "shaders/05_slow_dance_rings.frag",
+      "metadata": "metadata/05_slow_dance_rings.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 6,
+      "id": "crystal-goblet",
+      "name": "Crystal Goblet",
+      "shader": "shaders/06_crystal_goblet.frag",
+      "metadata": "metadata/06_crystal_goblet.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 7,
+      "id": "midnight-petals",
+      "name": "Midnight Petals",
+      "shader": "shaders/07_midnight_petals.frag",
+      "metadata": "metadata/07_midnight_petals.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 8,
+      "id": "satin-lagoon",
+      "name": "Satin Lagoon",
+      "shader": "shaders/08_satin_lagoon.frag",
+      "metadata": "metadata/08_satin_lagoon.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 9,
+      "id": "afterglow-balcony",
+      "name": "Afterglow Balcony",
+      "shader": "shaders/09_afterglow_balcony.frag",
+      "metadata": "metadata/09_afterglow_balcony.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 10,
+      "id": "velour-orbit",
+      "name": "Velour Orbit",
+      "shader": "shaders/10_velour_orbit.frag",
+      "metadata": "metadata/10_velour_orbit.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 11,
+      "id": "blue-hour-smoke",
+      "name": "Blue Hour Smoke",
+      "shader": "shaders/11_blue_hour_smoke.frag",
+      "metadata": "metadata/11_blue_hour_smoke.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 12,
+      "id": "rose-gold-moon",
+      "name": "Rose Gold Moon",
+      "shader": "shaders/12_rose_gold_moon.frag",
+      "metadata": "metadata/12_rose_gold_moon.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 13,
+      "id": "glass-rain",
+      "name": "Glass Rain",
+      "shader": "shaders/13_glass_rain.frag",
+      "metadata": "metadata/13_glass_rain.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 14,
+      "id": "dream-current",
+      "name": "Dream Current",
+      "shader": "shaders/14_dream_current.frag",
+      "metadata": "metadata/14_dream_current.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 15,
+      "id": "lounge-constellation",
+      "name": "Lounge Constellation",
+      "shader": "shaders/15_lounge_constellation.frag",
+      "metadata": "metadata/15_lounge_constellation.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 16,
+      "id": "violet-candlelight",
+      "name": "Violet Candlelight",
+      "shader": "shaders/16_violet_candlelight.frag",
+      "metadata": "metadata/16_violet_candlelight.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 17,
+      "id": "plum-horizon",
+      "name": "Plum Horizon",
+      "shader": "shaders/17_plum_horizon.frag",
+      "metadata": "metadata/17_plum_horizon.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 18,
+      "id": "sapphire-breath",
+      "name": "Sapphire Breath",
+      "shader": "shaders/18_sapphire_breath.frag",
+      "metadata": "metadata/18_sapphire_breath.json",
+      "energyLevel": "low"
+    },
+    {
+      "index": 19,
+      "id": "slow-bloom",
+      "name": "Slow Bloom",
+      "shader": "shaders/19_slow_bloom.frag",
+      "metadata": "metadata/19_slow_bloom.json",
+      "energyLevel": "medium"
+    },
+    {
+      "index": 20,
+      "id": "trance-ascension",
+      "name": "TRANCE Ascension",
+      "shader": "shaders/20_trance_ascension.frag",
+      "metadata": "metadata/20_trance_ascension.json",
+      "energyLevel": "peak"
+    }
+  ]
+}

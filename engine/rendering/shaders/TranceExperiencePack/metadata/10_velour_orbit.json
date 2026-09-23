@@ -1,0 +1,22 @@
+{
+  "id": "velour-orbit",
+  "index": 10,
+  "name": "Velour Orbit",
+  "shader": "shaders/10_velour_orbit.frag",
+  "description": "Soft orbital halos like lovers circling under venue lights.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

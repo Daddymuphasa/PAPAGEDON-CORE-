@@ -92,6 +92,17 @@ uniform float uDetail;
 uniform float uMasterBrightness;  // demo: final linear gain
 uniform float uMasterGlow;        // demo: scales the glow contribution
 uniform float uMasterExposure;    // demo: pre-bloom scene gain
+uniform float uFeedbackDecay;     // PGX: requested visual memory
+uniform float uFeedbackZoom;      // PGX: requested feedback zoom
+uniform float uFeedbackRotation;  // PGX: requested feedback rotation
+uniform float uFeedbackWarp;      // PGX: requested feedback warp
+uniform float uFeedbackBeatWarp;  // PGX: beat-driven feedback warp
+uniform int   uWaveformMode;      // PGX: 0 none, 1 line, 2 ribbon, 3 ring
+uniform float uWaveformOpacity;
+uniform float uWaveformThickness;
+uniform float uWaveformRadius;
+uniform float uWaveformBassResponse;
+uniform float uWaveformTrebleResponse;
 
 const float kPi  = 3.14159265358979;
 const float kTau = 6.28318530717959;
@@ -330,6 +341,20 @@ void main() {
     // Aspect-correct UV, centred at (0,0).
     vec2 uv = (vUV * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
 
+    // PGX pre-feedback intent.  Until the dedicated ping-pong feedback pass is
+    // installed, the default shader uses the same data to preview visual memory:
+    // persistent presets drift more slowly and smear their domain subtly.
+    float memory = clamp(uFeedbackDecay, 0.0, 1.0);
+    float pgxWarp = uFeedbackWarp + uFeedbackBeatWarp * uBeat;
+    float ca = cos(uFeedbackRotation * uTime * memory);
+    float sa = sin(uFeedbackRotation * uTime * memory);
+    uv = mat2(ca, -sa, sa, ca) * uv;
+    uv /= mix(1.0, max(uFeedbackZoom, 0.001), memory);
+    uv += vec2(
+        sin(uv.y * 7.0 + uTime * 0.8),
+        cos(uv.x * 6.0 - uTime * 0.7)
+    ) * pgxWarp * 0.035 * memory;
+
     // Bass/beat pump — the frame punches hard inward on the kick, breathes with
     // the low end, and rising energy pushes the scene toward the camera so drops
     // rush in with depth.
@@ -385,6 +410,27 @@ void main() {
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
     // Strength is theme-driven so each identity blooms to its own degree.
     color += color * color * uBloom;
+
+    // PGX waveform preview layer.  This is intentionally cheap; the dedicated
+    // WaveformPass will later replace it with real sample/spectrum geometry.
+    if (uWaveformMode != 0 && uWaveformOpacity > 0.001) {
+        float audioPush = uBass * uWaveformBassResponse + uTreble * uWaveformTrebleResponse;
+        float wave = 0.0;
+        if (uWaveformMode == 1) {
+            float y = sin(uv.x * (10.0 + uMid * 14.0) + uTime * (2.0 + uEnergy * 4.0)) * (0.05 + audioPush * 0.12);
+            wave = smoothstep(0.018 * uWaveformThickness, 0.0, abs(uv.y - y));
+        } else {
+            float r = length(uv);
+            float a = atan(uv.y, uv.x);
+            float target = uWaveformRadius + audioPush * 0.12
+                         + sin(a * 24.0 + uTime * 2.0) * (0.01 + uTreble * 0.025);
+            wave = smoothstep(0.018 * uWaveformThickness, 0.0, abs(r - target));
+            if (uWaveformMode == 2) {
+                wave *= 0.65 + 0.35 * sin(a * 8.0 + uTime);
+            }
+        }
+        color += palette(0.85 + uTreble * 0.15) * wave * uWaveformOpacity * (0.8 + uBeat);
+    }
 
     // Subtle mood tint.
     color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));
@@ -510,6 +556,17 @@ bool ShaderManager::Compile(
     locMasterBrightness_ = glGetUniformLocation(program_, "uMasterBrightness");
     locMasterGlow_       = glGetUniformLocation(program_, "uMasterGlow");
     locMasterExposure_   = glGetUniformLocation(program_, "uMasterExposure");
+    locFeedbackDecay_    = glGetUniformLocation(program_, "uFeedbackDecay");
+    locFeedbackZoom_     = glGetUniformLocation(program_, "uFeedbackZoom");
+    locFeedbackRotation_ = glGetUniformLocation(program_, "uFeedbackRotation");
+    locFeedbackWarp_     = glGetUniformLocation(program_, "uFeedbackWarp");
+    locFeedbackBeatWarp_ = glGetUniformLocation(program_, "uFeedbackBeatWarp");
+    locWaveformMode_     = glGetUniformLocation(program_, "uWaveformMode");
+    locWaveformOpacity_  = glGetUniformLocation(program_, "uWaveformOpacity");
+    locWaveformThickness_ = glGetUniformLocation(program_, "uWaveformThickness");
+    locWaveformRadius_   = glGetUniformLocation(program_, "uWaveformRadius");
+    locWaveformBassResponse_ = glGetUniformLocation(program_, "uWaveformBassResponse");
+    locWaveformTrebleResponse_ = glGetUniformLocation(program_, "uWaveformTrebleResponse");
 
     return true;
 }
@@ -559,6 +616,17 @@ void ShaderManager::SetUniforms(
     if (locMasterBrightness_ >= 0) glUniform1f(locMasterBrightness_, u.masterBrightness);
     if (locMasterGlow_       >= 0) glUniform1f(locMasterGlow_,       u.masterGlow);
     if (locMasterExposure_   >= 0) glUniform1f(locMasterExposure_,   u.masterExposure);
+    if (locFeedbackDecay_    >= 0) glUniform1f(locFeedbackDecay_,    u.feedbackDecay);
+    if (locFeedbackZoom_     >= 0) glUniform1f(locFeedbackZoom_,     u.feedbackZoom);
+    if (locFeedbackRotation_ >= 0) glUniform1f(locFeedbackRotation_, u.feedbackRotation);
+    if (locFeedbackWarp_     >= 0) glUniform1f(locFeedbackWarp_,     u.feedbackWarp);
+    if (locFeedbackBeatWarp_ >= 0) glUniform1f(locFeedbackBeatWarp_, u.feedbackBeatWarp);
+    if (locWaveformMode_     >= 0) glUniform1i(locWaveformMode_,     u.waveformMode);
+    if (locWaveformOpacity_  >= 0) glUniform1f(locWaveformOpacity_,  u.waveformOpacity);
+    if (locWaveformThickness_ >= 0) glUniform1f(locWaveformThickness_, u.waveformThickness);
+    if (locWaveformRadius_   >= 0) glUniform1f(locWaveformRadius_,   u.waveformRadius);
+    if (locWaveformBassResponse_ >= 0) glUniform1f(locWaveformBassResponse_, u.waveformBassResponse);
+    if (locWaveformTrebleResponse_ >= 0) glUniform1f(locWaveformTrebleResponse_, u.waveformTrebleResponse);
 }
 
 void ShaderManager::Shutdown() noexcept {
@@ -592,6 +660,17 @@ void ShaderManager::Shutdown() noexcept {
         locMasterBrightness_ = -1;
         locMasterGlow_       = -1;
         locMasterExposure_   = -1;
+        locFeedbackDecay_    = -1;
+        locFeedbackZoom_     = -1;
+        locFeedbackRotation_ = -1;
+        locFeedbackWarp_     = -1;
+        locFeedbackBeatWarp_ = -1;
+        locWaveformMode_     = -1;
+        locWaveformOpacity_  = -1;
+        locWaveformThickness_ = -1;
+        locWaveformRadius_   = -1;
+        locWaveformBassResponse_ = -1;
+        locWaveformTrebleResponse_ = -1;
     }
 }
 

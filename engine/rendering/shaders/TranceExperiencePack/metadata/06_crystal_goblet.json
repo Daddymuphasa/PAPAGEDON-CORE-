@@ -1,0 +1,22 @@
+{
+  "id": "crystal-goblet",
+  "index": 6,
+  "name": "Crystal Goblet",
+  "shader": "shaders/06_crystal_goblet.frag",
+  "description": "Refracted cocktail-glass caustics and elegant rim highlights.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

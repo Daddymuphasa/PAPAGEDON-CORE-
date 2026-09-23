@@ -1,0 +1,22 @@
+{
+  "id": "lounge-constellation",
+  "index": 15,
+  "name": "Lounge Constellation",
+  "shader": "shaders/15_lounge_constellation.frag",
+  "description": "Constellation lines gently connecting and dissolving above the lounge.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "medium"
+}

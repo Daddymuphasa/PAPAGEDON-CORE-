@@ -1,0 +1,22 @@
+{
+  "id": "moonlit-velvet",
+  "index": 1,
+  "name": "Moonlit Velvet",
+  "shader": "shaders/01_moonlit_velvet.frag",
+  "description": "Velvet midnight gradients with slow bass-breathing folds.",
+  "mood": [
+    "night",
+    "dreamy",
+    "classy",
+    "rnb",
+    "cocktail",
+    "outdoor",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    68,
+    96
+  ],
+  "recommendedTheme": "trance",
+  "energyLevel": "low"
+}
