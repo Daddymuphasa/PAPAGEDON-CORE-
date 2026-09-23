@@ -2229,6 +2229,14 @@ void OpenGLRenderer::Shutdown() noexcept {
         glDeleteProgram(implementation_->pgxFeedbackProgram);
         implementation_->pgxFeedbackProgram = 0;
     }
+    if (implementation_->pgxAudioShapeProgram != 0) {
+        glDeleteProgram(implementation_->pgxAudioShapeProgram);
+        implementation_->pgxAudioShapeProgram = 0;
+    }
+    glDeleteTextures(1, &implementation_->pgxSpectrumTex);
+    implementation_->pgxSpectrumTex = 0;
+    glDeleteTextures(1, &implementation_->pgxWaveformTex);
+    implementation_->pgxWaveformTex = 0;
     glDeleteFramebuffers(1, &implementation_->pgxSceneFBO);
     implementation_->pgxSceneFBO = 0;
     glDeleteTextures(1, &implementation_->pgxSceneTex);

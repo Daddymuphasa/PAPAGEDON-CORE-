@@ -35,8 +35,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 0.70F,
         .transitionSpeed  = 3.5F,
         .pgx = {
-            .feedback = {.decay = 0.86F, .zoom = 1.002F, .rotation = 0.010F, .warp = 0.12F, .beatWarp = 0.04F},
-            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.22F, .thickness = 1.8F, .radius = 0.42F, .bassResponse = 0.20F, .trebleResponse = 0.30F},
+            .feedback = {.decay = 0.91F, .zoom = 1.006F, .rotation = 0.018F, .warp = 0.22F, .beatWarp = 0.10F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.42F, .thickness = 2.2F, .radius = 0.42F, .bassResponse = 0.30F, .trebleResponse = 0.42F},
         },
     },
     // ── Nebula ──────────────────────────────────────────────────────────────
@@ -58,8 +58,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 0.50F,
         .transitionSpeed  = 3.0F,
         .pgx = {
-            .feedback = {.decay = 0.91F, .zoom = 1.001F, .rotation = -0.006F, .warp = 0.18F, .beatWarp = 0.03F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.18F, .thickness = 1.4F, .radius = 0.50F, .bassResponse = 0.15F, .trebleResponse = 0.45F},
+            .feedback = {.decay = 0.95F, .zoom = 1.004F, .rotation = -0.012F, .warp = 0.30F, .beatWarp = 0.08F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.36F, .thickness = 1.8F, .radius = 0.50F, .bassResponse = 0.20F, .trebleResponse = 0.65F},
         },
     },
     // ── Matrix ──────────────────────────────────────────────────────────────
@@ -81,8 +81,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.30F,
         .transitionSpeed  = 6.0F,
         .pgx = {
-            .feedback = {.decay = 0.58F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.03F, .beatWarp = 0.02F},
-            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.26F, .thickness = 1.0F, .radius = 0.36F, .bassResponse = 0.10F, .trebleResponse = 0.70F},
+            .feedback = {.decay = 0.70F, .zoom = 1.001F, .rotation = 0.000F, .warp = 0.08F, .beatWarp = 0.08F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.48F, .thickness = 1.2F, .radius = 0.36F, .bassResponse = 0.10F, .trebleResponse = 0.95F},
         },
     },
     // ── Liquid ──────────────────────────────────────────────────────────────
@@ -104,8 +104,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 0.50F,
         .transitionSpeed  = 2.5F,
         .pgx = {
-            .feedback = {.decay = 0.93F, .zoom = 0.999F, .rotation = 0.004F, .warp = 0.20F, .beatWarp = 0.02F},
-            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.20F, .thickness = 2.2F, .radius = 0.44F, .bassResponse = 0.35F, .trebleResponse = 0.20F},
+            .feedback = {.decay = 0.96F, .zoom = 0.998F, .rotation = 0.009F, .warp = 0.34F, .beatWarp = 0.07F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.40F, .thickness = 2.8F, .radius = 0.44F, .bassResponse = 0.48F, .trebleResponse = 0.26F},
         },
     },
     // ── Tunnel ──────────────────────────────────────────────────────────────
@@ -127,8 +127,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.80F,
         .transitionSpeed  = 7.0F,
         .pgx = {
-            .feedback = {.decay = 0.82F, .zoom = 1.010F, .rotation = 0.015F, .warp = 0.10F, .beatWarp = 0.10F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.30F, .thickness = 1.6F, .radius = 0.46F, .bassResponse = 0.60F, .trebleResponse = 0.20F},
+            .feedback = {.decay = 0.88F, .zoom = 1.018F, .rotation = 0.025F, .warp = 0.22F, .beatWarp = 0.22F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.52F, .thickness = 2.0F, .radius = 0.46F, .bassResponse = 0.80F, .trebleResponse = 0.24F},
         },
     },
     // ── Pulse ───────────────────────────────────────────────────────────────
@@ -150,8 +150,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.40F,
         .transitionSpeed  = 8.0F,
         .pgx = {
-            .feedback = {.decay = 0.76F, .zoom = 1.006F, .rotation = 0.000F, .warp = 0.08F, .beatWarp = 0.16F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.36F, .thickness = 2.0F, .radius = 0.40F, .bassResponse = 0.80F, .trebleResponse = 0.20F},
+            .feedback = {.decay = 0.84F, .zoom = 1.012F, .rotation = 0.000F, .warp = 0.18F, .beatWarp = 0.32F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.60F, .thickness = 2.6F, .radius = 0.40F, .bassResponse = 1.00F, .trebleResponse = 0.28F},
         },
     },
     // ── Vortex ────────────────────────────────────────────────────────────────
@@ -173,8 +173,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.40F,
         .transitionSpeed  = 6.0F,
         .pgx = {
-            .feedback = {.decay = 0.88F, .zoom = 1.004F, .rotation = 0.030F, .warp = 0.14F, .beatWarp = 0.08F},
-            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.28F, .thickness = 1.5F, .radius = 0.43F, .bassResponse = 0.45F, .trebleResponse = 0.35F},
+            .feedback = {.decay = 0.93F, .zoom = 1.010F, .rotation = 0.050F, .warp = 0.28F, .beatWarp = 0.18F},
+            .waveform = {.mode = pgx::WaveformMode::Ribbon, .opacity = 0.50F, .thickness = 1.9F, .radius = 0.43F, .bassResponse = 0.58F, .trebleResponse = 0.48F},
         },
     },
     // ── Lasers ────────────────────────────────────────────────────────────────
@@ -196,8 +196,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.60F,
         .transitionSpeed  = 7.0F,
         .pgx = {
-            .feedback = {.decay = 0.50F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.02F, .beatWarp = 0.05F},
-            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.32F, .thickness = 1.2F, .radius = 0.38F, .bassResponse = 0.15F, .trebleResponse = 0.85F},
+            .feedback = {.decay = 0.62F, .zoom = 1.002F, .rotation = 0.000F, .warp = 0.06F, .beatWarp = 0.14F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.58F, .thickness = 1.5F, .radius = 0.38F, .bassResponse = 0.18F, .trebleResponse = 1.00F},
         },
     },
     // ── Mandala ───────────────────────────────────────────────────────────────
@@ -219,8 +219,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.00F,
         .transitionSpeed  = 5.0F,
         .pgx = {
-            .feedback = {.decay = 0.90F, .zoom = 1.001F, .rotation = 0.020F, .warp = 0.16F, .beatWarp = 0.06F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.24F, .thickness = 1.4F, .radius = 0.48F, .bassResponse = 0.35F, .trebleResponse = 0.45F},
+            .feedback = {.decay = 0.94F, .zoom = 1.006F, .rotation = 0.035F, .warp = 0.30F, .beatWarp = 0.16F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.48F, .thickness = 1.8F, .radius = 0.48F, .bassResponse = 0.45F, .trebleResponse = 0.62F},
         },
     },
     // ── Lattice ───────────────────────────────────────────────────────────────
@@ -242,8 +242,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.20F,
         .transitionSpeed  = 6.5F,
         .pgx = {
-            .feedback = {.decay = 0.68F, .zoom = 1.003F, .rotation = 0.000F, .warp = 0.04F, .beatWarp = 0.07F},
-            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.30F, .thickness = 1.0F, .radius = 0.41F, .bassResponse = 0.50F, .trebleResponse = 0.40F},
+            .feedback = {.decay = 0.78F, .zoom = 1.006F, .rotation = 0.000F, .warp = 0.12F, .beatWarp = 0.16F},
+            .waveform = {.mode = pgx::WaveformMode::Line, .opacity = 0.52F, .thickness = 1.3F, .radius = 0.41F, .bassResponse = 0.65F, .trebleResponse = 0.55F},
         },
     },
     // ── Shockwave ─────────────────────────────────────────────────────────────
@@ -265,8 +265,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.30F,
         .transitionSpeed  = 7.5F,
         .pgx = {
-            .feedback = {.decay = 0.72F, .zoom = 1.008F, .rotation = 0.000F, .warp = 0.07F, .beatWarp = 0.18F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.34F, .thickness = 1.8F, .radius = 0.42F, .bassResponse = 0.90F, .trebleResponse = 0.15F},
+            .feedback = {.decay = 0.82F, .zoom = 1.016F, .rotation = 0.000F, .warp = 0.18F, .beatWarp = 0.36F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.62F, .thickness = 2.3F, .radius = 0.42F, .bassResponse = 1.00F, .trebleResponse = 0.22F},
         },
     },
     // ── Spectrum ──────────────────────────────────────────────────────────────
@@ -288,8 +288,8 @@ constexpr std::array<ExperiencePreset, kPresetCount> kPresets = {{
         .motionIntensity  = 1.00F,
         .transitionSpeed  = 6.0F,
         .pgx = {
-            .feedback = {.decay = 0.62F, .zoom = 1.000F, .rotation = 0.000F, .warp = 0.03F, .beatWarp = 0.04F},
-            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.42F, .thickness = 1.3F, .radius = 0.52F, .bassResponse = 0.45F, .trebleResponse = 0.45F},
+            .feedback = {.decay = 0.74F, .zoom = 1.004F, .rotation = 0.000F, .warp = 0.10F, .beatWarp = 0.12F},
+            .waveform = {.mode = pgx::WaveformMode::Ring, .opacity = 0.68F, .thickness = 1.7F, .radius = 0.52F, .bassResponse = 0.62F, .trebleResponse = 0.62F},
         },
     },
 }};
