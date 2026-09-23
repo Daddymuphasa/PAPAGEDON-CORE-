@@ -241,6 +241,37 @@ void main() {
 )GLSL";
 
 // ──────────────────────────────────────────────────────────────────────────────
+constexpr const char* kDeformationTransitionFragment = R"GLSL(
+#version 330 core
+in vec2 vUV;
+out vec4 fragColor;
+uniform sampler2D uTexA;
+uniform sampler2D uTexB;
+uniform float uProgress;
+uniform float uTime;
+uniform vec2 uResolution;
+void main() {
+    float p = smoothstep(0.0, 1.0, uProgress);
+    vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0);
+    vec2 q = (vUV - 0.5) * aspect;
+    float radius = length(q);
+    float angle = atan(q.y, q.x);
+    float envelope = sin(3.14159265 * p);
+    float twist = envelope * (0.38 + radius * 0.62);
+    float c = cos(twist), s = sin(twist);
+    vec2 turned = mat2(c, -s, s, c) * q;
+    turned *= 1.0 + envelope * (0.10 * sin(angle * 3.0 + uTime * 0.7) - 0.08);
+    vec2 bend = turned - q;
+    vec2 uvA = clamp(0.5 + (q - bend * (1.0 - p)) / aspect, 0.002, 0.998);
+    vec2 uvB = clamp(0.5 + (q + bend * p) / aspect, 0.002, 0.998);
+    float field = vUV.x + 0.075 * sin(vUV.y * 8.0 + angle * 2.0);
+    float reveal = smoothstep(p - 0.16, p + 0.16, field);
+    float seam = exp(-abs(field - p) * 34.0) * envelope;
+    fragColor = mix(texture(uTexB, uvB), texture(uTexA, uvA), reveal);
+    fragColor.rgb += vec3(0.23, 0.18, 0.36) * seam;
+}
+)GLSL";
+
 // PGX feedback composite pass
 //
 // The current visual is rendered into uScene.  The previous composited frame is
@@ -296,7 +327,7 @@ void main() {
         prev = texture(uPrevious, prevUV) * decay;
     }
 
-    float liveMix = clamp(0.34 + uEnergy * 0.22 + uBeat * 0.16, 0.20, 0.72);
+    float liveMix = clamp(0.68 + uEnergy * 0.18 + uBeat * 0.12, 0.62, 0.92);
     vec3 color = max(scene.rgb, prev.rgb * (0.82 + decay * 0.18));
     color = mix(prev.rgb, color, liveMix);
     color += scene.rgb * scene.rgb * (0.05 + uBeat * 0.10);
@@ -771,9 +802,9 @@ public:
     // 'B' snaps straight back to the show's home theme (Badman red), which loads
     // past the F1..F7 slots and so is otherwise unreachable from the keyboard.
     // Also toggles the "BADMAN EXPERIENCE 4.0" brand banner overlay.
-    bool homeKeyWasPressed = false;
-    bool pendingHomeRequest = false;
-    bool showBadmanBanner   = false;
+    bool tranceKeyWasPressed = false;
+    bool pendingTranceRequest = false;
+    bool showTranceWordmark = false;
 
     bool spaceWasPressed  = false;
     bool pendingPlayPause = false;
@@ -1030,7 +1061,7 @@ bool OpenGLRenderer::Initialize() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     implementation_->transitionProgram =
-        CompileGLProgram(ShaderManager::DefaultVertexSource(), kTransitionFragment);
+        CompileGLProgram(ShaderManager::DefaultVertexSource(), kDeformationTransitionFragment);
     if (implementation_->transitionProgram != 0) {
         implementation_->txLocTexA       = glGetUniformLocation(implementation_->transitionProgram, "uTexA");
         implementation_->txLocTexB       = glGetUniformLocation(implementation_->transitionProgram, "uTexB");
@@ -1958,8 +1989,9 @@ void OpenGLRenderer::Render(
     }
 
     // "BADMAN EXPERIENCE 4.0" brand banner (toggled by B key).
-    if (implementation_->showBadmanBanner) {
-        implementation_->debugOverlay.RenderBadmanBanner(width, height, 1.0f);
+    if (implementation_->showTranceWordmark) {
+        implementation_->debugOverlay.RenderTranceWordmark(
+            width, height, static_cast<float>(currentTime), 1.0f);
     }
 }
 
@@ -1990,14 +2022,23 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->themeKeyWasPressed[i] = pressed;
     }
 
-    // 'B' returns to the home theme (Badman red) and toggles the brand banner.
+    // 'B' selects the opening TRANCE scene and toggles its wordmark.
     const bool homeIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
-    if (homeIsPressed && !implementation_->homeKeyWasPressed) {
-        implementation_->pendingHomeRequest = true;
-        implementation_->showBadmanBanner = !implementation_->showBadmanBanner;
+    if (homeIsPressed && !implementation_->tranceKeyWasPressed) {
+        implementation_->pendingTranceRequest = true;
+        implementation_->showTranceWordmark = !implementation_->showTranceWordmark;
+        for (std::size_t i = 0; i < implementation_->shaderNames.size(); ++i) {
+            std::string name = implementation_->shaderNames[i];
+            std::transform(name.begin(), name.end(), name.begin(),
+                [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+            if (name.find("moonlit velvet") != std::string::npos) {
+                BeginShaderTransition(static_cast<int>(i));
+                break;
+            }
+        }
     }
-    implementation_->homeKeyWasPressed = homeIsPressed;
+    implementation_->tranceKeyWasPressed = homeIsPressed;
 
     // Space toggles audio play/pause.
     const bool spaceIsPressed =
@@ -2156,12 +2197,12 @@ int OpenGLRenderer::ConsumeThemeRequest() noexcept {
     return request;
 }
 
-bool OpenGLRenderer::ConsumeHomeThemeRequest() noexcept {
+bool OpenGLRenderer::ConsumeTranceRequest() noexcept {
     if (implementation_ == nullptr) {
         return false;
     }
-    const bool requested = implementation_->pendingHomeRequest;
-    implementation_->pendingHomeRequest = false;
+    const bool requested = implementation_->pendingTranceRequest;
+    implementation_->pendingTranceRequest = false;
     return requested;
 }
 

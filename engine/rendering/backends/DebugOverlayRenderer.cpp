@@ -389,35 +389,25 @@ void DebugOverlayRenderer::RenderBannerText(const char* text, float x, float y, 
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size() / 4));
 }
 
-void DebugOverlayRenderer::RenderBadmanBanner(int windowWidth, int windowHeight, float alpha) {
+void DebugOverlayRenderer::RenderTranceWordmark(
+    int windowWidth, int windowHeight, float time, float alpha) {
     if (!initialized_ || alpha <= 0.0F) {
         return;
     }
     const float w = static_cast<float>(windowWidth);
     const float h = static_cast<float>(windowHeight);
 
-    const float titleScale = std::max(4.0F, w / 220.0F);
-    const float subScale   = std::max(2.5F, w / 340.0F);
-    const float lineH = 8.0F * titleScale * 1.3F;
-    const float totalH = lineH * 2.0F + 8.0F * subScale;
-    const float yMid = (h + totalH) * 0.5F - totalH * 0.5F;
-
-    const char* line1 = "BADMAN";
-    const char* line2 = "EXPERIENCE 4.0";
-    const char* line3 = "+FESTIVAL OF SOUNDS+";
-    const float x1 = (w - 6.0F * 8.0F * titleScale) * 0.5F;
-    const float x2 = (w - 14.0F * 8.0F * titleScale) * 0.5F;
-    const float x3 = (w - 20.0F * 8.0F * subScale) * 0.5F;
-
-    RenderBannerText(line1, x1, yMid + lineH * 2.0F, titleScale,
-                     windowWidth, windowHeight,
-                     0.93F, 0.70F, 0.64F, alpha);
-    RenderBannerText(line2, x2, yMid + lineH, titleScale,
-                     windowWidth, windowHeight,
-                     0.93F, 0.70F, 0.64F, alpha);
-    RenderBannerText(line3, x3, yMid, subScale,
-                     windowWidth, windowHeight,
-                     1.0F, 1.0F, 1.0F, alpha * 0.95F);
+    const float scale = std::max(5.0F, w / 180.0F);
+    const float width = 6.0F * 8.0F * scale;
+    const float x = (w - width) * 0.5F;
+    const float y = h * 0.48F + std::sin(time * 0.72F) * (h * 0.008F);
+    const float breath = 0.76F + 0.16F * std::sin(time * 0.54F);
+    RenderBannerText("TRANCE", x, y, scale * 1.025F,
+                     windowWidth, windowHeight, 0.30F, 0.38F, 0.82F,
+                     alpha * breath * 0.28F);
+    RenderBannerText("TRANCE", x, y, scale,
+                     windowWidth, windowHeight, 0.88F, 0.76F, 1.0F,
+                     alpha * breath);
 }
 
 void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int windowHeight) {

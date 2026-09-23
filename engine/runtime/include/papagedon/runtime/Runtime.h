@@ -69,7 +69,6 @@ private:
     DemoConfig  config_;
     std::string configPath_ = "config/demo.json";
     std::string audioFileName_;      ///< Loaded clip / live device name, for the overlay.
-    std::string homeThemeId_ = "badman"; ///< Theme the 'B' key snaps back to (red brand).
     bool        audioReady_ = false; ///< False when audio is unavailable.
     bool        liveAudio_  = false; ///< True when reacting to a live capture device.
     std::vector<float> captureBuffer_; ///< Reused live-audio window (no per-frame alloc).

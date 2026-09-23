@@ -75,6 +75,8 @@ bool Runtime::Initialize(const std::string& audioPath) {
         } else {
             logger_.INFO("No theme files in '" + themeDir + "' — using built-in themes.");
         }
+        themeManager_.LoadTheme(
+            "engine/rendering/shaders/TranceExperiencePack/trance-theme.json");
     }
     {   // Select the configured theme (PAPAGEDON_THEME overrides the config value).
         std::string themeId = config_.theme;
@@ -283,11 +285,10 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     }
 
-    // B: snap straight back to the home theme (Badman red) — the show's brand
-    // colour, which loads past the F1..F7 slots and is otherwise unreachable.
-    if (renderer_.ConsumeHomeThemeRequest()) {
-        if (themeManager_.SetTheme(homeThemeId_)) {
-            logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + " (home).");
+    // B: switch to the TRANCE identity and its opening scene.
+    if (renderer_.ConsumeTranceRequest()) {
+        if (themeManager_.SetTheme("trance")) {
+            logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
         }
     }
 

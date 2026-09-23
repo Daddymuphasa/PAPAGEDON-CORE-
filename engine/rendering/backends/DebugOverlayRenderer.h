@@ -36,9 +36,8 @@ public:
     /// warm-white entries, with a drop shadow for legibility.  alpha fades it.
     void RenderMenu(int windowWidth, int windowHeight, float alpha);
 
-    /// Draws the "BADMAN EXPERIENCE 4.0 / FESTIVAL OF SOUNDS" brand banner
-    /// centred on screen, on top of all shaders.
-    void RenderBadmanBanner(int windowWidth, int windowHeight, float alpha);
+    /// Draws a softly animated TRANCE title over the live scene.
+    void RenderTranceWordmark(int windowWidth, int windowHeight, float time, float alpha);
 
     void Shutdown() noexcept;
 

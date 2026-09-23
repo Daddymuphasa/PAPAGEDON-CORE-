@@ -75,8 +75,8 @@ int Renderer::ConsumeThemeRequest() noexcept {
     return backend_ != nullptr ? backend_->ConsumeThemeRequest() : -1;
 }
 
-bool Renderer::ConsumeHomeThemeRequest() noexcept {
-    return backend_ != nullptr && backend_->ConsumeHomeThemeRequest();
+bool Renderer::ConsumeTranceRequest() noexcept {
+    return backend_ != nullptr && backend_->ConsumeTranceRequest();
 }
 
 bool Renderer::ConsumePlayPauseToggle() noexcept {
