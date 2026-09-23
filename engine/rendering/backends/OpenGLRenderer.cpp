@@ -1534,6 +1534,19 @@ void OpenGLRenderer::Render(
     smoothed.waveformTrebleResponse +=
         (preset.pgx.waveform.trebleResponse - smoothed.waveformTrebleResponse) * presetAlpha;
 
+    // Preset-local PGX state: a persistent phase and seed give the renderer
+    // enough memory to evolve shape layers over minutes instead of locking every
+    // preset to a short deterministic loop.
+    if (!implementation_->pgxStateInitialized || implementation_->pgxStatePreset != preset.id) {
+        implementation_->pgxStatePreset = preset.id;
+        implementation_->pgxStateInitialized = true;
+        const auto id = static_cast<std::size_t>(preset.id);
+        implementation_->pgxSeed = 17.0f + static_cast<float>(id * 37u);
+        implementation_->pgxPhase *= 0.35f;
+    }
+    implementation_->pgxPhase += deltaTime *
+        (0.35f + smoothed.energy * 1.6f + smoothed.bass * 0.8f + smoothed.beat * 2.0f);
+
     // ── Signature form cross-fade ──────────────────────────────────────────────
     // The pattern is a discrete choice, so it can't be lerped like a colour.
     // Instead we snapshot the outgoing form and ease patternBlend 0 → 1; the
@@ -1641,6 +1654,16 @@ void OpenGLRenderer::Render(
 
     // ── Fullscreen shader pass (with dramatic FBO crossfade transitions) ──
     const float time = static_cast<float>(currentTime);
+
+    glBindTexture(GL_TEXTURE_2D, implementation_->pgxSpectrumTex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                    static_cast<GLsizei>(audio::kSpectrumBandCount), 1,
+                    GL_RED, GL_FLOAT, signals.spectrum.data());
+    glBindTexture(GL_TEXTURE_2D, implementation_->pgxWaveformTex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                    static_cast<GLsizei>(audio::kWaveformSampleCount), 1,
+                    GL_RED, GL_FLOAT, signals.waveform.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     // Ensure transition FBO textures match the current framebuffer dimensions.
     if (width != implementation_->transitionTexW ||
@@ -1814,6 +1837,68 @@ void OpenGLRenderer::Render(
         glBindVertexArray(fullscreenVAO_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0u);
+
+        if (implementation_->pgxAudioShapeProgram != 0) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE);
+            glUseProgram(implementation_->pgxAudioShapeProgram);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, implementation_->pgxSpectrumTex);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, implementation_->pgxWaveformTex);
+            if (implementation_->pgxShapeLocSpectrum >= 0)
+                glUniform1i(implementation_->pgxShapeLocSpectrum, 0);
+            if (implementation_->pgxShapeLocWaveform >= 0)
+                glUniform1i(implementation_->pgxShapeLocWaveform, 1);
+            if (implementation_->pgxShapeLocTime >= 0)
+                glUniform1f(implementation_->pgxShapeLocTime, time);
+            if (implementation_->pgxShapeLocResolution >= 0)
+                glUniform2f(implementation_->pgxShapeLocResolution,
+                            static_cast<float>(width), static_cast<float>(height));
+            if (implementation_->pgxShapeLocWaveformMode >= 0)
+                glUniform1i(implementation_->pgxShapeLocWaveformMode, smoothed.waveformMode);
+            if (implementation_->pgxShapeLocWaveformOpacity >= 0)
+                glUniform1f(implementation_->pgxShapeLocWaveformOpacity, smoothed.waveformOpacity);
+            if (implementation_->pgxShapeLocWaveformThickness >= 0)
+                glUniform1f(implementation_->pgxShapeLocWaveformThickness, smoothed.waveformThickness);
+            if (implementation_->pgxShapeLocWaveformRadius >= 0)
+                glUniform1f(implementation_->pgxShapeLocWaveformRadius, smoothed.waveformRadius);
+            if (implementation_->pgxShapeLocWaveformBassResponse >= 0)
+                glUniform1f(implementation_->pgxShapeLocWaveformBassResponse, smoothed.waveformBassResponse);
+            if (implementation_->pgxShapeLocWaveformTrebleResponse >= 0)
+                glUniform1f(implementation_->pgxShapeLocWaveformTrebleResponse, smoothed.waveformTrebleResponse);
+            if (implementation_->pgxShapeLocBass >= 0)
+                glUniform1f(implementation_->pgxShapeLocBass, smoothed.bass);
+            if (implementation_->pgxShapeLocMid >= 0)
+                glUniform1f(implementation_->pgxShapeLocMid, smoothed.mid);
+            if (implementation_->pgxShapeLocTreble >= 0)
+                glUniform1f(implementation_->pgxShapeLocTreble, smoothed.treble);
+            if (implementation_->pgxShapeLocBeat >= 0)
+                glUniform1f(implementation_->pgxShapeLocBeat, smoothed.beat);
+            if (implementation_->pgxShapeLocEnergy >= 0)
+                glUniform1f(implementation_->pgxShapeLocEnergy, smoothed.energy);
+            if (implementation_->pgxShapeLocPhase >= 0)
+                glUniform1f(implementation_->pgxShapeLocPhase, implementation_->pgxPhase);
+            if (implementation_->pgxShapeLocSeed >= 0)
+                glUniform1f(implementation_->pgxShapeLocSeed, implementation_->pgxSeed);
+            if (implementation_->pgxShapeLocPrimary >= 0)
+                glUniform3f(implementation_->pgxShapeLocPrimary,
+                            smoothed.primaryColor.r, smoothed.primaryColor.g, smoothed.primaryColor.b);
+            if (implementation_->pgxShapeLocSecondary >= 0)
+                glUniform3f(implementation_->pgxShapeLocSecondary,
+                            smoothed.secondaryColor.r, smoothed.secondaryColor.g, smoothed.secondaryColor.b);
+            if (implementation_->pgxShapeLocAccent >= 0)
+                glUniform3f(implementation_->pgxShapeLocAccent,
+                            smoothed.accentColor.r, smoothed.accentColor.g, smoothed.accentColor.b);
+            glBindVertexArray(fullscreenVAO_);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glBindVertexArray(0u);
+            glDisable(GL_BLEND);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, implementation_->pgxFeedbackFBO[writeIndex]);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
