@@ -3,7 +3,7 @@
   "fullscreen": false,
   "vsync": true,
   "targetFPS": 120,
-  "theme": "nebula",
+  "theme": "badman",
   "audioFile": "test.mp3",
   "audioSource": "input",
   "captureDevice": 0,
