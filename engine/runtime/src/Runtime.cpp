@@ -111,6 +111,8 @@ bool Runtime::Initialize(const std::string& audioPath) {
     } else {
         logger_.INFO("Fullscreen — auto-selecting audio from config (" + audioSource + ").");
     }
+    audioSource_ = audioSource;
+    captureDevice_ = captureDevice;
 
     if (audioSource == "input" || audioSource == "loopback") {
         const bool loopback = (audioSource == "loopback");
@@ -226,6 +228,8 @@ void Runtime::Shutdown() noexcept {
     // Persist the last selected theme / audio so the next launch restores them.
     try {
         config_.theme = std::string(themeManager_.CurrentId());
+        config_.audioSource = audioSource_;
+        config_.captureDevice = captureDevice_;
         if (!liveAudio_) {
             config_.audioFile = audioFileName_;  // don't overwrite with a live device name
         }
@@ -289,6 +293,83 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     if (renderer_.ConsumeTranceRequest()) {
         if (themeManager_.SetTheme("trance")) {
             logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
+        }
+    }
+
+    if (renderer_.ConsumeInputSwitchRequest()) {
+        std::vector<audio::AudioCapture::DeviceInfo> devices;
+        try {
+            devices = audio::AudioCapture::EnumerateDevices();
+        } catch (...) {
+            logger_.INFO("Audio device scan failed; input unchanged.");
+        }
+        if (devices.empty()) {
+            logger_.INFO("No live audio devices found.");
+        } else {
+            std::vector<audio::AudioCapture::DeviceInfo> liveDevices;
+            for (const auto& device : devices) {
+                liveDevices.push_back(device);
+            }
+            std::stable_partition(liveDevices.begin(), liveDevices.end(),
+                [](const auto& device) { return device.isCapture; });
+            const auto current = std::find_if(liveDevices.begin(), liveDevices.end(),
+                [&](const auto& device) {
+                    return (device.isCapture ? "input" : "loopback") == audioSource_ &&
+                           (device.index == captureDevice_ ||
+                            (captureDevice_ < 0 && device.isDefault));
+                });
+            std::size_t next = current == liveDevices.end()
+                ? 0u
+                : (static_cast<std::size_t>(current - liveDevices.begin()) + 1u) % liveDevices.size();
+            const std::string previousSource = audioSource_;
+            const int previousDevice = captureDevice_;
+            const bool wasLiveAudio = liveAudio_;
+            if (wasLiveAudio) {
+                audioCapture_.Stop();
+                audioCapture_.Shutdown();
+                liveAudio_ = false;
+            }
+            const auto openDevice = [&](const audio::AudioCapture::DeviceInfo& device) {
+                const std::string source = device.isCapture ? "input" : "loopback";
+                if (audioCapture_.Initialize(device.index, !device.isCapture) &&
+                    audioCapture_.Start()) {
+                    audioSource_ = source;
+                    captureDevice_ = device.index;
+                    if (!wasLiveAudio) {
+                        audioPlayer_.Stop();
+                    }
+                    liveAudio_ = true;
+                    audioReady_ = true;
+                    audioFileName_ = "LIVE - " + audioCapture_.DeviceName();
+                    config_.audioSource = audioSource_;
+                    config_.captureDevice = captureDevice_;
+                    logger_.INFO("Live audio input: " + audioCapture_.DeviceName() + ".");
+                    return true;
+                }
+                audioCapture_.Shutdown();
+                return false;
+            };
+            bool switched = openDevice(liveDevices[next]);
+            if (!switched && wasLiveAudio) {
+                if (previousSource == "input" || previousSource == "loopback") {
+                    for (const auto& device : liveDevices) {
+                        if (device.index == previousDevice &&
+                            (device.isCapture ? "input" : "loopback") == previousSource) {
+                            switched = openDevice(device);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!switched) {
+                if (wasLiveAudio) {
+                    audioReady_ = false;
+                    audioFileName_.clear();
+                    audioSource_ = "file";
+                    captureDevice_ = -1;
+                }
+                logger_.INFO("Could not open selected audio device; input switch failed.");
+            }
         }
     }
 

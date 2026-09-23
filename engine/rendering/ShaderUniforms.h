@@ -54,6 +54,7 @@ struct ShaderUniforms final {
     int   previousPatternMode = 0;    ///< Outgoing PatternMode during a switch.
     float patternBlend        = 1.0F; ///< 0 = previous form, 1 = active form.
     float detail              = 1.0F; ///< Fractal detail emphasis.
+    float evolutionPhase      = 0.0F; ///< Persistent preset-local motion phase.
 
     // ── Master output trims (Demo Mode operator globals; 1.0 = neutral) ─────────
     float masterBrightness = 1.0F;  ///< Final linear gain.

@@ -65,6 +65,9 @@ public:
     /// True once per B press — select the TRANCE theme.
     [[nodiscard]] virtual bool ConsumeTranceRequest() noexcept = 0;
 
+    /// True once per I press — cycle to the next live audio device.
+    [[nodiscard]] virtual bool ConsumeInputSwitchRequest() noexcept = 0;
+
     /// True once per Space press — toggles audio play/pause.
     [[nodiscard]] virtual bool ConsumePlayPauseToggle() noexcept = 0;
 

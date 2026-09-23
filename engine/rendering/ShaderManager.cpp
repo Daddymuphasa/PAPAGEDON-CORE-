@@ -66,6 +66,7 @@ in  vec2 vUV;
 out vec4 fragColor;
 
 uniform float uTime;
+uniform float uEvolutionPhase;
 uniform vec2  uResolution;
 uniform float uEnergy;
 uniform float uIntensity;
@@ -352,11 +353,14 @@ void main() {
     // Bass/beat pump — the frame punches hard inward on the kick, breathes with
     // the low end, and rising energy pushes the scene toward the camera so drops
     // rush in with depth.
-    float pump = 1.0 - uBeat * uBeat * 0.13 - uBass * 0.07 - uEnergy * 0.05;
+    float pump = 1.0 - uBeat * uBeat * 0.24 - uBass * 0.12 - uEnergy * 0.06;
     uv *= pump;
 
     // Motion runs faster as the track lifts, so the visuals feel driven.
-    float t = uTime * (0.25 + uEnergy * 0.15) * uMotion;
+    float t = uTime * (0.25 + uEnergy * 0.15) * uMotion + uEvolutionPhase * 0.14;
+    float drift = uEvolutionPhase;
+    uv += vec2(sin(drift * 0.071), cos(drift * 0.053)) * 0.18;
+    uv += vec2(sin(drift * 0.019), cos(drift * 0.027)) * 0.10;
 
     // Active form, cross-fading from the outgoing form during a preset switch.
     float pattern = patternFor(uPattern, uv, t);
@@ -398,8 +402,8 @@ void main() {
     // The kick makes the existing colours bloom and decay smoothly (a punch you
     // feel), and the frame already pumped inward above — no white strobe flash.
     float kick = uBeat * uBeat;
-    color += color * kick * 0.7;
-    color += color * uBass * 0.25;
+    color += color * kick * 1.15;
+    color += color * uBass * 0.38;
 
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
     // Strength is theme-driven so each identity blooms to its own degree.
@@ -503,6 +507,7 @@ bool ShaderManager::Compile(
 
     // Cache uniform locations — resolved once, used every frame.
     locTime_       = glGetUniformLocation(program_, "uTime");
+    locEvolutionPhase_ = glGetUniformLocation(program_, "uEvolutionPhase");
     locResolution_ = glGetUniformLocation(program_, "uResolution");
     locEnergy_     = glGetUniformLocation(program_, "uEnergy");
     locIntensity_  = glGetUniformLocation(program_, "uIntensity");
@@ -562,6 +567,7 @@ void ShaderManager::SetUniforms(
 
     // glUniform* calls use pre-cached locations — no hash lookup per frame.
     if (locTime_       >= 0) glUniform1f(locTime_,       time);
+    if (locEvolutionPhase_ >= 0) glUniform1f(locEvolutionPhase_, u.evolutionPhase);
     if (locResolution_ >= 0) glUniform2f(locResolution_, static_cast<float>(width),
                                                          static_cast<float>(height));
     if (locEnergy_     >= 0) glUniform1f(locEnergy_,     u.energy);
@@ -607,6 +613,7 @@ void ShaderManager::Shutdown() noexcept {
         glDeleteProgram(program_);
         program_      = 0u;
         locTime_      = -1;
+        locEvolutionPhase_ = -1;
         locResolution_ = -1;
         locEnergy_    = -1;
         locIntensity_ = -1;

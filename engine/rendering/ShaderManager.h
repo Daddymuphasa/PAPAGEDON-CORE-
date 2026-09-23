@@ -58,6 +58,7 @@ private:
 
     // Cached uniform locations — resolved once in Compile().
     int locTime_       = -1;
+    int locEvolutionPhase_ = -1;
     int locResolution_ = -1;
     int locEnergy_     = -1;
     int locIntensity_  = -1;

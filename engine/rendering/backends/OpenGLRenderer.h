@@ -36,6 +36,7 @@ public:
 
     [[nodiscard]] int ConsumeThemeRequest() noexcept override;
     [[nodiscard]] bool ConsumeTranceRequest() noexcept override;
+    [[nodiscard]] bool ConsumeInputSwitchRequest() noexcept override;
     [[nodiscard]] bool ConsumePlayPauseToggle() noexcept override;
     [[nodiscard]] bool ConsumeReloadRequest() noexcept override;
     [[nodiscard]] bool ConsumeAutoToggle() noexcept override;

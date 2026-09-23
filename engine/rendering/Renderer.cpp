@@ -79,6 +79,10 @@ bool Renderer::ConsumeTranceRequest() noexcept {
     return backend_ != nullptr && backend_->ConsumeTranceRequest();
 }
 
+bool Renderer::ConsumeInputSwitchRequest() noexcept {
+    return backend_ != nullptr && backend_->ConsumeInputSwitchRequest();
+}
+
 bool Renderer::ConsumePlayPauseToggle() noexcept {
     return backend_ != nullptr && backend_->ConsumePlayPauseToggle();
 }

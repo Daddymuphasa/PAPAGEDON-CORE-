@@ -71,6 +71,8 @@ private:
     std::string audioFileName_;      ///< Loaded clip / live device name, for the overlay.
     bool        audioReady_ = false; ///< False when audio is unavailable.
     bool        liveAudio_  = false; ///< True when reacting to a live capture device.
+    std::string audioSource_ = "file";
+    int         captureDevice_ = -1;
     std::vector<float> captureBuffer_; ///< Reused live-audio window (no per-frame alloc).
 
     // Auto-VJ: when enabled, the AutoDirector chooses presets from the live

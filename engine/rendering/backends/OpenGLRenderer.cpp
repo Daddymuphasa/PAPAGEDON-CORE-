@@ -799,12 +799,13 @@ public:
     bool themeKeyWasPressed[kThemeKeyCount] = {};
     int  pendingThemeRequest = -1;
 
-    // 'B' snaps straight back to the show's home theme (Badman red), which loads
-    // past the F1..F7 slots and so is otherwise unreachable from the keyboard.
-    // Also toggles the "BADMAN EXPERIENCE 4.0" brand banner overlay.
+    // 'B' selects TRANCE and toggles its wordmark; 'I' cycles live audio devices.
     bool tranceKeyWasPressed = false;
     bool pendingTranceRequest = false;
     bool showTranceWordmark = false;
+
+    bool inputKeyWasPressed = false;
+    bool pendingInputSwitch = false;
 
     bool spaceWasPressed  = false;
     bool pendingPlayPause = false;
@@ -1479,11 +1480,11 @@ void OpenGLRenderer::Render(
 
     // ── Audio-signal following ─────────────────────────────────────────────────
     // Low visual latency is a primary target, so transients use a fast attack
-    // (~18 ms — an onset lands within ~2 frames) and a slower release (~110 ms)
+    // (~13 ms — an onset lands within a frame) and a short release (~83 ms)
     // to keep the decay smooth.  This keeps the image locked to the beat instead
     // of trailing it, while still avoiding per-frame strobing.
-    constexpr float kAttack  = 55.0f; // rise time constant ~18 ms
-    constexpr float kRelease = 9.0f;  // fall time constant ~110 ms
+    constexpr float kAttack  = 80.0f; // rise time constant ~13 ms
+    constexpr float kRelease = 12.0f; // fall time constant ~83 ms
 
     // The preset scales how much energy drives brightness.
     const float targetEnergy = std::clamp(signals.energy * preset.energyMultiplier, 0.0f, 1.0f);
@@ -1498,7 +1499,7 @@ void OpenGLRenderer::Render(
     if (signals.beat) {
         smoothed.beat = preset.beatResponse;
     } else {
-        const float beatDecayRate = 10.0f; // exp(-dt * 10) gives ~37% after 100 ms
+        const float beatDecayRate = 14.0f; // exp(-dt * 14) gives ~25% after 100 ms
         smoothed.beat *= std::exp(-deltaTime * beatDecayRate);
     }
 
@@ -1577,6 +1578,7 @@ void OpenGLRenderer::Render(
     }
     implementation_->pgxPhase += deltaTime *
         (0.35f + smoothed.energy * 1.6f + smoothed.bass * 0.8f + smoothed.beat * 2.0f);
+    smoothed.evolutionPhase = implementation_->pgxPhase;
 
     // ── Signature form cross-fade ──────────────────────────────────────────────
     // The pattern is a discrete choice, so it can't be lerped like a colour.
@@ -2040,6 +2042,13 @@ bool OpenGLRenderer::EndFrame() {
     }
     implementation_->tranceKeyWasPressed = homeIsPressed;
 
+    const bool inputIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_I) == GLFW_PRESS;
+    if (inputIsPressed && !implementation_->inputKeyWasPressed) {
+        implementation_->pendingInputSwitch = true;
+    }
+    implementation_->inputKeyWasPressed = inputIsPressed;
+
     // Space toggles audio play/pause.
     const bool spaceIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_SPACE) == GLFW_PRESS;
@@ -2203,6 +2212,15 @@ bool OpenGLRenderer::ConsumeTranceRequest() noexcept {
     }
     const bool requested = implementation_->pendingTranceRequest;
     implementation_->pendingTranceRequest = false;
+    return requested;
+}
+
+bool OpenGLRenderer::ConsumeInputSwitchRequest() noexcept {
+    if (!implementation_) {
+        return false;
+    }
+    const bool requested = implementation_->pendingInputSwitch;
+    implementation_->pendingInputSwitch = false;
     return requested;
 }
 
