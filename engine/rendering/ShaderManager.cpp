@@ -97,12 +97,6 @@ uniform float uFeedbackZoom;      // PGX: requested feedback zoom
 uniform float uFeedbackRotation;  // PGX: requested feedback rotation
 uniform float uFeedbackWarp;      // PGX: requested feedback warp
 uniform float uFeedbackBeatWarp;  // PGX: beat-driven feedback warp
-uniform int   uWaveformMode;      // PGX: 0 none, 1 line, 2 ribbon, 3 ring
-uniform float uWaveformOpacity;
-uniform float uWaveformThickness;
-uniform float uWaveformRadius;
-uniform float uWaveformBassResponse;
-uniform float uWaveformTrebleResponse;
 
 const float kPi  = 3.14159265358979;
 const float kTau = 6.28318530717959;
@@ -410,27 +404,6 @@ void main() {
     // Pseudo-bloom: bright neon blooms into a glow (cheap, no extra passes).
     // Strength is theme-driven so each identity blooms to its own degree.
     color += color * color * uBloom;
-
-    // PGX waveform preview layer.  This is intentionally cheap; the dedicated
-    // WaveformPass will later replace it with real sample/spectrum geometry.
-    if (uWaveformMode != 0 && uWaveformOpacity > 0.001) {
-        float audioPush = uBass * uWaveformBassResponse + uTreble * uWaveformTrebleResponse;
-        float wave = 0.0;
-        if (uWaveformMode == 1) {
-            float y = sin(uv.x * (10.0 + uMid * 14.0) + uTime * (2.0 + uEnergy * 4.0)) * (0.05 + audioPush * 0.12);
-            wave = smoothstep(0.018 * uWaveformThickness, 0.0, abs(uv.y - y));
-        } else {
-            float r = length(uv);
-            float a = atan(uv.y, uv.x);
-            float target = uWaveformRadius + audioPush * 0.12
-                         + sin(a * 24.0 + uTime * 2.0) * (0.01 + uTreble * 0.025);
-            wave = smoothstep(0.018 * uWaveformThickness, 0.0, abs(r - target));
-            if (uWaveformMode == 2) {
-                wave *= 0.65 + 0.35 * sin(a * 8.0 + uTime);
-            }
-        }
-        color += palette(0.85 + uTreble * 0.15) * wave * uWaveformOpacity * (0.8 + uBeat);
-    }
 
     // Subtle mood tint.
     color *= mix(vec3(0.9, 1.0, 1.1), vec3(1.1, 1.0, 0.9), clamp(uMood, 0.0, 1.0));

@@ -66,6 +66,7 @@ private:
     float treblePeak_ = 0.0f;
     float energyPeak_ = 0.0f;
     float intensityPeak_ = 0.0f;
+    float spectrumPeak_ = 0.0f;
 };
 
 } // namespace papagedon::audio

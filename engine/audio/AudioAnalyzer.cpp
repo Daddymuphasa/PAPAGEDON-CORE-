@@ -69,6 +69,7 @@ void AudioAnalyzer::Reset() noexcept {
     treblePeak_ = 0.0f;
     energyPeak_ = 0.0f;
     intensityPeak_ = 0.0f;
+    spectrumPeak_ = 0.0f;
 }
 
 ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
@@ -111,6 +112,9 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     float bassEnergy = 0.0f;
     float midEnergy = 0.0f;
     float trebleEnergy = 0.0f;
+    std::array<float, kSpectrumBandCount> rawSpectrum{};
+    std::array<float, kSpectrumBandCount> outSpectrum{};
+    std::array<float, kWaveformSampleCount> outWaveform{};
 
     size_t bassCount = 0;
     size_t midCount = 0;
@@ -132,6 +136,14 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
         } else if (freq >= 4000.0f && freq < 20000.0f) {
             trebleEnergy += magnitude;
             trebleCount++;
+        }
+
+        if (freq >= 20.0f && freq <= nyquist) {
+            const float normFreq = std::clamp(freq / std::max(nyquist, 1.0f), 0.0f, 0.999f);
+            const size_t band = std::min(
+                static_cast<size_t>(normFreq * static_cast<float>(kSpectrumBandCount)),
+                kSpectrumBandCount - 1);
+            rawSpectrum[band] += magnitude;
         }
     }
 
@@ -196,6 +208,23 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     const float outEnergy    = AdaptiveNorm(energy, energyPeak_);
     const float outIntensity = AdaptiveNorm(rawMid + rawTreble, intensityPeak_);
 
+    float maxSpectrum = 0.0f;
+    for (float v : rawSpectrum) {
+        maxSpectrum = std::max(maxSpectrum, v);
+    }
+    spectrumPeak_ = std::max(maxSpectrum, spectrumPeak_ * 0.997f);
+    for (size_t i = 0; i < kSpectrumBandCount; ++i) {
+        const float n = rawSpectrum[i] / std::max(spectrumPeak_, 1.0e-5f);
+        outSpectrum[i] = std::clamp(std::pow(n, 0.55f), 0.0f, 1.0f);
+    }
+
+    for (size_t i = 0; i < kWaveformSampleCount; ++i) {
+        const size_t src = std::min(
+            (i * copySize) / kWaveformSampleCount,
+            copySize > 0 ? copySize - 1 : 0);
+        outWaveform[i] = copySize > 0 ? std::clamp(monoBuffer_[src], -1.0f, 1.0f) : 0.0f;
+    }
+
     return {
         .energy = outEnergy,
         .intensity = outIntensity,
@@ -205,7 +234,9 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
         .beat = beat,
         .bpm = currentBpm_,
         .tension = outEnergy * 0.5F,
-        .confidence = 1.0f
+        .confidence = 1.0f,
+        .spectrum = outSpectrum,
+        .waveform = outWaveform
     };
 }
 

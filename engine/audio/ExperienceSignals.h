@@ -1,6 +1,12 @@
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 namespace papagedon::audio {
+
+inline constexpr std::size_t kSpectrumBandCount = 64;
+inline constexpr std::size_t kWaveformSampleCount = 128;
 
 /// Semantic information derived from one analyzed audio frame.
 ///
@@ -23,6 +29,12 @@ struct ExperienceSignals final {
     float tension = 0.0F; 
 
     float confidence = 0.0F;
+
+    // GPU-ready audio detail for PGX passes. Spectrum bands are normalized
+    // magnitudes from low to high frequency; waveform samples are recent mono
+    // PCM values in [-1, 1], downsampled for lightweight visual geometry.
+    std::array<float, kSpectrumBandCount> spectrum{};
+    std::array<float, kWaveformSampleCount> waveform{};
 
     [[nodiscard]] bool IsFinite() const noexcept;
 };
