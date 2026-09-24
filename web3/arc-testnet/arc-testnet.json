@@ -1,0 +1,10 @@
+{
+  "network": "Arc Testnet",
+  "chainId": 5042002,
+  "chainIdHex": "0x4cef52",
+  "rpcUrl": "https://rpc.testnet.arc.io",
+  "explorerUrl": "https://explorer.testnet.arc.io",
+  "faucetUrl": "https://faucet.circle.com",
+  "nativeGasToken": "USDC",
+  "usdcErc20Address": "0x3600000000000000000000000000000000000000"
+}

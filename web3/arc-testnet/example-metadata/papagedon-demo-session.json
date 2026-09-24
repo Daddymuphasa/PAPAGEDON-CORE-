@@ -1,0 +1,17 @@
+{
+  "name": "PAPAGEDON Arc Testnet Demo Session",
+  "description": "A PAPAGEDON real-time audio-reactive experience anchored on Arc testnet for hackathon verification.",
+  "engine": "PAPAGEDON Core",
+  "runtime": "PGX",
+  "presetPack": "SignaturePack",
+  "preset": "12_spectrum_ring",
+  "audio": {
+    "source": "demo",
+    "features": ["bass", "mid", "treble", "beat", "energy"]
+  },
+  "artifacts": {
+    "repository": "https://github.com/",
+    "demoVideo": "",
+    "sessionAsset": ""
+  }
+}
