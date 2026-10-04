@@ -1,0 +1,18 @@
+{
+  "id": "pearl-tides",
+  "index": 21,
+  "name": "Pearl Tides",
+  "shader": "shaders/21_pearl_tides.frag",
+  "description": "Pearl Tides: flowing, elegant audio-reactive scene with persistent evolution.",
+  "mood": [
+    "dreamy",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    60,
+    105
+  ],
+  "recommendedTheme": "trance",
+  "composition": 2,
+  "energyLevel": "low"
+}

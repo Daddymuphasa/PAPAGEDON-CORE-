@@ -1,0 +1,18 @@
+{
+  "id": "silk-aurora",
+  "index": 23,
+  "name": "Silk Aurora",
+  "shader": "shaders/23_silk_aurora.frag",
+  "description": "Silk Aurora: flowing, elegant audio-reactive scene with persistent evolution.",
+  "mood": [
+    "dreamy",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    60,
+    105
+  ],
+  "recommendedTheme": "trance",
+  "composition": 0,
+  "energyLevel": "medium"
+}

@@ -35,6 +35,12 @@
     { "index": 9,  "id": "rave-grid",       "name": "Rave Grid",        "shader": "shaders/09_rave_grid.frag",        "metadata": "metadata/09_rave_grid.json",        "energyLevel": "high" },
     { "index": 10, "id": "void-temple",     "name": "Void Temple",      "shader": "shaders/10_void_temple.frag",      "metadata": "metadata/10_void_temple.json",      "energyLevel": "low" },
     { "index": 11, "id": "phantom-crowd",   "name": "Phantom Crowd",    "shader": "shaders/11_phantom_crowd.frag",    "metadata": "metadata/11_phantom_crowd.json",    "energyLevel": "medium" },
-    { "index": 12, "id": "final-ascension", "name": "Final Ascension",  "shader": "shaders/12_final_ascension.frag",  "metadata": "metadata/12_final_ascension.json",  "energyLevel": "peak" }
+    { "index": 12, "id": "final-ascension", "name": "Final Ascension",  "shader": "shaders/12_final_ascension.frag",  "metadata": "metadata/12_final_ascension.json",  "energyLevel": "peak" },
+    { "index": 13, "id": "kinetic-colonnade", "name": "Kinetic Colonnade", "shader": "shaders/13_kinetic_colonnade.frag", "metadata": "metadata/13_kinetic_colonnade.json", "energyLevel": "high" },
+    { "index": 14, "id": "prism-vault", "name": "Prism Vault", "shader": "shaders/14_prism_vault.frag", "metadata": "metadata/14_prism_vault.json", "energyLevel": "peak" },
+    { "index": 15, "id": "neon-skyline", "name": "Neon Skyline", "shader": "shaders/15_neon_skyline.frag", "metadata": "metadata/15_neon_skyline.json", "energyLevel": "high" },
+    { "index": 16, "id": "laser-canopy", "name": "Laser Canopy", "shader": "shaders/16_laser_canopy.frag", "metadata": "metadata/16_laser_canopy.json", "energyLevel": "peak" },
+    { "index": 17, "id": "molten-dunes", "name": "Molten Dunes", "shader": "shaders/17_molten_dunes.frag", "metadata": "metadata/17_molten_dunes.json", "energyLevel": "high" },
+    { "index": 18, "id": "bass-portals", "name": "Bass Portals", "shader": "shaders/18_bass_portals.frag", "metadata": "metadata/18_bass_portals.json", "energyLevel": "peak" }
   ]
 }

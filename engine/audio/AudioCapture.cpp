@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -25,8 +26,13 @@ public:
 
     // Ring buffer (~2 s), interleaved float.
     std::uint64_t ringFrames = 88200;
-    std::vector<float> ring;
+    std::unique_ptr<std::atomic<float>[]> ring;
     std::atomic<std::uint64_t> writeFrame{0};
+    std::atomic<std::int64_t> lastCallbackNs{0};
+    std::atomic<float> jitterMs{0.0f};
+    std::atomic<unsigned> observations{0};
+    float periodMs = 0.0f;
+    std::int64_t previousCallbackNs = 0;
 
     void Write(const float* src, ma_uint32 frames) noexcept {
         const std::uint64_t w = writeFrame.load(std::memory_order_relaxed);
@@ -34,10 +40,22 @@ public:
         for (ma_uint32 i = 0; i < frames; ++i) {
             const std::uint64_t idx = ((w + i) % ringFrames) * ch;
             for (std::uint32_t c = 0; c < ch; ++c) {
-                ring[static_cast<std::size_t>(idx + c)] = src[i * ch + c];
+                ring[static_cast<std::size_t>(idx + c)].store(src[i * ch + c], std::memory_order_relaxed);
             }
         }
         writeFrame.store(w + frames, std::memory_order_release);
+        const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        if (previousCallbackNs > 0) {
+            const float intervalMs = static_cast<float>(now - previousCallbackNs) / 1.0e6f;
+            const float expectedMs = frames * 1000.0f / sampleRate;
+            const float jitter = std::abs(intervalMs - expectedMs);
+            const float old = jitterMs.load(std::memory_order_relaxed);
+            jitterMs.store(old + (jitter - old) * 0.04f, std::memory_order_relaxed);
+        }
+        previousCallbackNs = now;
+        lastCallbackNs.store(now, std::memory_order_release);
+        observations.fetch_add(1, std::memory_order_relaxed);
     }
 
     // miniaudio data callback (runs on the audio thread).
@@ -102,7 +120,7 @@ bool AudioCapture::Initialize(const int deviceIndex, const bool loopback) {
     // this lowers latency without risking dropouts.  PAPAGEDON_CAPTURE_PERIOD
     // overrides the period size (in frames) for tuning at soundcheck.
     config.performanceProfile = ma_performance_profile_low_latency;
-    ma_uint32 periodFrames = 256; // ~5–6 ms at 44.1/48 kHz
+    ma_uint32 periodFrames = 128; // Shared-mode drivers clamp to their supported minimum.
     if (const char* const p = std::getenv("PAPAGEDON_CAPTURE_PERIOD")) {
         const int v = std::atoi(p);
         if (v >= 32 && v <= 4096) {
@@ -123,8 +141,15 @@ bool AudioCapture::Initialize(const int deviceIndex, const bool loopback) {
     impl_->channels   = impl_->device.capture.channels;
     impl_->sampleRate = impl_->device.sampleRate != 0 ? impl_->device.sampleRate : 44100;
     impl_->ringFrames = static_cast<std::uint64_t>(impl_->sampleRate) * 2;
-    impl_->ring.assign(static_cast<std::size_t>(impl_->ringFrames) * impl_->channels, 0.0F);
+    impl_->ring = std::make_unique<std::atomic<float>[]>(static_cast<std::size_t>(impl_->ringFrames) * impl_->channels);
     impl_->writeFrame.store(0, std::memory_order_release);
+    impl_->lastCallbackNs.store(0);
+    impl_->jitterMs.store(0.0f);
+    impl_->observations.store(0);
+    impl_->previousCallbackNs = 0;
+    const auto nativeRate = std::max(impl_->device.capture.internalSampleRate, 1u);
+    impl_->periodMs = 1000.0f * impl_->device.capture.internalPeriodSizeInFrames /
+        static_cast<float>(nativeRate);
     return true;
 }
 
@@ -175,7 +200,7 @@ std::size_t AudioCapture::ReadLatest(std::vector<float>& out, const std::size_t 
     for (std::size_t i = 0; i < avail; ++i) {
         const std::uint64_t idx = ((start + i) % impl_->ringFrames) * ch;
         for (std::uint32_t c = 0; c < ch; ++c) {
-            out[i * ch + c] = impl_->ring[static_cast<std::size_t>(idx + c)];
+            out[(frames - avail + i) * ch + c] = impl_->ring[static_cast<std::size_t>(idx + c)].load(std::memory_order_relaxed);
         }
     }
     return avail;
@@ -184,6 +209,18 @@ std::size_t AudioCapture::ReadLatest(std::vector<float>& out, const std::size_t 
 double AudioCapture::CapturedSeconds() const noexcept {
     const std::uint64_t w = impl_->writeFrame.load(std::memory_order_acquire);
     return impl_->sampleRate > 0 ? static_cast<double>(w) / impl_->sampleRate : 0.0;
+}
+
+CaptureTiming AudioCapture::Timing() const noexcept {
+    CaptureTiming result;
+    result.observations = impl_->observations.load(std::memory_order_relaxed);
+    result.periodMs = impl_->periodMs;
+    result.jitterMs = impl_->jitterMs.load(std::memory_order_relaxed);
+    const auto last = impl_->lastCallbackNs.load(std::memory_order_acquire);
+    const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    result.ageMs = last > 0 ? static_cast<float>(now - last) / 1.0e6f : 0.0f;
+    return result;
 }
 
 void AudioCapture::ListDevices() {

@@ -1,0 +1,18 @@
+{
+  "id": "starlight-weave",
+  "index": 26,
+  "name": "Starlight Weave",
+  "shader": "shaders/26_starlight_weave.frag",
+  "description": "Starlight Weave: flowing, elegant audio-reactive scene with persistent evolution.",
+  "mood": [
+    "dreamy",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    60,
+    105
+  ],
+  "recommendedTheme": "trance",
+  "composition": 0,
+  "energyLevel": "medium"
+}

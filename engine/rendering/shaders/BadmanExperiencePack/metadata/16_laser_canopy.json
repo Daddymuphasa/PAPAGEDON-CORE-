@@ -1,0 +1,18 @@
+{
+  "id": "laser-canopy",
+  "index": 16,
+  "name": "Laser Canopy",
+  "shader": "shaders/16_laser_canopy.frag",
+  "description": "Laser Canopy: immersive, rhythmic audio-reactive scene with persistent evolution.",
+  "mood": [
+    "hypnotic",
+    "aggressive"
+  ],
+  "recommendedBpmRange": [
+    105,
+    135
+  ],
+  "recommendedTheme": "badman",
+  "composition": 6,
+  "energyLevel": "peak"
+}

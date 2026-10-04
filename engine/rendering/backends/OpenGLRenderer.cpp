@@ -1,6 +1,7 @@
 #include "OpenGLRenderer.h"
 #include "../scene/SceneState.h"
 #include "../ShaderUniforms.h"
+#include "../DoubleTap.h"
 #include "DebugOverlayRenderer.h"
 
 #include <Theme.h>
@@ -266,11 +267,9 @@ void main() {
     vec2 bend = turned - q;
     vec2 uvA = clamp(0.5 + (q - bend * (1.0 - p)) / aspect, 0.002, 0.998);
     vec2 uvB = clamp(0.5 + (q + bend * p) / aspect, 0.002, 0.998);
-    float field = vUV.x + 0.075 * sin(vUV.y * 8.0 + angle * 2.0);
-    float reveal = smoothstep(p - 0.16, p + 0.16, field);
-    float seam = exp(-abs(field - p) * 34.0) * envelope;
-    fragColor = mix(texture(uTexB, uvB), texture(uTexA, uvA), reveal);
-    fragColor.rgb += vec3(0.23, 0.18, 0.36) * seam;
+    float flow = sin(q.x * 3.0 + q.y * 2.0 + uTime * 0.18) * 0.5;
+    float blend = clamp(p + flow * envelope * 0.24, 0.0, 1.0);
+    fragColor = mix(texture(uTexA, uvA), texture(uTexB, uvB), blend);
 }
 )GLSL";
 
@@ -369,6 +368,7 @@ uniform float uPhase;
 uniform float uSeed;
 uniform int uComposition;
 uniform int uSection;
+uniform float uLayerGain;
 uniform vec3  uPrimaryColour;
 uniform vec3  uSecondaryColour;
 uniform vec3  uAccentColour;
@@ -481,7 +481,7 @@ void main() {
     if (uComposition == 4)
         color += uPrimaryColour * tunnel * (0.04 + uBass * 0.16 + uBeat * 0.18);
 
-    color *= uSection == 1 ? 0.22 : 0.85;
+    color *= (uSection == 1 ? 0.22 : 0.85) * uLayerGain;
 
     fragColor = vec4(clamp(color, 0.0, 1.0), clamp(length(color), 0.0, 1.0));
 }
@@ -734,6 +734,8 @@ public:
     int          lastTransitionEffect = -1;
     float        transitionProgress = 0.0f;
     bool         needsOutgoingCapture = false;
+    bool         frozenOutgoing = false;
+    ShaderUniforms outgoingUniforms;
 
     // ── PGX visual-memory pipeline ─────────────────────────────────────────────
     unsigned int pgxSceneFBO = 0;
@@ -778,6 +780,7 @@ public:
     int          pgxShapeLocSeed = -1;
     int          pgxShapeLocComposition = -1;
     int          pgxShapeLocSection = -1;
+    int          pgxShapeLocLayerGain = -1;
     int          pgxShapeLocPrimary = -1;
     int          pgxShapeLocSecondary = -1;
     int          pgxShapeLocAccent = -1;
@@ -805,6 +808,7 @@ public:
     bool         prevBeat       = false;
     float        energyBaseline = 0.0f;
     bool         autoShaderKeyWasPressed = false; // 'V'
+    unsigned int phraseBeats = 0;
 
     // ── Pattern cross-fade state ───────────────────────────────────────────────
     // Tracks the signature form the shader is drawing.  When the preset's pattern
@@ -826,6 +830,8 @@ public:
 
     // T selects TRANCE, B selects Badman/Amapiano, and I cycles live audio devices.
     bool tranceKeyWasPressed = false;
+    DoubleTap tranceTap;
+    DoubleTap badmanTap;
     bool pendingTranceRequest = false;
     bool showTranceWordmark = false;
     double tranceWordmarkStart = 0.0;
@@ -1233,6 +1239,7 @@ bool OpenGLRenderer::Initialize() {
             glGetUniformLocation(p, "uSeed");
         implementation_->pgxShapeLocComposition = glGetUniformLocation(p, "uComposition");
         implementation_->pgxShapeLocSection = glGetUniformLocation(p, "uSection");
+        implementation_->pgxShapeLocLayerGain = glGetUniformLocation(p, "uLayerGain");
         implementation_->pgxShapeLocPrimary =
             glGetUniformLocation(p, "uPrimaryColour");
         implementation_->pgxShapeLocSecondary =
@@ -1365,6 +1372,13 @@ void OpenGLRenderer::PresentSplash(const std::string& status, const float progre
 
     glfwSwapBuffers(implementation_->window);
     glfwPollEvents();
+
+    if (!implementation_->isFullscreen &&
+        glfwGetWindowAttrib(implementation_->window, GLFW_MAXIMIZED)) {
+        // Restore first so F11 can return to the original decorated window.
+        glfwRestoreWindow(implementation_->window);
+        SetFullscreen(true);
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1439,6 +1453,17 @@ void OpenGLRenderer::BeginShaderTransition(const int target) {
     implementation_->lastTransitionEffect = effect;
     implementation_->transitionEffect     = effect;
 
+    implementation_->frozenOutgoing = implementation_->transitioning && implementation_->pgxTexW > 0;
+    if (implementation_->frozenOutgoing) {
+        // Continue an interrupted morph from the last visible composite.
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, implementation_->pgxSceneFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, implementation_->transitionFBO[0]);
+        glBlitFramebuffer(0, 0, implementation_->pgxTexW, implementation_->pgxTexH,
+                          0, 0, implementation_->pgxTexW, implementation_->pgxTexH,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    implementation_->outgoingUniforms = implementation_->smoothedUniforms;
     implementation_->outgoingShader       = implementation_->activeShader;
     implementation_->pendingShader        = target;
     implementation_->transitioning        = true;
@@ -1471,6 +1496,7 @@ void OpenGLRenderer::ActivateSection(const ShowMode mode) {
     impl.introActive = false;
     impl.tranceWordmarkStart = impl.badmanWordmarkStart = glfwGetTime();
     impl.lastSwitchTime = glfwGetTime();
+    impl.phraseBeats = 0;
     impl.pgxFeedbackPrimed = false;
     const char* opening = mode == ShowMode::Trance ? "moonlit-velvet" : "rave-grid";
     int target = 0;
@@ -1569,7 +1595,7 @@ void OpenGLRenderer::Render(
     // (~13 ms — an onset lands within a frame) and a short release (~83 ms)
     // to keep the decay smooth.  This keeps the image locked to the beat instead
     // of trailing it, while still avoiding per-frame strobing.
-    constexpr float kAttack  = 80.0f; // rise time constant ~13 ms
+    const float kAttack = debugState.audioAttackRate;
     constexpr float kRelease = 12.0f; // fall time constant ~83 ms
 
     // The preset scales how much energy drives brightness.
@@ -1720,7 +1746,9 @@ void OpenGLRenderer::Render(
         const double dwell = gentle ? 18.0 + (1.0 - implementation_->energyBaseline) * 8.0
                                     : 7.0 + (1.0 - implementation_->energyBaseline) * 5.0;
         const bool phraseBeat = signals.beat && !implementation_->prevBeat;
-        const bool timeUp = since > dwell && (phraseBeat || since > dwell + 2.0);
+        if (phraseBeat) ++implementation_->phraseBeats;
+        const bool phraseBoundary = phraseBeat && implementation_->phraseBeats % (gentle ? 16 : 8) == 0;
+        const bool timeUp = since > dwell && (phraseBoundary || since > dwell + (gentle ? 6.0 : 3.0));
         if (!implementation_->transitioning && since > (gentle ? 14.0 : 4.0) && ((!gentle && drop) || timeUp)) {
             const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
             if (count > 1 && !implementation_->shaderMeta.empty()) {
@@ -1763,6 +1791,7 @@ void OpenGLRenderer::Render(
                     // Prefer rested scenes and different compositions even on steady music.
                     score += static_cast<float>(std::min(currentTime - m.lastPlayed, 180.0)) * 0.06f;
                     if (m.composition == previousFamily) score -= 7.0f;
+                    score -= std::min(m.visits, 12u) * 0.75f;
                     const float jitter = static_cast<float>((i * 7 + static_cast<int>(currentTime * 3.0)) % 100) * 0.005f;
                     score += jitter;
                     if (score > bestScore) {
@@ -1832,9 +1861,12 @@ void OpenGLRenderer::Render(
         implementation_->pgxFeedbackPrimed = false;
     }
 
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, implementation_->pgxSpectrumTex);
+    glActiveTexture(GL_TEXTURE0);
     if (implementation_->transitioning && implementation_->transitionProgram != 0) {
-        // ── Capture outgoing shader to FBO-A (once, on the first frame) ──
-        if (implementation_->needsOutgoingCapture) {
+        // Both scenes stay alive throughout the deformation.
+        if (!implementation_->frozenOutgoing) {
             glBindFramebuffer(GL_FRAMEBUFFER, implementation_->transitionFBO[0]);
             glViewport(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -1844,14 +1876,21 @@ void OpenGLRenderer::Render(
                 ? shaderManager_
                 : *implementation_->shaderLib[outIdx - 1];
             outgoing.Bind();
-            outgoing.SetUniforms(smoothed, time, width, height);
+            auto& outgoingState = implementation_->outgoingUniforms;
+            outgoingState.bass = smoothed.bass;
+            outgoingState.mid = smoothed.mid;
+            outgoingState.treble = smoothed.treble;
+            outgoingState.beat = smoothed.beat;
+            outgoingState.energy = smoothed.energy;
+            outgoingState.evolutionPhase += deltaTime * 0.35f;
+            outgoing.SetUniforms(outgoingState, time, width, height);
             glBindVertexArray(fullscreenVAO_);
             glDrawArrays(GL_TRIANGLES, 0, 3);
             glBindVertexArray(0u);
 
-            implementation_->activeShader = implementation_->pendingShader;
-            implementation_->needsOutgoingCapture = false;
         }
+        implementation_->activeShader = implementation_->pendingShader;
+        implementation_->needsOutgoingCapture = false;
 
         // ── Render incoming shader to FBO-B (every frame — live with music) ──
         glBindFramebuffer(GL_FRAMEBUFFER, implementation_->transitionFBO[1]);
@@ -1900,9 +1939,9 @@ void OpenGLRenderer::Render(
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        // Advance progress — each effect has its own duration.
-        const int eff = implementation_->transitionEffect;
-        const float dur = mode == ShowMode::Trance ? 2.8f : 1.15f;
+        const float beatSeconds = 60.0f / std::clamp(implementation_->smoothBpm, 70.0f, 160.0f);
+        const float dur = mode == ShowMode::Trance ? std::clamp(beatSeconds * 4.0f, 2.8f, 4.0f)
+                                                  : std::clamp(beatSeconds * 3.0f, 1.6f, 2.4f);
         implementation_->transitionProgress += deltaTime / dur;
         if (implementation_->transitionProgress >= 1.0f) {
             implementation_->transitionProgress = 1.0f;
@@ -1950,7 +1989,8 @@ void OpenGLRenderer::Render(
                         static_cast<float>(width), static_cast<float>(height));
         if (implementation_->pgxLocDecay >= 0)
             glUniform1f(implementation_->pgxLocDecay,
-                        implementation_->pgxFeedbackPrimed ? smoothed.feedbackDecay : 0.0f);
+                        implementation_->pgxFeedbackPrimed ?
+                            std::min(smoothed.feedbackDecay, implementation_->transitioning ? 0.65f : 0.985f) : 0.0f);
         if (implementation_->pgxLocZoom >= 0)
             glUniform1f(implementation_->pgxLocZoom, smoothed.feedbackZoom);
         if (implementation_->pgxLocRotation >= 0)
@@ -2011,11 +2051,16 @@ void OpenGLRenderer::Render(
                 glUniform1f(implementation_->pgxShapeLocPhase, implementation_->pgxPhase);
             if (implementation_->pgxShapeLocSeed >= 0)
                 glUniform1f(implementation_->pgxShapeLocSeed, implementation_->pgxSeed);
-            const int composition = implementation_->activeShader > 0
-                ? implementation_->shaderMeta[implementation_->activeShader - 1].composition
+            const int overlayShader = implementation_->transitioning && implementation_->transitionProgress < 0.5f
+                ? implementation_->outgoingShader : implementation_->activeShader;
+            const int composition = overlayShader > 0
+                ? implementation_->shaderMeta[overlayShader - 1].composition
                 : static_cast<int>(presetIndex % 7);
             glUniform1i(implementation_->pgxShapeLocComposition, composition);
             glUniform1i(implementation_->pgxShapeLocSection, static_cast<int>(mode));
+            const float layerGain = implementation_->transitioning
+                ? std::abs(2.0f * implementation_->transitionProgress - 1.0f) : 1.0f;
+            glUniform1f(implementation_->pgxShapeLocLayerGain, layerGain);
             if (implementation_->pgxShapeLocPrimary >= 0)
                 glUniform3f(implementation_->pgxShapeLocPrimary,
                             smoothed.primaryColor.r, smoothed.primaryColor.g, smoothed.primaryColor.b);
@@ -2136,9 +2181,15 @@ bool OpenGLRenderer::EndFrame() {
     const bool tranceIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_T) == GLFW_PRESS;
     if (tranceIsPressed && !implementation_->tranceKeyWasPressed) {
-        implementation_->pendingTranceRequest = true;
-        implementation_->pendingBadmanRequest = false;
-        implementation_->sectionRequested = true;
+        if (implementation_->tranceTap.Press(glfwGetTime()) && implementation_->section == ShowMode::Trance) {
+            implementation_->showTranceWordmark = !implementation_->showTranceWordmark;
+            std::fprintf(stderr, "[Show] TRANCE title: %s\n", implementation_->showTranceWordmark ? "on" : "off");
+        } else {
+            implementation_->pendingTranceRequest = true;
+            implementation_->pendingBadmanRequest = false;
+            implementation_->sectionRequested = implementation_->section != ShowMode::Trance;
+            implementation_->autoShader = true;
+        }
     }
     implementation_->tranceKeyWasPressed = tranceIsPressed;
 
@@ -2146,9 +2197,15 @@ bool OpenGLRenderer::EndFrame() {
     const bool badmanIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
     if (badmanIsPressed && !implementation_->badmanKeyWasPressed) {
-        implementation_->pendingBadmanRequest = true;
-        implementation_->pendingTranceRequest = false;
-        implementation_->sectionRequested = true;
+        if (implementation_->badmanTap.Press(glfwGetTime()) && implementation_->section == ShowMode::Badman) {
+            implementation_->showBadmanWordmark = !implementation_->showBadmanWordmark;
+            std::fprintf(stderr, "[Show] BADMAN title: %s\n", implementation_->showBadmanWordmark ? "on" : "off");
+        } else {
+            implementation_->pendingBadmanRequest = true;
+            implementation_->pendingTranceRequest = false;
+            implementation_->sectionRequested = implementation_->section != ShowMode::Badman;
+            implementation_->autoShader = true;
+        }
     }
     implementation_->badmanKeyWasPressed = badmanIsPressed;
 

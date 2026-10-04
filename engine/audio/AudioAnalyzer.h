@@ -50,6 +50,8 @@ private:
     std::vector<float> bassHistory_;
     size_t bassHistoryIndex_ = 0;
     float previousBass_ = 0.0f;
+    float previousTransient_ = 0.0f;
+    double lastAnalysisTime_ = -1.0;
 
     // Tempo tracking — timed from the audio playback clock, so it is
     // independent of how fast the render loop calls the analyzer.

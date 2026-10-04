@@ -1,0 +1,18 @@
+{
+  "id": "glass-garden",
+  "index": 24,
+  "name": "Glass Garden",
+  "shader": "shaders/24_glass_garden.frag",
+  "description": "Glass Garden: flowing, elegant audio-reactive scene with persistent evolution.",
+  "mood": [
+    "dreamy",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    60,
+    105
+  ],
+  "recommendedTheme": "trance",
+  "composition": 6,
+  "energyLevel": "medium"
+}

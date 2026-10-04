@@ -449,8 +449,10 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         // Live: the most recent window captured from the DJ booth / interface.
         const uint32_t channels = audioCapture_.Channels();
         const uint32_t sampleRate = audioCapture_.SampleRate();
+        inputLatency_.Update(audioCapture_.Timing(), static_cast<float>(sampleRate),
+                             static_cast<float>(deltaTime.count()));
         audioCapture_.ReadLatest(captureBuffer_, 1024);
-        if (channels > 0 && !captureBuffer_.empty()) {
+        if (channels > 0 && !captureBuffer_.empty() && !inputLatency_.Stalled()) {
             audioFrame.samples          = std::span<const float>(captureBuffer_.data(), captureBuffer_.size());
             audioFrame.sampleRate       = sampleRate;
             audioFrame.channelCount     = channels;
@@ -458,6 +460,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     } else {
         // File: read the window at the current playback position.
+        inputLatency_.Reset();
         const uint64_t currentFrame = audioPlayer_.GetPlaybackPositionInFrames();
         const uint32_t channels = audioInput_.Channels();
         const uint32_t sampleRate = audioInput_.SampleRate();
@@ -507,6 +510,10 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     debugState.mid                = signals.mid;
     debugState.treble             = signals.treble;
     debugState.beat               = signals.beat;
+    debugState.liveInput          = liveAudio_;
+    debugState.inputLatencyMs     = inputLatency_.EstimatedMs();
+    debugState.latencyConfidence  = inputLatency_.Confidence();
+    debugState.audioAttackRate    = inputLatency_.AttackRate();
     debugState.currentExperience  = ToString(graphOutput.state);
     debugState.currentScene       = currentScene.activeProfile
                                         ? currentScene.activeProfile->sceneId.c_str()

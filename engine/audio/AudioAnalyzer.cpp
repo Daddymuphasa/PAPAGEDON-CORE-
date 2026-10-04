@@ -60,6 +60,8 @@ void AudioAnalyzer::Reset() noexcept {
     bassHistorySum_ = 0.0f;
     bassHistoryIndex_ = 0;
     previousBass_ = 0.0f;
+    previousTransient_ = 0.0f;
+    lastAnalysisTime_ = -1.0;
     lastBeatTimeSeconds_ = -1.0;
     beatBpmHistory_.clear();
     beatBpmIndex_ = 0;
@@ -74,33 +76,44 @@ void AudioAnalyzer::Reset() noexcept {
 
 ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     if (!frame.IsValid() || frame.samples.empty()) {
-        return latestSignals_; // Return last signals if not enough data
+        return {}; // Silence or a disconnected device must not hold an old beat.
     }
 
     const size_t numFrames = frame.samples.size() / frame.channelCount;
-    if (numFrames == 0) return latestSignals_;
+    if (numFrames == 0) return {};
+    if (frame.timestampSeconds > 0.0 && frame.timestampSeconds == lastAnalysisTime_) {
+        auto held = latestSignals_;
+        held.beat = false;
+        return held;
+    }
+    lastAnalysisTime_ = frame.timestampSeconds;
 
     // 1. Downmix to mono and apply Hann window
     size_t copySize = std::min(numFrames, kFftSize);
-    monoBuffer_.resize(kFftSize, 0.0f);
+    monoBuffer_.assign(kFftSize, 0.0f);
+    const size_t startFrame = numFrames - copySize;
     
     float totalAmplitude = 0.0F;
+    float transientAmplitude = 0.0F;
+    const size_t fastWindow = std::min(copySize, size_t{128});
 
     for (size_t i = 0; i < copySize; ++i) {
         float mono = 0.0f;
         for (std::uint32_t c = 0; c < frame.channelCount; ++c) {
-            mono += frame.samples[i * frame.channelCount + c];
+            mono += frame.samples[(startFrame + i) * frame.channelCount + c];
         }
         mono /= static_cast<float>(frame.channelCount);
 
         totalAmplitude += std::clamp(std::abs(mono), 0.0F, 1.0F);
+        if (i >= copySize - fastWindow) transientAmplitude += std::abs(mono);
 
         // Hann window: 0.5 * (1 - cos(2*pi*n/N))
         const float window = 0.5f * (1.0f - std::cos(2.0f * 3.14159265358979323846f * i / (kFftSize - 1)));
         monoBuffer_[i] = mono * window;
     }
 
-    const float energy = totalAmplitude / static_cast<float>(copySize);
+    const float transient = transientAmplitude / static_cast<float>(fastWindow);
+    const float energy = std::max(totalAmplitude / static_cast<float>(copySize), transient * 0.85f);
 
     // 2. Perform FFT
     fft_->Execute(monoBuffer_, fftOutput_);
@@ -171,7 +184,10 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
     const bool levelSpike = bassEnergy > averageBass * kBeatThresholdMultiplier &&
                             bassEnergy > 0.15f;
     const bool onsetSpike = bassFlux > kBeatOnsetThreshold && bassEnergy > 0.22f;
-    const bool bassSpike  = levelSpike || onsetSpike;
+    const bool fastOnset = transient > 0.015f &&
+        transient - previousTransient_ > std::max(0.012f, previousTransient_ * 0.65f);
+    previousTransient_ = transient;
+    const bool bassSpike = levelSpike || onsetSpike || fastOnset;
 
     // Update the rolling bass history feeding the adaptive threshold above.
     bassHistorySum_ -= bassHistory_[bassHistoryIndex_];
@@ -222,7 +238,10 @@ ExperienceSignals AudioAnalyzer::Analyze(const AudioFrame& frame) noexcept {
         const size_t src = std::min(
             (i * copySize) / kWaveformSampleCount,
             copySize > 0 ? copySize - 1 : 0);
-        outWaveform[i] = copySize > 0 ? std::clamp(monoBuffer_[src], -1.0f, 1.0f) : 0.0f;
+        float sample = 0.0f;
+        for (std::uint32_t ch = 0; ch < frame.channelCount; ++ch)
+            sample += frame.samples[(startFrame + src) * frame.channelCount + ch];
+        outWaveform[i] = std::clamp(sample / frame.channelCount, -1.0f, 1.0f);
     }
 
     return {

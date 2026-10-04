@@ -1,0 +1,18 @@
+{
+  "id": "bass-portals",
+  "index": 18,
+  "name": "Bass Portals",
+  "shader": "shaders/18_bass_portals.frag",
+  "description": "Bass Portals: immersive, rhythmic audio-reactive scene with persistent evolution.",
+  "mood": [
+    "hypnotic",
+    "aggressive"
+  ],
+  "recommendedBpmRange": [
+    105,
+    135
+  ],
+  "recommendedTheme": "badman",
+  "composition": 5,
+  "energyLevel": "peak"
+}

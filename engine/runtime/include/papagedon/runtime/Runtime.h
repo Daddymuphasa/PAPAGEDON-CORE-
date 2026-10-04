@@ -56,6 +56,7 @@ private:
     audio::AudioPlayer audioPlayer_;
     audio::AudioCapture audioCapture_;
     audio::AudioAnalyzer audioAnalyzer_;
+    audio::InputLatency inputLatency_;
     ExperienceGraph experienceGraph_;
     PresetManager presetManager_;
     AutoDirector autoDirector_;

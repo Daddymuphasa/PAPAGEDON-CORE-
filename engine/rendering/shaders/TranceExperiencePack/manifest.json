@@ -201,6 +201,12 @@
       "shader": "shaders/20_trance_ascension.frag",
       "metadata": "metadata/20_trance_ascension.json",
       "energyLevel": "peak"
-    }
+    },
+    { "index": 21, "id": "pearl-tides", "name": "Pearl Tides", "shader": "shaders/21_pearl_tides.frag", "metadata": "metadata/21_pearl_tides.json", "energyLevel": "low" },
+    { "index": 22, "id": "lantern-drift", "name": "Lantern Drift", "shader": "shaders/22_lantern_drift.frag", "metadata": "metadata/22_lantern_drift.json", "energyLevel": "low" },
+    { "index": 23, "id": "silk-aurora", "name": "Silk Aurora", "shader": "shaders/23_silk_aurora.frag", "metadata": "metadata/23_silk_aurora.json", "energyLevel": "medium" },
+    { "index": 24, "id": "glass-garden", "name": "Glass Garden", "shader": "shaders/24_glass_garden.frag", "metadata": "metadata/24_glass_garden.json", "energyLevel": "medium" },
+    { "index": 25, "id": "velvet-horizon", "name": "Velvet Horizon", "shader": "shaders/25_velvet_horizon.frag", "metadata": "metadata/25_velvet_horizon.json", "energyLevel": "low" },
+    { "index": 26, "id": "starlight-weave", "name": "Starlight Weave", "shader": "shaders/26_starlight_weave.frag", "metadata": "metadata/26_starlight_weave.json", "energyLevel": "medium" }
   ]
 }

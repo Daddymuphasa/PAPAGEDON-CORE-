@@ -1,0 +1,18 @@
+{
+  "id": "lantern-drift",
+  "index": 22,
+  "name": "Lantern Drift",
+  "shader": "shaders/22_lantern_drift.frag",
+  "description": "Lantern Drift: flowing, elegant audio-reactive scene with persistent evolution.",
+  "mood": [
+    "dreamy",
+    "atmospheric"
+  ],
+  "recommendedBpmRange": [
+    60,
+    105
+  ],
+  "recommendedTheme": "trance",
+  "composition": 1,
+  "energyLevel": "low"
+}

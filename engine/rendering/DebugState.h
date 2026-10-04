@@ -12,6 +12,10 @@ struct DebugState final {
     float mid = 0.0F;
     float treble = 0.0F;
     bool  beat = false;
+    bool liveInput = false;
+    float inputLatencyMs = 0.0F;
+    float latencyConfidence = 0.0F;
+    float audioAttackRate = 100.0F;
     const char* currentExperience = "";
     const char* currentScene = "";
     const char* currentPreset = "";

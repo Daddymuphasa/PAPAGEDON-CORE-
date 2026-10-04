@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "InputLatency.h"
 
 namespace papagedon::audio {
 
@@ -47,6 +48,7 @@ public:
 
     /// Monotonic audio-domain time (seconds) of the most recent captured sample.
     [[nodiscard]] double CapturedSeconds() const noexcept;
+    [[nodiscard]] CaptureTiming Timing() const noexcept;
 
     /// Prints the available capture and playback (loopback) devices to stdout.
     static void ListDevices();

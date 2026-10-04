@@ -219,6 +219,10 @@ void DebugOverlayRenderer::Render(const DebugState& state, int windowWidth, int 
     ss << "Treble:            " << state.treble << "\n";
     ss << "Energy:            " << state.energy << "\n";
     ss << "Beat:              " << (state.beat ? "*" : "-") << "\n";
+    if (state.liveInput) {
+        ss << "Input estimate:    " << state.inputLatencyMs << " ms\n";
+        ss << "Timing confidence: " << state.latencyConfidence * 100.0F << "%\n";
+    }
     ss << "ExperienceState:   " << state.currentExperience << "\n";
     ss << "Audio File:        " << state.currentAudioFile << "\n";
     ss << "Renderer:          " << state.rendererBackend << "\n";
@@ -280,12 +284,12 @@ void DebugOverlayRenderer::RenderMenu(int windowWidth, int windowHeight, float a
         {"   [   ]     prev / next shader", false},
         {"   V         auto-shader  (music-driven)", false},
         {"   SPACE     play / pause audio", false},
-        {"   I         cycle live audio input", false},
+        {"   I         cycle input + auto-calibrate", false},
         {"   F8        reload shaders & theme", false},
         {"", false},
         {" COLOUR", true},
-        {"   T         TRANCE - romantic / elegant", false},
-        {"   B         BADMAN - Amapiano after party", false},
+        {"   T / T T   TRANCE / toggle title", false},
+        {"   B / B B   BADMAN / toggle title", false},
         {"   F1 - F7   cyber / techno / industrial /", false},
         {"             rave / aurora / nebula / matrix", false},
         {"   F10       FX on/off  (glow / bloom)", false},
@@ -475,6 +479,11 @@ void DebugOverlayRenderer::RenderMeter(const DebugState& state, int windowWidth,
     ss << "TREBLE  " << bar(state.treble) << "\n";
     ss << "ENERGY  " << bar(state.energy) << "\n\n";
     ss << (level > 0.02F ? "SIGNAL: OK" : "SIGNAL: -- (silent)") << "\n";
+    if (state.liveInput) {
+        ss << std::fixed << std::setprecision(1);
+        ss << "AUTO LATENCY: " << state.inputLatencyMs << " ms  ("
+           << state.latencyConfidence * 100.0F << "% confidence)\n";
+    }
     ss << "SOURCE: " << state.currentAudioFile << "\n";
 
     RenderText(ss.str().c_str(), 40.0F, static_cast<float>(windowHeight) * 0.72F,

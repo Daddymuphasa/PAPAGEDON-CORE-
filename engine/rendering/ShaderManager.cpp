@@ -506,6 +506,12 @@ bool ShaderManager::Compile(
     }
 
     program_ = prog;
+    const int spectrumLocation = glGetUniformLocation(program_, "uSpectrum");
+    if (spectrumLocation >= 0) {
+        glUseProgram(program_);
+        glUniform1i(spectrumLocation, 2);
+        glUseProgram(0);
+    }
 
     // Cache uniform locations — resolved once, used every frame.
     locTime_       = glGetUniformLocation(program_, "uTime");
