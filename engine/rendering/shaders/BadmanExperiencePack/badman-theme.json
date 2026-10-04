@@ -2,14 +2,14 @@
   "id": "badman",
   "name": "Badman Experience",
   "palette": {
-    "primary": "#A30D18",
-    "secondary": "#050505",
-    "accent": "#D6A53A",
+    "primary": "#EF234A",
+    "secondary": "#083E48",
+    "accent": "#FFD159",
     "background": "#180202"
   },
   "glow": 0.45,
   "bloom": 0.55,
-  "motion": 0.85,
+  "motion": 1.25,
   "noise": 0.12,
   "distortion": 1.1,
   "transitionSpeed": 5

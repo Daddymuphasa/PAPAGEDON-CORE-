@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ExperienceTypes.h"
+#include "ShowMode.h"
 #include <presets/ExperiencePreset.h>
 
 #include <cstdint>
@@ -40,6 +41,7 @@ public:
 
     /// Clears all state (e.g. when re-arming for a new set).
     void Reset() noexcept;
+    void SetMode(ShowMode mode) noexcept;
 
 private:
     [[nodiscard]] int      TierFor(float energyEnvelope, ExperienceState state) const noexcept;
@@ -53,6 +55,7 @@ private:
     ExperienceEvent lastEvent_   = ExperienceEvent::Silence;
     std::uint32_t   rng_         = 0x9E3779B9u;
     bool            initialized_ = false;
+    ShowMode        mode_ = ShowMode::Open;
 
     // Smoothed frequency bands for stable matching decisions.
     float smoothBass_   = 0.0F;

@@ -7,5 +7,6 @@
   "mood": ["aggressive", "immersive", "hypnotic"],
   "recommendedBpmRange": [124, 140],
   "recommendedTheme": "badman",
+  "composition": 4,
   "energyLevel": "peak"
 }

@@ -57,6 +57,8 @@ std::uint32_t AutoDirector::NextRandom() noexcept {
 }
 
 int AutoDirector::TierFor(const float env, const ExperienceState state) const noexcept {
+    if (mode_ == ShowMode::Trance) return 0;
+    if (mode_ == ShowMode::Badman) return env >= 0.55F ? 2 : 1;
     if (state == ExperienceState::Silence || env < 0.12F) return 0;
     if (state == ExperienceState::Drop    || env >= 0.55F) return 2;
     return 1;
@@ -122,11 +124,12 @@ PresetId AutoDirector::Update(const ExperienceGraphOutput& e, const float dt) no
     const int tier = TierFor(energyEnv_, e.state);
 
     bool switchNow = false;
-    if (dropEdge && dwell_ >= kDropCutMin) {
+    const bool gentle = mode_ == ShowMode::Trance;
+    if (!gentle && dropEdge && dwell_ >= kDropCutMin) {
         switchNow = true;
     } else if (dwell_ >= kMinDwell && tier != currentTier_) {
         switchNow = true;
-    } else if (dwell_ >= kMaxDwell) {
+    } else if (dwell_ >= (gentle ? 24.0F : kMaxDwell)) {
         switchNow = true;
     }
 
@@ -148,6 +151,12 @@ void AutoDirector::Reset() noexcept {
     smoothBass_   = 0.0F;
     smoothTreble_ = 0.0F;
     smoothMood_   = 0.0F;
+}
+
+void AutoDirector::SetMode(const ShowMode mode) noexcept {
+    if (mode_ == mode) return;
+    mode_ = mode;
+    Reset();
 }
 
 } // namespace papagedon

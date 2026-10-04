@@ -16,6 +16,7 @@ uniform float uTreble;
 uniform float uBeat;
 uniform float uEnergy;
 uniform float uIntensity;
+uniform float uEvolutionPhase;
 uniform vec3  uPrimaryColour;
 uniform vec3  uSecondaryColour;
 uniform vec3  uAccentColour;
@@ -51,27 +52,27 @@ void main() {
     vec3 GOLD   = themed(uAccentColour,  BAD_GOLD);
     vec3 SHADOW = themed(uBackground,    BAD_SHADOW);
 
-    float t = uTime;
-    vec3  col = SHADOW * 0.25;
-
-    // Floor lives below the horizon (y < 0), projected into perspective.
-    if (uv.y < -0.02) {
-        float persp = 1.0 / (-uv.y + 0.04);
-        float bend  = uBeat * 0.30 * sin(uv.x * 3.0 + t);   // beats bend the grid
-        vec2  g     = vec2(uv.x * persp, t * 2.0 + persp);
-        g.y += bend;
-        vec2  gl   = abs(fract(g) - 0.5);
-        float line = smoothstep(0.06, 0.0, min(gl.x, gl.y) * (0.35 + 0.25 / persp));
-        float fade = smoothstep(0.0, 1.2, -uv.y);
-        col += RED  * line * fade * (0.7 + uEnergy);
-        col += GOLD * pow(line, 4.0) * fade * 0.3;          // gold node glints
-    }
-
-    col += RED * exp(-abs(uv.y) * 6.0) * (0.4 + uBass * 0.6);   // horizon glow
-    col += RED * fbm(uv * 3.0 - t * 0.5) * 0.08;                // haze
-
-    col += col * col * 0.5;
-    col = aces(col * 1.15);
-    col *= 1.0 - 0.30 * smoothstep(0.8, 1.7, length(uv));
+    float t = uTime * 0.55 + uEvolutionPhase * 0.12;
+    vec3 teal = themed(uSecondaryColour, vec3(0.01, 0.48, 0.55));
+    vec2 grid = uv * 4.5;
+    grid.x += sin(grid.y * 0.34 + t * 0.27) * 0.55;
+    grid.y += t * 0.18;
+    float row = floor(grid.y);
+    grid.x += mod(row, 2.0) * 0.5;
+    vec2 cell = floor(grid);
+    vec2 p = fract(grid) - 0.5;
+    float seed = hash21(cell);
+    float groove = 0.5 + 0.5 * sin(cell.x * 0.85 + cell.y * 1.2 - t * 2.5);
+    float rhythm = mix(uBass, uTreble, step(0.5, seed));
+    float size = 0.13 + groove * 0.16 + rhythm * 0.11;
+    float box = max(abs(p.x), abs(p.y));
+    float edge = exp(-abs(box - size) * 62.0);
+    float fill = (1.0 - smoothstep(size - 0.025, size, box)) * groove * 0.20;
+    vec3 tile = mix(teal * 2.0, RED, step(0.42, seed));
+    tile = mix(tile, GOLD, step(0.85, seed));
+    vec3 col = SHADOW * 0.3 + tile * (edge + fill) * (0.55 + rhythm + uBeat * 0.65);
+    float sweep = exp(-pow(sin(uv.x * 0.7 - uv.y * 0.4 - t * 0.25) * 7.0, 2.0));
+    col += tile * sweep * edge * 0.5;
+    col = aces(col * 1.2);
     fragColor = vec4(col, 1.0);
 }

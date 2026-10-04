@@ -18,3 +18,8 @@ add_subdirectory(engine/core)
 
 # Applications
 add_subdirectory(apps/player)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

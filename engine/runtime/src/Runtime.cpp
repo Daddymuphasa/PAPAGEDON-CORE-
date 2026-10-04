@@ -291,15 +291,19 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     }
 
-    // B: switch to the TRANCE identity and its opening scene.
+    // Section keys arm both directors so the whole show follows the selection.
     if (renderer_.ConsumeTranceRequest()) {
         if (themeManager_.SetTheme("trance")) {
+            autoMode_ = true;
+            autoDirector_.SetMode(ShowMode::Trance);
             logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
         }
     }
 
     if (renderer_.ConsumeBadmanRequest()) {
         if (themeManager_.SetTheme("badman")) {
+            autoMode_ = true;
+            autoDirector_.SetMode(ShowMode::Badman);
             logger_.INFO("Theme: " + themeManager_.CurrentTheme().name +
                          " (Amapiano after party).");
         } else {
@@ -474,6 +478,7 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
         }
     }
 
+    autoDirector_.SetMode(ShowModeForTheme(themeManager_.CurrentId()));
     const audio::ExperienceSignals signals = audioAnalyzer_.Update(audioFrame);
 
     // ── 3. ExperienceGraph ────────────────────────────────────────────────────

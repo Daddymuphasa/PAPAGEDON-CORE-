@@ -117,6 +117,25 @@ void ThemeManager::RegisterBuiltins() {
         add(std::move(t));
     }
 
+    // Event sections remain available even when external assets are missing.
+    {
+        Theme t;
+        t.id = "trance"; t.name = "TRANCE";
+        t.palette.primary = Rgb(0x456BA8); t.palette.secondary = Rgb(0x0A2450);
+        t.palette.accent = Rgb(0xFFD38A); t.palette.background = Rgb(0x030614);
+        t.glow = 0.38F; t.bloom = 0.32F; t.motion = 0.48F;
+        t.noise = 0.025F; t.distortion = 0.62F; t.transitionSpeed = 2.2F;
+        add(std::move(t));
+    }
+    {
+        Theme t;
+        t.id = "badman"; t.name = "Badman / Amapiano";
+        t.palette.primary = Rgb(0xEF234A); t.palette.secondary = Rgb(0x083E48);
+        t.palette.accent = Rgb(0xFFD159); t.palette.background = Rgb(0x100308);
+        t.glow = 0.45F; t.bloom = 0.50F; t.motion = 1.25F;
+        t.noise = 0.06F; t.distortion = 1.1F; t.transitionSpeed = 5.0F;
+        add(std::move(t));
+    }
     currentIndex_ = 0; // Cyberpunk
 }
 

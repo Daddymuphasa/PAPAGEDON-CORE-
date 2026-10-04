@@ -2,6 +2,7 @@
 
 #include "../IRenderer.h"
 #include "../ShaderManager.h"
+#include <ShowMode.h>
 
 #include <memory>
 
@@ -51,6 +52,7 @@ private:
 
     /// Begins a dramatic randomised crossfade transition to the given library shader index.
     void BeginShaderTransition(int target);
+    void ActivateSection(ShowMode mode);
 
     std::unique_ptr<Implementation> implementation_;
     ShaderManager shaderManager_;

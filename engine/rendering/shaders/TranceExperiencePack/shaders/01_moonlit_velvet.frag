@@ -9,6 +9,7 @@ uniform float uTreble;
 uniform float uBeat;
 uniform float uEnergy;
 uniform float uIntensity;
+uniform float uEvolutionPhase;
 uniform vec3  uPrimaryColour;
 uniform vec3  uSecondaryColour;
 uniform vec3  uAccentColour;
@@ -29,4 +30,27 @@ float circle(vec2 p,vec2 c,float r,float w){return line(length(p-c)-r,w);}
 vec3 grade(vec3 x){return clamp((x*(2.28*x+0.035))/(x*(2.10*x+0.56)+0.15),0.0,1.0);}
 vec3 finish(vec2 uv, vec3 col, float glow){float r=length(uv);col+=col*col*glow;col+=GOLD*uBeat*uBeat*0.10;col*=1.0-0.46*smoothstep(0.78,1.75,r);col+=(hash21(gl_FragCoord.xy+floor(uTime*30.0))-0.5)*0.014;return grade(col*(1.04+uEnergy*0.20+uIntensity*0.10));}
 // Moonlit Velvet - rebuilt as a distinct TRANCE scene.
-void main(){vec2 uv=vUV*2.0-1.0;uv.x*=uResolution.x/uResolution.y;float t=uTime*.09;vec3 bg=themed(uBackground,NIGHT);vec3 pcol=themed(uPrimaryColour,VIOLET);vec3 scol=themed(uSecondaryColour,BLUE);vec3 acol=themed(uAccentColour,GOLD);uv*=1.0-uBass*.035-uBeat*uBeat*.035;float curtain=0.0;for(int i=0;i<5;i++){float fi=float(i);float x=sin(uv.y*(1.2+fi*.3)+t*(1.0+fi*.11)+fi)*.28+sin(t+fi)*.18;curtain+=line(uv.x-x,.050+fi*.012)*(0.70-fi*.08);}float folds=fbm(vec2(uv.x*1.7,uv.y*3.0-t*3.0));vec3 col=mix(bg,scol,0.28+0.22*folds);col=mix(col,pcol,curtain*.52);col+=acol*pow(curtain,2.4)*(0.25+uTreble*.35);fragColor=vec4(finish(uv,col,.36),1.0);}
+void main() {
+    vec2 uv = vUV * 2.0 - 1.0;
+    uv.x *= uResolution.x / uResolution.y;
+    float t = uTime * 0.065 + uEvolutionPhase * 0.06;
+    vec3 base = themed(uBackground, NIGHT);
+    vec3 blue = themed(uPrimaryColour, BLUE);
+    vec3 gold = themed(uAccentColour, GOLD);
+    vec3 col = base + blue * 0.055;
+    // Broad silk folds cross the whole wall, each with its own slow motion.
+    for (int i = 0; i < 9; ++i) {
+        float f = float(i);
+        float y = -1.15 + f * 0.29;
+        y += sin(uv.x * (0.65 + f * 0.035) + t + f * 0.8) * 0.28;
+        y += sin(uv.x * 1.7 - t * 0.71 + f) * (0.06 + uMid * 0.04);
+        float d = abs(uv.y - y);
+        float silk = exp(-d * d / (0.003 + 0.002 * sin(t * 0.19 + f)));
+        float edge = exp(-d * 170.0);
+        float sheen = 0.5 + 0.5 * sin(uv.x * 0.8 + f * 1.3 + t * 0.37);
+        vec3 ribbon = mix(blue, vec3(0.55, 0.24, 0.42), sheen * 0.38);
+        col += ribbon * silk * (0.36 + uBass * 0.10);
+        col += mix(blue, gold, sheen * 0.7) * edge * (0.28 + uTreble * 0.35);
+    }
+    fragColor = vec4(finish(uv, col, 0.22), 1.0);
+}

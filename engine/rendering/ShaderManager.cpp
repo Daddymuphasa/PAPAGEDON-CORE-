@@ -362,19 +362,8 @@ void main() {
     uv += vec2(sin(drift * 0.071), cos(drift * 0.053)) * 0.18;
     uv += vec2(sin(drift * 0.019), cos(drift * 0.027)) * 0.10;
 
-    // Keep the selected preset as the starting point, then let its composition
-    // travel through the signature forms on a long, seamless visual cadence.
-    // The blend only evaluates a second form during the transition window.
-    const float formCycle = uTime / 42.0;
-    const float formPhase = fract(formCycle);
-    const int formOffset = int(mod(floor(formCycle), 12.0));
-    const int sceneMode = (uPattern + formOffset) % 12;
-    const int nextSceneMode = (sceneMode + 1) % 12;
-    float pattern = patternFor(sceneMode, uv, t);
-    if (formPhase > 0.68) {
-        float nextPattern = patternFor(nextSceneMode, uv, t);
-        pattern = mix(pattern, nextPattern, smoothstep(0.68, 1.0, formPhase));
-    }
+    // The director selects an on-theme form; local phase evolves its geometry.
+    float pattern = patternFor(uPattern, uv, t);
 
     // Preset changes still take precedence and blend from their outgoing form.
     if (uPatternBlend < 0.999 && uPrevPattern != uPattern) {

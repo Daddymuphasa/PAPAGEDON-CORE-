@@ -252,6 +252,8 @@ uniform float uTime;
 uniform vec2 uResolution;
 void main() {
     float p = smoothstep(0.0, 1.0, uProgress);
+    if (uProgress <= 0.0) { fragColor = texture(uTexA, vUV); return; }
+    if (uProgress >= 1.0) { fragColor = texture(uTexB, vUV); return; }
     vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0);
     vec2 q = (vUV - 0.5) * aspect;
     float radius = length(q);
@@ -365,6 +367,8 @@ uniform float uBeat;
 uniform float uEnergy;
 uniform float uPhase;
 uniform float uSeed;
+uniform int uComposition;
+uniform int uSection;
 uniform vec3  uPrimaryColour;
 uniform vec3  uSecondaryColour;
 uniform vec3  uAccentColour;
@@ -393,14 +397,14 @@ void main() {
     float width = 0.006 * max(uWaveformThickness, 0.2);
 
     // Real waveform layer.
-    if (uWaveformMode == 1) {
+    if (uComposition == 0 || (uComposition == 6 && uWaveformMode != 0)) {
         float sample = wave(uv01.x);
-        float y = sample * (0.13 + audioPush * 0.18);
+        float y = sample * (0.13 + audioPush * 0.18) + sin(uv.x * 1.8 + uPhase * 0.08) * 0.25;
         float glow = smoothstep(width * 5.0, 0.0, abs(uv.y - y));
         float core = smoothstep(width, 0.0, abs(uv.y - y));
         color += uAccentColour * glow * opacity * 0.55;
         color += mix(uPrimaryColour, vec3(1.0), 0.25) * core * opacity * 1.6;
-    } else if (uWaveformMode == 2 || uWaveformMode == 3) {
+    } else if (uComposition == 5) {
         float a = atan(uv.y, uv.x) + kPi;
         float x = fract(a / kTau + uPhase * 0.015);
         float sample = wave(x);
@@ -424,10 +428,21 @@ void main() {
     float outer = inner + 0.15 + band * (0.55 + uEnergy * 0.20);
     float angular = smoothstep(0.46, 0.24, abs(fracSlot - 0.5));
     float bar = angular * smoothstep(inner, inner + 0.015, r) * smoothstep(outer + 0.025, outer, r);
-    color += mix(uPrimaryColour, uAccentColour, band) * bar * (0.30 + uEnergy * 0.45);
+    if (uComposition == 5)
+        color += mix(uPrimaryColour, uAccentColour, band) * bar * (0.30 + uEnergy * 0.45);
+
+    if (uComposition == 2 || uComposition == 3) {
+        vec2 p = uv01;
+        if (uComposition == 3) p.y = fract(p.y + p.x * 0.4 + uPhase * 0.025);
+        float s = spec((floor(p.x * 64.0) + 0.5) / 64.0);
+        float columns = 1.0 - smoothstep(0.32, 0.48, abs(fract(p.x * 64.0) - 0.5));
+        float height = 0.03 + s * 0.38;
+        float bars = columns * (1.0 - smoothstep(height, height + 0.012, p.y));
+        color += mix(uPrimaryColour, uAccentColour, s) * bars * 0.42;
+    }
 
     // Beat rings.
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < (uComposition == 5 ? 4 : 0); ++i) {
         float age = fract(uPhase * 0.11 + float(i) * 0.25);
         float rr = age * (1.25 + uBass * 0.25);
         float ring = smoothstep(0.020, 0.0, abs(r - rr)) * (1.0 - age);
@@ -435,24 +450,26 @@ void main() {
     }
 
     // Line web traces, driven by mid/treble energy.
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < (uComposition == 6 ? 10 : 0); ++i) {
         float fi = float(i);
         float h1 = hash(fi * 17.0 + floor(uSeed));
         float h2 = hash(fi * 31.0 + 9.0 + floor(uSeed));
         float t = uPhase * (0.10 + h1 * 0.05) + fi;
-        vec2 p1 = vec2(sin(t + h1 * kTau), cos(t * 0.81 + h2 * kTau)) * (0.18 + h1 * 0.58);
-        vec2 p2 = vec2(cos(t * 0.73 + h2 * kTau), sin(t * 1.13 + h1 * kTau)) * (0.24 + h2 * 0.55);
+        vec2 spread = vec2(uResolution.x / max(uResolution.y, 1.0), 1.0);
+        vec2 p1 = vec2(sin(t + h1 * kTau), cos(t * 0.81 + h2 * kTau)) * spread;
+        vec2 p2 = vec2(cos(t * 0.73 + h2 * kTau), sin(t * 1.13 + h1 * kTau)) * spread;
         float trace = lineSegment(uv, p1, p2, 0.004 + uTreble * 0.009);
         color += mix(uSecondaryColour, uAccentColour, h1) * trace * (0.05 + uMid * 0.22 + uTreble * 0.25);
     }
 
     // Spark bursts on high frequencies.
-    for (int i = 0; i < 24; ++i) {
+    for (int i = 0; i < (uComposition == 1 ? 32 : 0); ++i) {
         float fi = float(i);
         float h = hash(fi * 23.1 + floor(uSeed));
         float ang = h * kTau + uPhase * (0.15 + hash(fi) * 0.12);
         float dist = 0.18 + hash(fi + 4.0) * 1.05;
-        vec2 sp = vec2(cos(ang), sin(ang)) * dist;
+        vec2 sp = vec2((hash(fi + uSeed) * 2.0 - 1.0) * uResolution.x / max(uResolution.y, 1.0),
+                       fract(hash(fi + 8.0) + uPhase * (0.008 + h * 0.015)) * 2.0 - 1.0);
         float sz = 0.006 + spec(h) * 0.020;
         float spark = exp(-dot(uv - sp, uv - sp) / max(sz * sz, 1.0e-5));
         color += uAccentColour * spark * (uTreble * 0.18 + uBeat * 0.22);
@@ -461,7 +478,10 @@ void main() {
     // Tunnel overlays: depth bands that accelerate with energy.
     float tunnel = 0.5 + 0.5 * sin(1.0 / max(r, 0.05) * 4.0 - uPhase * (1.5 + uEnergy * 2.0) + a * 4.0);
     tunnel = smoothstep(0.78, 1.0, tunnel) * smoothstep(1.25, 0.05, r);
-    color += uPrimaryColour * tunnel * (0.04 + uBass * 0.16 + uBeat * 0.18);
+    if (uComposition == 4)
+        color += uPrimaryColour * tunnel * (0.04 + uBass * 0.16 + uBeat * 0.18);
+
+    color *= uSection == 1 ? 0.22 : 0.85;
 
     fragColor = vec4(clamp(color, 0.0, 1.0), clamp(length(color), 0.0, 1.0));
 }
@@ -684,6 +704,8 @@ public:
     std::vector<std::unique_ptr<ShaderManager>> shaderLib;   // extra shaders (slot 1..N)
     std::vector<std::string>                    shaderNames; // names for every slot (0..N)
     int  activeShader        = 0;
+    ShowMode section = ShowMode::Open;
+    bool sectionRequested = false;
     bool prevShaderKeyPressed = false;
     bool nextShaderKeyPressed = false;
     // Brief on-screen name toast after a switch.
@@ -754,6 +776,8 @@ public:
     int          pgxShapeLocEnergy = -1;
     int          pgxShapeLocPhase = -1;
     int          pgxShapeLocSeed = -1;
+    int          pgxShapeLocComposition = -1;
+    int          pgxShapeLocSection = -1;
     int          pgxShapeLocPrimary = -1;
     int          pgxShapeLocSecondary = -1;
     int          pgxShapeLocAccent = -1;
@@ -761,6 +785,7 @@ public:
     bool         pgxStateInitialized = false;
     float        pgxPhase = 0.0f;
     float        pgxSeed = 1.0f;
+    float        presetPhases[kPresetCount] = {};
 
     // ── Cinematic startup intro (procedural gold logo) ──────────────────────────
     unsigned int introProgram = 0;
@@ -799,7 +824,7 @@ public:
     bool themeKeyWasPressed[kThemeKeyCount] = {};
     int  pendingThemeRequest = -1;
 
-    // 'B' selects TRANCE and toggles its wordmark; 'I' cycles live audio devices.
+    // T selects TRANCE, B selects Badman/Amapiano, and I cycles live audio devices.
     bool tranceKeyWasPressed = false;
     bool pendingTranceRequest = false;
     bool showTranceWordmark = false;
@@ -852,6 +877,12 @@ public:
 
     // ── Shader metadata (for smart auto-shader matching) ────────────────────────
     struct ShaderMeta {
+        ShowMode section = ShowMode::Open;
+        std::string id;
+        int composition = 0;
+        double lastPlayed = -10000.0;
+        unsigned int visits = 0;
+        float phase = 0.0f;
         int   bpmLow      = 0;
         int   bpmHigh     = 300;
         int   energyTier  = 1;   // 0=low, 1=medium, 2=high, 3=peak
@@ -937,6 +968,8 @@ bool OpenGLRenderer::Initialize() {
     implementation_->isFullscreen = (windowMonitor != nullptr);
 
     glfwMakeContextCurrent(implementation_->window);
+    // Preserve short taps even when press and release arrive in one frame.
+    glfwSetInputMode(implementation_->window, GLFW_STICKY_KEYS, GLFW_TRUE);
     if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0) {
         glfwDestroyWindow(implementation_->window);
         implementation_->window = nullptr;
@@ -1005,10 +1038,16 @@ bool OpenGLRenderer::Initialize() {
                     Implementation::ShaderMeta meta;
                     const auto stem = fs::path(file).stem().string();
                     const auto packDir = fs::path(file).parent_path().parent_path();
+                    const auto packName = packDir.filename().string();
+                    meta.section = packName == "TranceExperiencePack" ? ShowMode::Trance
+                                 : packName == "BadmanExperiencePack" ? ShowMode::Badman
+                                 : ShowMode::Open;
                     const auto metaPath = packDir / "metadata" / (stem + ".json");
                     if (std::ifstream mf(metaPath, std::ios::binary); mf) {
                         std::ostringstream ms; ms << mf.rdbuf();
                         const std::string mj = ms.str();
+                        meta.id = JsonString(mj, "id");
+                        meta.composition = JsonInt(mj, "composition", 0);
                         if (const auto bp = mj.find("recommendedBpmRange"); bp != std::string::npos) {
                             auto br = mj.find('[', bp);
                             if (br != std::string::npos) {
@@ -1192,6 +1231,8 @@ bool OpenGLRenderer::Initialize() {
             glGetUniformLocation(p, "uPhase");
         implementation_->pgxShapeLocSeed =
             glGetUniformLocation(p, "uSeed");
+        implementation_->pgxShapeLocComposition = glGetUniformLocation(p, "uComposition");
+        implementation_->pgxShapeLocSection = glGetUniformLocation(p, "uSection");
         implementation_->pgxShapeLocPrimary =
             glGetUniformLocation(p, "uPrimaryColour");
         implementation_->pgxShapeLocSecondary =
@@ -1403,6 +1444,13 @@ void OpenGLRenderer::BeginShaderTransition(const int target) {
     implementation_->transitioning        = true;
     implementation_->transitionProgress   = 0.0f;
     implementation_->needsOutgoingCapture = true;
+    implementation_->lastSwitchTime = glfwGetTime();
+    if (target > 0) {
+        auto& meta = implementation_->shaderMeta[static_cast<std::size_t>(target - 1)];
+        meta.lastPlayed = implementation_->lastSwitchTime;
+        ++meta.visits;
+    }
+    std::fprintf(stderr, "[Show] Scene: %s\n", implementation_->shaderNames[target].c_str());
 
     implementation_->toastText  = implementation_->shaderNames[static_cast<std::size_t>(target)];
     implementation_->toastUntil = glfwGetTime() + 2.2;
@@ -1411,6 +1459,34 @@ void OpenGLRenderer::BeginShaderTransition(const int target) {
 // ──────────────────────────────────────────────────────────────────────────────
 // BeginFrame
 // ──────────────────────────────────────────────────────────────────────────────
+void OpenGLRenderer::ActivateSection(const ShowMode mode) {
+    auto& impl = *implementation_;
+    impl.section = mode;
+    impl.sectionRequested = false;
+    impl.showTranceWordmark = mode == ShowMode::Trance;
+    impl.showBadmanWordmark = mode == ShowMode::Badman;
+    if (mode == ShowMode::Open) return;
+
+    impl.autoShader = true;
+    impl.introActive = false;
+    impl.tranceWordmarkStart = impl.badmanWordmarkStart = glfwGetTime();
+    impl.lastSwitchTime = glfwGetTime();
+    impl.pgxFeedbackPrimed = false;
+    const char* opening = mode == ShowMode::Trance ? "moonlit-velvet" : "rave-grid";
+    int target = 0;
+    for (std::size_t i = 0; i < impl.shaderMeta.size(); ++i) {
+        const auto& meta = impl.shaderMeta[i];
+        if (!SceneAllowed(mode, meta.section)) continue;
+        if (target == 0) target = static_cast<int>(i + 1);
+        if (meta.id == opening) { target = static_cast<int>(i + 1); break; }
+    }
+    BeginShaderTransition(target);
+    impl.toastText = mode == ShowMode::Trance ? "TRANCE - automatic scenes" : "BADMAN / AMAPIANO - automatic scenes";
+    impl.toastUntil = glfwGetTime() + 3.0;
+    std::fprintf(stderr, "[Show] Mode: %s; auto scenes enabled\n",
+                 mode == ShowMode::Trance ? "TRANCE" : "BADMAN");
+}
+
 void OpenGLRenderer::BeginFrame() {
     // Reserved for future pre-frame GPU work (e.g. fence waits, UBO updates).
 }
@@ -1427,6 +1503,11 @@ void OpenGLRenderer::Render(
 
     if (!initialized_) {
         return;
+    }
+
+    const ShowMode mode = ShowModeForTheme(theme.id);
+    if (mode != implementation_->section || implementation_->sectionRequested) {
+        ActivateSection(mode);
     }
 
     // ── Cinematic startup intro ─────────────────────────────────────────────────
@@ -1502,7 +1583,7 @@ void OpenGLRenderer::Render(
     // Beat pulse: instant on the beat frame (zero latency), then a fast decay so
     // it reads as a punch.  Peaks at the preset's beat response.
     if (signals.beat) {
-        smoothed.beat = preset.beatResponse;
+        smoothed.beat = preset.beatResponse * (mode == ShowMode::Trance ? 0.28f : 1.0f);
     } else {
         const float beatDecayRate = 14.0f; // exp(-dt * 14) gives ~25% after 100 ms
         smoothed.beat *= std::exp(-deltaTime * beatDecayRate);
@@ -1574,15 +1655,15 @@ void OpenGLRenderer::Render(
     // Preset-local PGX state: a persistent phase and seed give the renderer
     // enough memory to evolve shape layers over minutes instead of locking every
     // preset to a short deterministic loop.
-    if (!implementation_->pgxStateInitialized || implementation_->pgxStatePreset != preset.id) {
-        implementation_->pgxStatePreset = preset.id;
-        implementation_->pgxStateInitialized = true;
-        const auto id = static_cast<std::size_t>(preset.id);
-        implementation_->pgxSeed = 17.0f + static_cast<float>(id * 37u);
-        implementation_->pgxPhase *= 0.35f;
-    }
-    implementation_->pgxPhase += deltaTime *
-        (0.35f + smoothed.energy * 1.6f + smoothed.bass * 0.8f + smoothed.beat * 2.0f);
+    const auto presetIndex = static_cast<std::size_t>(preset.id);
+    float& localPhase = implementation_->activeShader > 0
+        ? implementation_->shaderMeta[implementation_->activeShader - 1].phase
+        : implementation_->presetPhases[presetIndex];
+    localPhase += deltaTime * (mode == ShowMode::Trance ? 0.35f :
+        0.55f + smoothed.energy * 1.6f + smoothed.bass * 0.8f + smoothed.beat * 2.0f);
+    implementation_->pgxPhase = localPhase;
+    implementation_->pgxSeed = 17.0f + 37.0f * static_cast<float>(implementation_->activeShader > 0
+        ? implementation_->activeShader : presetIndex);
     smoothed.evolutionPhase = implementation_->pgxPhase;
 
     // ── Signature form cross-fade ──────────────────────────────────────────────
@@ -1624,7 +1705,6 @@ void OpenGLRenderer::Render(
     // Auto-shader: move through the library with the music, matching shaders
     // to the current audio character (BPM, energy, frequency profile).
     if (implementation_->autoShader) {
-        implementation_->prevBeat = signals.beat;
         const float ba = 1.0f - std::exp(-deltaTime * 0.4f);
         implementation_->energyBaseline += (signals.energy - implementation_->energyBaseline) * ba;
         const float sa = 1.0f - std::exp(-deltaTime * 0.8f);
@@ -1636,8 +1716,12 @@ void OpenGLRenderer::Render(
         }
         const double since  = currentTime - implementation_->lastSwitchTime;
         const bool   drop   = (signals.energy - implementation_->energyBaseline) > 0.28f && signals.energy > 0.45f;
-        const bool   timeUp = since > 8.0;
-        if (!implementation_->transitioning && since > 3.0 && (drop || timeUp)) {
+        const bool gentle = implementation_->section == ShowMode::Trance;
+        const double dwell = gentle ? 18.0 + (1.0 - implementation_->energyBaseline) * 8.0
+                                    : 7.0 + (1.0 - implementation_->energyBaseline) * 5.0;
+        const bool phraseBeat = signals.beat && !implementation_->prevBeat;
+        const bool timeUp = since > dwell && (phraseBeat || since > dwell + 2.0);
+        if (!implementation_->transitioning && since > (gentle ? 14.0 : 4.0) && ((!gentle && drop) || timeUp)) {
             const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
             if (count > 1 && !implementation_->shaderMeta.empty()) {
                 const float bpm    = implementation_->smoothBpm;
@@ -1647,11 +1731,14 @@ void OpenGLRenderer::Render(
                 const int eTier = energy < 0.25f ? 0 : energy < 0.50f ? 1
                                 : energy < 0.75f ? 2 : 3;
                 float bestScore  = -1e9f;
-                int   bestShader = (implementation_->activeShader + 1) % count;
+                int   bestShader = -1;
+                const int previousFamily = implementation_->activeShader > 0
+                    ? implementation_->shaderMeta[implementation_->activeShader - 1].composition : -1;
                 for (int i = 1; i < count; ++i) {
                     const std::size_t mi = static_cast<std::size_t>(i - 1);
                     if (mi >= implementation_->shaderMeta.size()) continue;
                     const auto& m = implementation_->shaderMeta[mi];
+                    if (i == implementation_->activeShader || !SceneAllowed(implementation_->section, m.section)) continue;
                     float score = 0.0f;
                     if (bpm > 30.0f && m.bpmLow > 0) {
                         if (bpm >= static_cast<float>(m.bpmLow) &&
@@ -1661,7 +1748,7 @@ void OpenGLRenderer::Render(
                             const float dist = bpm < static_cast<float>(m.bpmLow)
                                 ? static_cast<float>(m.bpmLow) - bpm
                                 : bpm - static_cast<float>(m.bpmHigh);
-                            score -= dist * 0.15f;
+                            score -= std::min(dist * 0.05f, 2.0f);
                         }
                     }
                     const int tierDist = std::abs(eTier - m.energyTier);
@@ -1673,6 +1760,9 @@ void OpenGLRenderer::Render(
                     for (int r : implementation_->recentShaders) {
                         if (r == i) { score -= 5.0f; break; }
                     }
+                    // Prefer rested scenes and different compositions even on steady music.
+                    score += static_cast<float>(std::min(currentTime - m.lastPlayed, 180.0)) * 0.06f;
+                    if (m.composition == previousFamily) score -= 7.0f;
                     const float jitter = static_cast<float>((i * 7 + static_cast<int>(currentTime * 3.0)) % 100) * 0.005f;
                     score += jitter;
                     if (score > bestScore) {
@@ -1680,14 +1770,17 @@ void OpenGLRenderer::Render(
                         bestShader = i;
                     }
                 }
-                implementation_->recentShaders[implementation_->recentHead % 4] = bestShader;
-                implementation_->recentHead++;
-                BeginShaderTransition(bestShader);
-            } else {
+                if (bestShader >= 0) {
+                    implementation_->recentShaders[implementation_->recentHead % 4] = bestShader;
+                    implementation_->recentHead++;
+                    BeginShaderTransition(bestShader);
+                }
+            } else if (implementation_->section == ShowMode::Open) {
                 BeginShaderTransition((implementation_->activeShader + 1) % count);
             }
             implementation_->lastSwitchTime = currentTime;
         }
+        implementation_->prevBeat = signals.beat;
     }
 
     // ── Fullscreen shader pass (with dramatic FBO crossfade transitions) ──
@@ -1809,8 +1902,7 @@ void OpenGLRenderer::Render(
 
         // Advance progress — each effect has its own duration.
         const int eff = implementation_->transitionEffect;
-        const float dur = (eff >= 0 && eff < kNumTransitionEffects)
-            ? kTransitionDurations[eff] : 0.8f;
+        const float dur = mode == ShowMode::Trance ? 2.8f : 1.15f;
         implementation_->transitionProgress += deltaTime / dur;
         if (implementation_->transitionProgress >= 1.0f) {
             implementation_->transitionProgress = 1.0f;
@@ -1919,6 +2011,11 @@ void OpenGLRenderer::Render(
                 glUniform1f(implementation_->pgxShapeLocPhase, implementation_->pgxPhase);
             if (implementation_->pgxShapeLocSeed >= 0)
                 glUniform1f(implementation_->pgxShapeLocSeed, implementation_->pgxSeed);
+            const int composition = implementation_->activeShader > 0
+                ? implementation_->shaderMeta[implementation_->activeShader - 1].composition
+                : static_cast<int>(presetIndex % 7);
+            glUniform1i(implementation_->pgxShapeLocComposition, composition);
+            glUniform1i(implementation_->pgxShapeLocSection, static_cast<int>(mode));
             if (implementation_->pgxShapeLocPrimary >= 0)
                 glUniform3f(implementation_->pgxShapeLocPrimary,
                             smoothed.primaryColor.r, smoothed.primaryColor.g, smoothed.primaryColor.b);
@@ -1995,7 +2092,7 @@ void OpenGLRenderer::Render(
         implementation_->debugOverlay.RenderMenu(width, height, menuAlpha);
     }
 
-    // "BADMAN EXPERIENCE 4.0" brand banner (toggled by B key).
+    // Section wordmarks appear after their matching T/B key is pressed.
     if (implementation_->showTranceWordmark) {
         implementation_->debugOverlay.RenderTranceWordmark(
             width, height,
@@ -2040,18 +2137,8 @@ bool OpenGLRenderer::EndFrame() {
         glfwGetKey(implementation_->window, GLFW_KEY_T) == GLFW_PRESS;
     if (tranceIsPressed && !implementation_->tranceKeyWasPressed) {
         implementation_->pendingTranceRequest = true;
-        implementation_->showTranceWordmark = true;
-        implementation_->showBadmanWordmark = false;
-        implementation_->tranceWordmarkStart = glfwGetTime();
-        for (std::size_t i = 0; i < implementation_->shaderNames.size(); ++i) {
-            std::string name = implementation_->shaderNames[i];
-            std::transform(name.begin(), name.end(), name.begin(),
-                [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-            if (name.find("moonlit velvet") != std::string::npos) {
-                BeginShaderTransition(static_cast<int>(i));
-                break;
-            }
-        }
+        implementation_->pendingBadmanRequest = false;
+        implementation_->sectionRequested = true;
     }
     implementation_->tranceKeyWasPressed = tranceIsPressed;
 
@@ -2060,23 +2147,8 @@ bool OpenGLRenderer::EndFrame() {
         glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
     if (badmanIsPressed && !implementation_->badmanKeyWasPressed) {
         implementation_->pendingBadmanRequest = true;
-        implementation_->showBadmanWordmark = true;
-        implementation_->showTranceWordmark = false;
-        implementation_->badmanWordmarkStart = glfwGetTime();
-        int target = -1;
-        for (std::size_t i = 0; i < implementation_->shaderNames.size(); ++i) {
-            std::string name = implementation_->shaderNames[i];
-            std::transform(name.begin(), name.end(), name.begin(),
-                [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
-            if (name.find("blood pulse") != std::string::npos) {
-                target = static_cast<int>(i);
-                break;
-            }
-            if (target < 0 && name.find("inferno lasers") != std::string::npos) {
-                target = static_cast<int>(i);
-            }
-        }
-        if (target >= 0) BeginShaderTransition(target);
+        implementation_->pendingTranceRequest = false;
+        implementation_->sectionRequested = true;
     }
     implementation_->badmanKeyWasPressed = badmanIsPressed;
 
@@ -2138,7 +2210,14 @@ bool OpenGLRenderer::EndFrame() {
     // '[' / ']' cycle the active shader through the library (signature + pack).
     const int shaderCount = 1 + static_cast<int>(implementation_->shaderLib.size());
     const auto switchShader = [&](int delta) {
-        BeginShaderTransition((implementation_->activeShader + delta + shaderCount) % shaderCount);
+        for (int step = 1; step < shaderCount; ++step) {
+            const int target = (implementation_->activeShader + delta * step + shaderCount) % shaderCount;
+            if (target == 0 && implementation_->section != ShowMode::Open) continue;
+            if (target > 0 && !SceneAllowed(implementation_->section,
+                    implementation_->shaderMeta[target - 1].section)) continue;
+            BeginShaderTransition(target);
+            break;
+        }
     };
     const bool prevSh = glfwGetKey(implementation_->window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS;
     if (prevSh && !implementation_->prevShaderKeyPressed && shaderCount > 1) switchShader(-1);

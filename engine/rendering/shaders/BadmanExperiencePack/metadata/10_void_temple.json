@@ -7,5 +7,6 @@
   "mood": ["luxury", "cinematic", "atmospheric"],
   "recommendedBpmRange": [110, 120],
   "recommendedTheme": "badman",
+  "composition": 4,
   "energyLevel": "low"
 }

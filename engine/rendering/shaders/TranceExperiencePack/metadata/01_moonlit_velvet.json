@@ -3,7 +3,7 @@
   "index": 1,
   "name": "Moonlit Velvet",
   "shader": "shaders/01_moonlit_velvet.frag",
-  "description": "Velvet midnight gradients with slow bass-breathing folds.",
+  "description": "Wide moonlit silk ribbons with independently drifting folds, champagne edges and gentle bass breathing across the wall.",
   "mood": [
     "night",
     "dreamy",
@@ -18,5 +18,6 @@
     96
   ],
   "recommendedTheme": "trance",
+  "composition": 0,
   "energyLevel": "low"
 }

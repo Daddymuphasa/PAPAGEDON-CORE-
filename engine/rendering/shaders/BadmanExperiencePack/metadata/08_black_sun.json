@@ -7,5 +7,6 @@
   "mood": ["cinematic", "aggressive", "premium"],
   "recommendedBpmRange": [122, 128],
   "recommendedTheme": "badman",
+  "composition": 5,
   "energyLevel": "high"
 }
