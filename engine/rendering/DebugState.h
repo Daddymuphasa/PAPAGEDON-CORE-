@@ -10,6 +10,8 @@ struct DebugState final {
     float intensity = 0.0F;
     const char* currentExperience = "";
     const char* currentScene = "";
+    const char* currentPreset = "";
+    bool  autoMode = false;
     float transitionProgress = 0.0F;
 };
 

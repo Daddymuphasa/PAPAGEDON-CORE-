@@ -24,15 +24,24 @@ void Renderer::BeginFrame() {
 void Renderer::Render(
     const SceneState&     state,
     const DebugState&     debugState,
-    const ShaderUniforms& uniforms) {
+    const audio::ExperienceSignals& signals,
+    const ExperiencePreset& preset) {
 
     if (backend_ != nullptr) {
-        backend_->Render(state, debugState, uniforms);
+        backend_->Render(state, debugState, signals, preset);
     }
 }
 
 bool Renderer::EndFrame() {
     return backend_ != nullptr && backend_->EndFrame();
+}
+
+int Renderer::ConsumePresetRequest() noexcept {
+    return backend_ != nullptr ? backend_->ConsumePresetRequest() : -1;
+}
+
+bool Renderer::ConsumeAutoToggle() noexcept {
+    return backend_ != nullptr && backend_->ConsumeAutoToggle();
 }
 
 void Renderer::Shutdown() noexcept {

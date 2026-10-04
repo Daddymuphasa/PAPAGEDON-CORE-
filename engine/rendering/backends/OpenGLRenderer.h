@@ -21,9 +21,13 @@ public:
     void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const ShaderUniforms& uniforms) override;
+        const audio::ExperienceSignals& signals,
+        const ExperiencePreset& preset) override;
     [[nodiscard]] bool EndFrame() override;
     void Shutdown() noexcept override;
+
+    [[nodiscard]] int ConsumePresetRequest() noexcept override;
+    [[nodiscard]] bool ConsumeAutoToggle() noexcept override;
 
 private:
     class Implementation;

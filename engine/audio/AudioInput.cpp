@@ -32,42 +32,49 @@ bool AudioInput::Load(const std::string& path) {
         &decoder, nullptr, &decodedChannels, &decodedSampleRate, nullptr, 0);
 
     ma_uint64 expectedFrames = 0;
-    if (decodedChannels == 0 || decodedSampleRate == 0 ||
-        ma_decoder_get_length_in_pcm_frames(&decoder, &expectedFrames) != MA_SUCCESS ||
-        expectedFrames > std::numeric_limits<std::size_t>::max() / decodedChannels) {
-        return false;
-    }
+    // We try to get the length to pre-allocate, but don't fail if we can't.
+    ma_decoder_get_length_in_pcm_frames(&decoder, &expectedFrames);
 
     std::vector<float> decodedPcm;
-    try {
-        decodedPcm.resize(static_cast<std::size_t>(expectedFrames) * decodedChannels);
-    } catch (...) {
-        return false;
+    if (expectedFrames > 0 && expectedFrames < std::numeric_limits<std::size_t>::max() / decodedChannels) {
+        try {
+            decodedPcm.reserve(static_cast<std::size_t>(expectedFrames) * decodedChannels);
+        } catch (...) {
+            // Ignore reserve failure
+        }
     }
 
-    ma_uint64 framesRead = 0;
-    while (framesRead < expectedFrames) {
+    constexpr ma_uint64 CHUNK_FRAMES = 4096;
+    std::vector<float> chunk(CHUNK_FRAMES * decodedChannels);
+
+    ma_uint64 totalFramesRead = 0;
+    while (true) {
         ma_uint64 framesReadThisPass = 0;
         const ma_result result = ma_decoder_read_pcm_frames(
             &decoder,
-            decodedPcm.data() + static_cast<std::size_t>(framesRead) * decodedChannels,
-            expectedFrames - framesRead,
+            chunk.data(),
+            CHUNK_FRAMES,
             &framesReadThisPass);
 
-        framesRead += framesReadThisPass;
-        if (result != MA_SUCCESS && result != MA_AT_END) {
-            return false;
+        if (framesReadThisPass > 0) {
+            decodedPcm.insert(decodedPcm.end(), chunk.data(), chunk.data() + (framesReadThisPass * decodedChannels));
+            totalFramesRead += framesReadThisPass;
         }
-        if (framesReadThisPass == 0 || result == MA_AT_END) {
+
+        if (result != MA_SUCCESS || framesReadThisPass == 0) {
             break;
         }
     }
 
-    decodedPcm.resize(static_cast<std::size_t>(framesRead) * decodedChannels);
+    if (totalFramesRead == 0) {
+        return false;
+    }
+
+    decodedPcm.shrink_to_fit();
     pcmData_ = std::move(decodedPcm);
     sampleRate_ = decodedSampleRate;
     channels_ = decodedChannels;
-    frameCount_ = framesRead;
+    frameCount_ = totalFramesRead;
     return true;
 }
 
@@ -76,6 +83,10 @@ void AudioInput::Close() noexcept {
     sampleRate_ = 0;
     channels_ = 0;
     frameCount_ = 0;
+}
+
+std::span<const float> AudioInput::GetSamples() const noexcept {
+    return pcmData_;
 }
 
 std::uint32_t AudioInput::SampleRate() const noexcept {

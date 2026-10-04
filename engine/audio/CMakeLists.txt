@@ -2,6 +2,7 @@ add_library(papagedon-audio
     AudioAnalyzer.cpp
     AudioFrame.cpp
     AudioInput.cpp
+    AudioPlayer.cpp
     ExperienceSignals.cpp
 )
 

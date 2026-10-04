@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IRenderer.h"
-#include "ShaderUniforms.h"
+#include "../audio/ExperienceSignals.h"
 
 #include <memory>
 
@@ -24,10 +24,18 @@ public:
     void Render(
         const SceneState&    state,
         const DebugState&    debugState,
-        const ShaderUniforms& uniforms);
+        const audio::ExperienceSignals& signals,
+        const ExperiencePreset& preset);
     /// Returns false once the active backend requests application shutdown.
     [[nodiscard]] bool EndFrame();
     void Shutdown() noexcept;
+
+    /// Preset index requested via the temporary F1..F12 controls, or -1 if none.
+    /// See IRenderer::ConsumePresetRequest.
+    [[nodiscard]] int ConsumePresetRequest() noexcept;
+
+    /// True once per press of the Auto-VJ toggle key. See IRenderer::ConsumeAutoToggle.
+    [[nodiscard]] bool ConsumeAutoToggle() noexcept;
 
 private:
     std::unique_ptr<IRenderer> backend_;

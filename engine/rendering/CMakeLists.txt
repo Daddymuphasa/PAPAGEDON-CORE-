@@ -17,6 +17,10 @@ find_package(glfw3 CONFIG REQUIRED)
 target_include_directories(papagedon-rendering
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        # IRenderer.h consumes the data-only ExperiencePreset from the experience
+        # module.  This is a header-only include (the struct definition) — no link
+        # dependency — so the renderer stays backend-neutral and allocation-free.
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/engine/experience>
 )
 
 target_link_libraries(papagedon-rendering

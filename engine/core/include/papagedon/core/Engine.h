@@ -3,6 +3,8 @@
 #include <papagedon/runtime/Runtime.h>
 #include <papagedon/utilities/Logger.h>
 
+#include <string>
+
 namespace papagedon::core {
 
 class Engine final {
@@ -13,7 +15,9 @@ public:
     Engine(const Engine&) = delete;
     Engine& operator=(const Engine&) = delete;
 
-    bool Initialize();
+    /// Initializes the engine. An optional audio-file path selects the clip to
+    /// play; when empty the runtime falls back to its default (test.mp3).
+    bool Initialize(const std::string& audioPath = {});
     void Run();
     void Shutdown() noexcept;
     void RequestStop() noexcept;
