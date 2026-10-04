@@ -1,6 +1,6 @@
 {
   "demoMode": true,
-  "fullscreen": false,
+  "fullscreen": true,
   "vsync": true,
   "targetFPS": 120,
   "theme": "trance",
