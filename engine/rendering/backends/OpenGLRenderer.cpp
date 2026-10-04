@@ -803,6 +803,11 @@ public:
     bool tranceKeyWasPressed = false;
     bool pendingTranceRequest = false;
     bool showTranceWordmark = false;
+    double tranceWordmarkStart = 0.0;
+    bool badmanKeyWasPressed = false;
+    bool pendingBadmanRequest = false;
+    bool showBadmanWordmark = false;
+    double badmanWordmarkStart = 0.0;
 
     bool inputKeyWasPressed = false;
     bool pendingInputSwitch = false;
@@ -1377,7 +1382,7 @@ void OpenGLRenderer::SetFullscreen(const bool enable) {
 // ──────────────────────────────────────────────────────────────────────────────
 void OpenGLRenderer::BeginShaderTransition(const int target) {
     const int count = 1 + static_cast<int>(implementation_->shaderLib.size());
-    if (target < 0 || target >= count || implementation_->transitioning) {
+    if (target < 0 || target >= count) {
         return;
     }
     if (target == implementation_->activeShader) {
@@ -1993,7 +1998,13 @@ void OpenGLRenderer::Render(
     // "BADMAN EXPERIENCE 4.0" brand banner (toggled by B key).
     if (implementation_->showTranceWordmark) {
         implementation_->debugOverlay.RenderTranceWordmark(
-            width, height, static_cast<float>(currentTime), 1.0f);
+            width, height,
+            static_cast<float>(currentTime - implementation_->tranceWordmarkStart), 1.0f);
+    }
+    if (implementation_->showBadmanWordmark) {
+        implementation_->debugOverlay.RenderBadmanWordmark(
+            width, height,
+            static_cast<float>(currentTime - implementation_->badmanWordmarkStart), 1.0f);
     }
 }
 
@@ -2024,12 +2035,14 @@ bool OpenGLRenderer::EndFrame() {
         implementation_->themeKeyWasPressed[i] = pressed;
     }
 
-    // 'B' selects the opening TRANCE scene and toggles its wordmark.
-    const bool homeIsPressed =
-        glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
-    if (homeIsPressed && !implementation_->tranceKeyWasPressed) {
+    // 'T' selects the opening TRANCE scene and wordmark.
+    const bool tranceIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_T) == GLFW_PRESS;
+    if (tranceIsPressed && !implementation_->tranceKeyWasPressed) {
         implementation_->pendingTranceRequest = true;
-        implementation_->showTranceWordmark = !implementation_->showTranceWordmark;
+        implementation_->showTranceWordmark = true;
+        implementation_->showBadmanWordmark = false;
+        implementation_->tranceWordmarkStart = glfwGetTime();
         for (std::size_t i = 0; i < implementation_->shaderNames.size(); ++i) {
             std::string name = implementation_->shaderNames[i];
             std::transform(name.begin(), name.end(), name.begin(),
@@ -2040,7 +2053,32 @@ bool OpenGLRenderer::EndFrame() {
             }
         }
     }
-    implementation_->tranceKeyWasPressed = homeIsPressed;
+    implementation_->tranceKeyWasPressed = tranceIsPressed;
+
+    // 'B' selects the lively Badman/Amapiano section.
+    const bool badmanIsPressed =
+        glfwGetKey(implementation_->window, GLFW_KEY_B) == GLFW_PRESS;
+    if (badmanIsPressed && !implementation_->badmanKeyWasPressed) {
+        implementation_->pendingBadmanRequest = true;
+        implementation_->showBadmanWordmark = true;
+        implementation_->showTranceWordmark = false;
+        implementation_->badmanWordmarkStart = glfwGetTime();
+        int target = -1;
+        for (std::size_t i = 0; i < implementation_->shaderNames.size(); ++i) {
+            std::string name = implementation_->shaderNames[i];
+            std::transform(name.begin(), name.end(), name.begin(),
+                [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+            if (name.find("blood pulse") != std::string::npos) {
+                target = static_cast<int>(i);
+                break;
+            }
+            if (target < 0 && name.find("inferno lasers") != std::string::npos) {
+                target = static_cast<int>(i);
+            }
+        }
+        if (target >= 0) BeginShaderTransition(target);
+    }
+    implementation_->badmanKeyWasPressed = badmanIsPressed;
 
     const bool inputIsPressed =
         glfwGetKey(implementation_->window, GLFW_KEY_I) == GLFW_PRESS;
@@ -2212,6 +2250,15 @@ bool OpenGLRenderer::ConsumeTranceRequest() noexcept {
     }
     const bool requested = implementation_->pendingTranceRequest;
     implementation_->pendingTranceRequest = false;
+    return requested;
+}
+
+bool OpenGLRenderer::ConsumeBadmanRequest() noexcept {
+    if (!implementation_) {
+        return false;
+    }
+    const bool requested = implementation_->pendingBadmanRequest;
+    implementation_->pendingBadmanRequest = false;
     return requested;
 }
 

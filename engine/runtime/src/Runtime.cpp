@@ -77,6 +77,8 @@ bool Runtime::Initialize(const std::string& audioPath) {
         }
         themeManager_.LoadTheme(
             "engine/rendering/shaders/TranceExperiencePack/trance-theme.json");
+        themeManager_.LoadTheme(
+            "engine/rendering/shaders/BadmanExperiencePack/badman-theme.json");
     }
     {   // Select the configured theme (PAPAGEDON_THEME overrides the config value).
         std::string themeId = config_.theme;
@@ -293,6 +295,15 @@ void Runtime::Update(const FrameDuration deltaTime) noexcept {
     if (renderer_.ConsumeTranceRequest()) {
         if (themeManager_.SetTheme("trance")) {
             logger_.INFO("Theme: " + themeManager_.CurrentTheme().name + ".");
+        }
+    }
+
+    if (renderer_.ConsumeBadmanRequest()) {
+        if (themeManager_.SetTheme("badman")) {
+            logger_.INFO("Theme: " + themeManager_.CurrentTheme().name +
+                         " (Amapiano after party).");
+        } else {
+            logger_.INFO("Badman theme is unavailable; keeping the current palette.");
         }
     }
 

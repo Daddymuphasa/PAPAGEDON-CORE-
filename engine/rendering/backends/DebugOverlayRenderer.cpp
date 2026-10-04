@@ -284,7 +284,8 @@ void DebugOverlayRenderer::RenderMenu(int windowWidth, int windowHeight, float a
         {"   F8        reload shaders & theme", false},
         {"", false},
         {" COLOUR", true},
-        {"   B         TRANCE theme + wordmark", false},
+        {"   T         TRANCE - romantic / elegant", false},
+        {"   B         BADMAN - Amapiano after party", false},
         {"   F1 - F7   cyber / techno / industrial /", false},
         {"             rave / aurora / nebula / matrix", false},
         {"   F10       FX on/off  (glow / bloom)", false},
@@ -401,7 +402,10 @@ void DebugOverlayRenderer::RenderTranceWordmark(
     const float scale = std::max(5.0F, w / 180.0F);
     const float width = 6.0F * 8.0F * scale;
     const float x = (w - width) * 0.5F;
-    const float y = h * 0.48F + std::sin(time * 0.72F) * (h * 0.008F);
+    const float travel = std::clamp(time / 2.4F, 0.0F, 1.0F);
+    const float easedTravel = travel * travel * (3.0F - 2.0F * travel);
+    const float y = h * (0.48F + 0.40F * easedTravel) +
+                    std::sin(time * 0.72F) * (h * 0.008F);
     const float breath = 0.76F + 0.16F * std::sin(time * 0.54F);
     RenderBannerText("TRANCE", x, y, scale * 1.025F,
                      windowWidth, windowHeight, 0.30F, 0.38F, 0.82F,
@@ -409,6 +413,30 @@ void DebugOverlayRenderer::RenderTranceWordmark(
     RenderBannerText("TRANCE", x, y, scale,
                      windowWidth, windowHeight, 0.88F, 0.76F, 1.0F,
                      alpha * breath);
+}
+
+void DebugOverlayRenderer::RenderBadmanWordmark(
+    int windowWidth, int windowHeight, float time, float alpha) {
+    if (!initialized_ || alpha <= 0.0F) {
+        return;
+    }
+    const float w = static_cast<float>(windowWidth);
+    const float h = static_cast<float>(windowHeight);
+    const float scale = std::max(5.0F, w / 190.0F);
+    const float subScale = std::max(2.0F, w / 420.0F);
+    const float y = h * 0.48F + std::sin(time * 1.1F) * (h * 0.006F);
+    const float breath = 0.80F + 0.20F * std::sin(time * 0.8F);
+    const float titleWidth = 6.0F * 8.0F * scale;
+    const float subtitleWidth = 20.0F * 8.0F * subScale;
+    RenderBannerText("BADMAN", (w - titleWidth) * 0.5F, y + 8.0F * scale,
+                     scale * 1.02F, windowWidth, windowHeight,
+                     0.92F, 0.12F, 0.24F, alpha * breath * 0.30F);
+    RenderBannerText("BADMAN", (w - titleWidth) * 0.5F, y + 8.0F * scale,
+                     scale, windowWidth, windowHeight,
+                     1.0F, 0.68F, 0.56F, alpha * breath);
+    RenderBannerText("AMAPIANO AFTER PARTY", (w - subtitleWidth) * 0.5F, y,
+                     subScale, windowWidth, windowHeight,
+                     1.0F, 0.82F, 0.72F, alpha * breath * 0.9F);
 }
 
 void DebugOverlayRenderer::RenderToast(const char* text, int windowWidth, int windowHeight) {

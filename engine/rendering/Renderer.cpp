@@ -79,6 +79,10 @@ bool Renderer::ConsumeTranceRequest() noexcept {
     return backend_ != nullptr && backend_->ConsumeTranceRequest();
 }
 
+bool Renderer::ConsumeBadmanRequest() noexcept {
+    return backend_ != nullptr && backend_->ConsumeBadmanRequest();
+}
+
 bool Renderer::ConsumeInputSwitchRequest() noexcept {
     return backend_ != nullptr && backend_->ConsumeInputSwitchRequest();
 }

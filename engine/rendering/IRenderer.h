@@ -62,8 +62,11 @@ public:
     /// Theme slot requested via F1..F7 since the previous call (0..6), or -1.
     [[nodiscard]] virtual int ConsumeThemeRequest() noexcept = 0;
 
-    /// True once per B press — select the TRANCE theme.
+    /// True once per T press — select the TRANCE theme.
     [[nodiscard]] virtual bool ConsumeTranceRequest() noexcept = 0;
+
+    /// True once per B press — select the lively Badman/Amapiano section.
+    [[nodiscard]] virtual bool ConsumeBadmanRequest() noexcept = 0;
 
     /// True once per I press — cycle to the next live audio device.
     [[nodiscard]] virtual bool ConsumeInputSwitchRequest() noexcept = 0;

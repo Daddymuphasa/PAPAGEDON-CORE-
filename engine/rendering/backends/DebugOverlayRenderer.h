@@ -38,6 +38,8 @@ public:
 
     /// Draws a softly animated TRANCE title over the live scene.
     void RenderTranceWordmark(int windowWidth, int windowHeight, float time, float alpha);
+    /// Draws the animated Badman / Amapiano section title.
+    void RenderBadmanWordmark(int windowWidth, int windowHeight, float time, float alpha);
 
     void Shutdown() noexcept;
 
